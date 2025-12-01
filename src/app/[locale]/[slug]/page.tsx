@@ -51,7 +51,7 @@ export async function generateMetadata({ params }: CountryPageParams): Promise<M
 
   if (country) {
     return {
-      title: countryTax?.title || country.title || `${country.name} Vizesi - Kolay Seyahat`,
+      title: country.meta_title || countryTax?.title || country.title || `${country.name} Vizesi - Kolay Seyahat`,
       description:
         countryTax?.description ||
         country.description ||

@@ -1,4 +1,29 @@
-// Ülke ID'sinden slug'a dönüşüm
+/**
+ * Generate URL-friendly slug from text
+ */
+export function generateSlug(text: string): string {
+  const turkishMap: Record<string, string> = {
+    'ç': 'c', 'Ç': 'c',
+    'ğ': 'g', 'Ğ': 'g',
+    'ı': 'i', 'İ': 'i',
+    'ö': 'o', 'Ö': 'o',
+    'ş': 's', 'Ş': 's',
+    'ü': 'u', 'Ü': 'u',
+  };
+
+  return text
+    .split('')
+    .map(char => turkishMap[char] || char)
+    .join('')
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '') // Remove special chars
+    .replace(/\s+/g, '-')     // Replace spaces with -
+    .replace(/-+/g, '-')      // Replace multiple - with single -
+    .replace(/^-+|-+$/g, ''); // Remove leading/trailing -
+}
+
+// Ülke ID'sinden slug'a dönüşüm (legacy support)
 export const COUNTRY_ID_TO_SLUG: Record<number, string> = {
   4: "amerika",
   6: "ingiltere",

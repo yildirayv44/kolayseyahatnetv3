@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { Save, ArrowLeft, Languages, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { ImageUpload } from "./ImageUpload";
 
 export function ConsultantEditForm({ consultant }: { consultant: any }) {
   const router = useRouter();
@@ -20,6 +21,7 @@ export function ConsultantEditForm({ consultant }: { consultant: any }) {
     description_en: consultant.description_en || "",
     aboutme_en: consultant.aboutme_en || "",
     avatar: consultant.avatar || "",
+    image_url: consultant.image_url || "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -148,6 +150,17 @@ export function ConsultantEditForm({ consultant }: { consultant: any }) {
             className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
           />
         </div>
+
+        {/* Image Upload - Only show in Turkish tab */}
+        {activeLocale === 'tr' && (
+          <ImageUpload
+            currentImageUrl={formData.image_url}
+            onImageChange={(url) => setFormData({ ...formData, image_url: url })}
+            bucket="consultant-images"
+            label="Danışman Profil Fotoğrafı"
+            aspectRatio="1/1"
+          />
+        )}
 
         <div className="grid gap-6 md:grid-cols-2">
           <div className="space-y-2">

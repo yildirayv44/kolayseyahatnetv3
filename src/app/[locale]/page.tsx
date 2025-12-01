@@ -154,7 +154,7 @@ export default async function Home({ params }: HomePageProps) {
                   {country.visa_required === false ? t.popular.visaFreeEntry : t.popular.secureApplication}
                 </span>
                 <Link
-                  href={getLocalizedUrl(getCountrySlug(country.id), locale)}
+                  href={getLocalizedUrl(country.slug || getCountrySlug(country.id), locale)}
                   className="inline-flex items-center text-xs font-semibold text-primary hover:text-primary-dark"
                 >
                   {t.popular.details}

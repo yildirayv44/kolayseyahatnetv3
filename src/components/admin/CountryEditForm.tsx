@@ -8,6 +8,8 @@ import Link from "next/link";
 import { RichTextEditor } from "./RichTextEditor";
 import { ImageUrlFixer } from "./ImageUrlFixer";
 import { AIContentGenerator } from "./AIContentGenerator";
+import { ImageUpload } from "./ImageUpload";
+import { generateSlug } from "@/lib/helpers";
 
 export function CountryEditForm({ country }: { country: any }) {
   const router = useRouter();
@@ -16,7 +18,9 @@ export function CountryEditForm({ country }: { country: any }) {
   const [activeLocale, setActiveLocale] = useState<'tr' | 'en'>('tr');
   const [formData, setFormData] = useState({
     name: country.name || "",
+    slug: country.slug || generateSlug(country.name || ""),
     title: country.title || "",
+    meta_title: country.meta_title || "",
     description: country.description || "",
     contents: country.contents || "",
     req_document: country.req_document || "",
@@ -28,6 +32,7 @@ export function CountryEditForm({ country }: { country: any }) {
     title_en: country.title_en || "",
     description_en: country.description_en || "",
     contents_en: country.contents_en || "",
+    image_url: country.image_url || "",
     status: country.status || 0,
   });
 
@@ -164,7 +169,14 @@ export function CountryEditForm({ country }: { country: any }) {
           <input
             type="text"
             value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            onChange={(e) => {
+              const name = e.target.value;
+              setFormData({ 
+                ...formData, 
+                name,
+                slug: generateSlug(name) // Otomatik slug güncelle
+              });
+            }}
             required
             className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
           />
@@ -172,7 +184,42 @@ export function CountryEditForm({ country }: { country: any }) {
 
         <div className="space-y-2">
           <label className="block text-sm font-semibold text-slate-900">
-            Başlık {activeLocale === 'en' && '(English)'}
+            URL Slug
+          </label>
+          <input
+            type="text"
+            value={formData.slug}
+            onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+            required
+            className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm font-mono focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          />
+          <p className="text-xs text-slate-500">
+            URL: /{formData.slug}
+          </p>
+        </div>
+
+        {activeLocale === 'tr' && (
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-slate-900">
+              Meta Başlık (SEO Title)
+            </label>
+            <input
+              type="text"
+              value={formData.meta_title}
+              onChange={(e) => setFormData({ ...formData, meta_title: e.target.value })}
+              className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              placeholder="Örn: Karadağ Vizesi Başvurusu | Kolay Seyahat"
+              maxLength={60}
+            />
+            <p className="text-xs text-slate-500">
+              Google'da gösterilecek başlık (Max 60 karakter) • Mevcut: {formData.meta_title.length}/60
+            </p>
+          </div>
+        )}
+
+        <div className="space-y-2">
+          <label className="block text-sm font-semibold text-slate-900">
+            Sayfa Başlığı (H1) {activeLocale === 'en' && '(English)'}
           </label>
           <input
             type="text"
@@ -181,6 +228,9 @@ export function CountryEditForm({ country }: { country: any }) {
             className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
             placeholder={activeLocale === 'en' ? 'Enter English title...' : 'Başlık girin...'}
           />
+          <p className="text-xs text-slate-500">
+            Sayfada gösterilecek ana başlık
+          </p>
         </div>
 
         <div className="space-y-2">
@@ -195,6 +245,17 @@ export function CountryEditForm({ country }: { country: any }) {
             placeholder={activeLocale === 'en' ? 'Enter English description...' : 'Açıklama girin...'}
           />
         </div>
+
+        {/* Image Upload - Only show in Turkish tab */}
+        {activeLocale === 'tr' && (
+          <ImageUpload
+            currentImageUrl={formData.image_url}
+            onImageChange={(url) => setFormData({ ...formData, image_url: url })}
+            bucket="country-images"
+            label="Ülke Kapak Fotoğrafı"
+            aspectRatio="16/9"
+          />
+        )}
 
         <div className="space-y-2">
           <label className="block text-sm font-semibold text-slate-900">

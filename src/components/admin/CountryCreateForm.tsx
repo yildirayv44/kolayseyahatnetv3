@@ -7,17 +7,23 @@ import { Save, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { RichTextEditor } from "./RichTextEditor";
 import { AIContentGenerator } from "./AIContentGenerator";
+import { ImageUpload } from "./ImageUpload";
+import { generateSlug } from "@/lib/helpers";
 
 export function CountryCreateForm() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
+    slug: "",
     title: "",
+    meta_title: "",
     description: "",
     contents: "",
     req_document: "",
     price_contents: "",
+    image_url: "",
+    sorted: 0,
     status: 1,
   });
 
@@ -26,13 +32,31 @@ export function CountryCreateForm() {
     setLoading(true);
 
     try {
-      const { data, error } = await supabase
+      // 1. Ülkeyi kaydet (slug hariç - o taxonomies'e gidecek)
+      const { slug, ...countryData } = formData;
+      const { data: country, error: countryError } = await supabase
         .from("countries")
-        .insert([formData])
+        .insert([countryData])
         .select()
         .single();
 
-      if (error) throw error;
+      if (countryError) throw countryError;
+
+      // 2. Taxonomy kaydı oluştur (slug için)
+      const { error: taxonomyError } = await supabase
+        .from("taxonomies")
+        .insert([
+          {
+            model_id: country.id,
+            slug: formData.slug,
+            type: "Country\\CountryController@detail",
+          },
+        ]);
+
+      if (taxonomyError) {
+        console.error("Taxonomy error:", taxonomyError);
+        // Taxonomy hatası olsa bile devam et
+      }
 
       alert("Ülke başarıyla eklendi!");
       router.push("/admin/ulkeler");
@@ -56,23 +80,67 @@ export function CountryCreateForm() {
             type="text"
             required
             value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            onChange={(e) => {
+              const name = e.target.value;
+              setFormData({ 
+                ...formData, 
+                name,
+                slug: generateSlug(name) // Otomatik slug oluştur
+              });
+            }}
             className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-            placeholder="Örn: Amerika Birleşik Devletleri"
+            placeholder="Örn: Karadağ"
           />
         </div>
 
         <div className="space-y-2">
           <label className="block text-sm font-semibold text-slate-900">
-            Sayfa Başlığı
+            URL Slug *
+          </label>
+          <input
+            type="text"
+            required
+            value={formData.slug}
+            onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+            className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm font-mono focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            placeholder="Örn: karadag"
+          />
+          <p className="text-xs text-slate-500">
+            URL: /{formData.slug || "karadag"}
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <label className="block text-sm font-semibold text-slate-900">
+            Meta Başlık (SEO Title)
+          </label>
+          <input
+            type="text"
+            value={formData.meta_title}
+            onChange={(e) => setFormData({ ...formData, meta_title: e.target.value })}
+            className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            placeholder="Örn: Karadağ Vizesi Başvurusu | Kolay Seyahat"
+            maxLength={60}
+          />
+          <p className="text-xs text-slate-500">
+            Google'da gösterilecek başlık (Max 60 karakter) • Mevcut: {formData.meta_title.length}/60
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <label className="block text-sm font-semibold text-slate-900">
+            Sayfa Başlığı (H1)
           </label>
           <input
             type="text"
             value={formData.title}
             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
             className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-            placeholder="Örn: Amerika Vizesi - Kolay Seyahat"
+            placeholder="Örn: Karadağ Vizesi"
           />
+          <p className="text-xs text-slate-500">
+            Sayfada gösterilecek ana başlık
+          </p>
         </div>
 
         <div className="space-y-2">
@@ -87,6 +155,14 @@ export function CountryCreateForm() {
             placeholder="SEO için kısa açıklama (meta description)"
           />
         </div>
+
+        <ImageUpload
+          currentImageUrl={formData.image_url}
+          onImageChange={(url) => setFormData({ ...formData, image_url: url })}
+          bucket="country-images"
+          label="Ülke Kapak Fotoğrafı"
+          aspectRatio="16/9"
+        />
 
         <div className="space-y-2">
           <label className="block text-sm font-semibold text-slate-900">

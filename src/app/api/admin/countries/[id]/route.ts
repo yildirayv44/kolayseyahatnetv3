@@ -21,6 +21,7 @@ export async function PUT(
       }
     );
 
+    // 1. Ülkeyi güncelle
     const { data, error } = await supabase
       .from("countries")
       .update(body)
@@ -29,6 +30,36 @@ export async function PUT(
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+
+    // 2. Taxonomy'yi güncelle (slug değiştiyse)
+    if (body.slug) {
+      // Önce mevcut taxonomy var mı kontrol et
+      const { data: existingTax } = await supabase
+        .from("taxonomies")
+        .select("id")
+        .eq("model_id", id)
+        .eq("type", "Country\\CountryController@detail")
+        .maybeSingle();
+
+      if (existingTax) {
+        // Varsa güncelle
+        await supabase
+          .from("taxonomies")
+          .update({ slug: body.slug })
+          .eq("id", existingTax.id);
+      } else {
+        // Yoksa oluştur
+        await supabase
+          .from("taxonomies")
+          .insert([
+            {
+              model_id: parseInt(id),
+              slug: body.slug,
+              type: "Country\\CountryController@detail",
+            },
+          ]);
+      }
     }
 
     return NextResponse.json({ data });

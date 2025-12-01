@@ -8,6 +8,7 @@ import Link from "next/link";
 import { RichTextEditor } from "./RichTextEditor";
 import { ImageUrlFixer } from "./ImageUrlFixer";
 import { AIContentGenerator } from "./AIContentGenerator";
+import { ImageUpload } from "./ImageUpload";
 
 export function BlogEditForm({ blog }: { blog: any }) {
   const router = useRouter();
@@ -22,6 +23,7 @@ export function BlogEditForm({ blog }: { blog: any }) {
     description_en: blog.description_en || "",
     contents_en: blog.contents_en || "",
     image: blog.image || "",
+    image_url: blog.image_url || "",
     status: blog.status || 0,
   });
 
@@ -166,6 +168,17 @@ export function BlogEditForm({ blog }: { blog: any }) {
             placeholder={activeLocale === 'en' ? 'Enter English description...' : 'Açıklama girin...'}
           />
         </div>
+
+        {/* Image Upload - Only show in Turkish tab */}
+        {activeLocale === 'tr' && (
+          <ImageUpload
+            currentImageUrl={formData.image_url}
+            onImageChange={(url) => setFormData({ ...formData, image_url: url })}
+            bucket="blog-images"
+            label="Blog Kapak Fotoğrafı"
+            aspectRatio="21/9"
+          />
+        )}
 
         <div className="space-y-2">
           <label className="block text-sm font-semibold text-slate-900">

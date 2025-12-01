@@ -12,6 +12,7 @@ export const DEFAULT_IMAGES = {
 /**
  * Clean and validate image URL
  * Removes old system URLs and returns clean URL or default
+ * Priority: Supabase Storage > Unsplash > Default
  */
 export function getCleanImageUrl(
   imageUrl: string | null | undefined,
@@ -19,6 +20,11 @@ export function getCleanImageUrl(
 ): string {
   if (!imageUrl) {
     return DEFAULT_IMAGES[type];
+  }
+
+  // Allow Supabase Storage URLs
+  if (imageUrl.includes("supabase.co/storage")) {
+    return imageUrl;
   }
 
   // Remove old system URLs (eski sistemden gelen URL'ler)

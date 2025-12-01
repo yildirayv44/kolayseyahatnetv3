@@ -42,7 +42,7 @@ export default async function CountriesPage() {
           return (
             <Link
               key={country.id}
-              href={`/${getCountrySlug(country.id)}`}
+              href={`/${country.slug || getCountrySlug(country.id)}`}
               className="card group overflow-hidden p-0 hover:border-primary hover:shadow-lg"
             >
               {/* Country Image */}

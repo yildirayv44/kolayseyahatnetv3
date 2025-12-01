@@ -7,6 +7,7 @@ import { Save, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { RichTextEditor } from "./RichTextEditor";
 import { AIContentGenerator } from "./AIContentGenerator";
+import { ImageUpload } from "./ImageUpload";
 
 export function BlogCreateForm() {
   const router = useRouter();
@@ -16,6 +17,8 @@ export function BlogCreateForm() {
     description: "",
     contents: "",
     image: "",
+    image_url: "",
+    sorted: 0,
     status: 1,
   });
 
@@ -72,6 +75,14 @@ export function BlogCreateForm() {
             placeholder="Blog yazısının özeti"
           />
         </div>
+
+        <ImageUpload
+          currentImageUrl={formData.image_url}
+          onImageChange={(url) => setFormData({ ...formData, image_url: url })}
+          bucket="blog-images"
+          label="Blog Kapak Fotoğrafı"
+          aspectRatio="21/9"
+        />
 
         <div className="space-y-2">
           <label className="block text-sm font-semibold text-slate-900">

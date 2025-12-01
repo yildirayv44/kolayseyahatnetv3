@@ -1,7 +1,7 @@
 import { supabase } from "./supabase";
 
 export async function getCountries() {
-  const { data, error } = await supabase
+  const { data: countries, error } = await supabase
     .from("countries")
     .select("*")
     .eq("status", 1)
@@ -12,7 +12,26 @@ export async function getCountries() {
     return [];
   }
 
-  return data || [];
+  if (!countries) return [];
+
+  // Her ülke için taxonomy'den slug çek
+  const countriesWithSlugs = await Promise.all(
+    countries.map(async (country) => {
+      const { data: taxonomy } = await supabase
+        .from("taxonomies")
+        .select("slug")
+        .eq("model_id", country.id)
+        .eq("type", "Country\\CountryController@detail")
+        .maybeSingle();
+
+      return {
+        ...country,
+        slug: taxonomy?.slug || `country-${country.id}`,
+      };
+    })
+  );
+
+  return countriesWithSlugs;
 }
 
 export async function getCountryById(id: number) {
