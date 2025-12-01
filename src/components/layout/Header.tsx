@@ -126,24 +126,25 @@ export function Header() {
 
       {/* Main Header */}
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-4 py-4 md:gap-4">
-        <Link href={getLocalizedUrl("", locale)} className="shrink-0 text-xl font-bold text-slate-800 md:text-2xl">
-          KolaySeyahat
+        <Link href={getLocalizedUrl("", locale)} className="shrink-0 font-bold text-slate-800">
+          <span className="text-2xl md:hidden">KS</span>
+          <span className="hidden text-2xl md:inline">KolaySeyahat</span>
         </Link>
 
         {/* Search Bar */}
-        <div className="search-container relative flex-1 max-w-md">
+        <div className="search-container relative flex-1 max-w-md md:max-w-md">
           <div className="relative">
             {/* Pulse Animation Ring */}
             <div className="absolute -inset-1 rounded-lg bg-primary/20 opacity-75 blur-sm animate-pulse pointer-events-none"></div>
             
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 z-10" />
+            <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-primary z-10 md:h-4 md:w-4" />
             <input
               type="text"
               placeholder="Ülke ara..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => setSearchOpen(true)}
-              className="relative z-10 w-full rounded-lg border-2 border-primary/30 bg-white py-2 pl-10 pr-2 text-xs focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 md:pr-4 md:text-sm"
+              className="relative z-10 w-full rounded-lg border-2 border-primary/40 bg-white py-3 pl-11 pr-3 text-sm font-medium placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30 md:py-2 md:pl-10 md:pr-4 md:text-sm"
             />
           </div>
 

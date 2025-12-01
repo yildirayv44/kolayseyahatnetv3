@@ -30,11 +30,11 @@ export function StickyCTA({ countryName }: StickyCTAProps) {
 
   return (
     <div
-      className={`fixed bottom-0 left-0 right-0 z-40 mb-16 transition-transform duration-300 md:mb-0 ${
+      className={`fixed bottom-0 left-0 right-0 z-50 mb-16 transition-transform duration-300 md:mb-0 ${
         isVisible ? "translate-y-0" : "translate-y-[200%]"
       }`}
     >
-      <div className="bg-white shadow-2xl border-t-2 border-primary">
+      <div className="bg-white shadow-2xl border-t-2 border-primary relative">
         <div className="mx-auto max-w-6xl px-4 py-4">
           <div className="flex items-center justify-between gap-4">
             {/* Left: Text */}
