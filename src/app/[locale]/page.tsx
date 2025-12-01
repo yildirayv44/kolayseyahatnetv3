@@ -6,6 +6,7 @@ import { getLocalizedUrl } from "@/lib/locale-link";
 import { TrustBadges } from "@/components/home/TrustBadges";
 import { FavoriteButton } from "@/components/shared/FavoriteButton";
 import { SearchTooltip } from "@/components/home/SearchTooltip";
+import { UrgencyBanner } from "@/components/home/UrgencyBanner";
 import { translateArray } from "@/lib/translation";
 import { type Locale } from "@/i18n/config";
 
@@ -78,6 +79,9 @@ export default async function Home({ params }: HomePageProps) {
 
   return (
     <div className="space-y-12 md:space-y-16">
+      {/* Urgency Banner */}
+      <UrgencyBanner />
+
       {/* Search Tooltip */}
       <SearchTooltip />
 

@@ -28,6 +28,20 @@ html, body {
     @apply inline-flex items-center justify-center rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:bg-primary-dark;
   }
 
+  /* Shimmer animation for urgency banner */
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  .animate-shimmer {
+    animation: shimmer 3s infinite;
+  }
+
   .card {
     @apply rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:shadow-lg;
   }
