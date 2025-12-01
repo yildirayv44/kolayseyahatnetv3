@@ -120,9 +120,6 @@ export function TestimonialsSlider() {
       {/* Slider - Kompakt */}
       <div className="relative">
         <div className="card relative overflow-hidden bg-gradient-to-br from-slate-50 to-white p-6">
-          {/* Quote Icon */}
-          <Quote className="absolute right-8 top-8 h-16 w-16 text-primary/10" />
-
           {/* Content */}
           <div className="relative z-10 mx-auto max-w-3xl">
             {/* Stars - Küçük */}
