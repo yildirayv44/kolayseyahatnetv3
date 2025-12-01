@@ -1,0 +1,176 @@
+import { Metadata } from "next";
+
+interface SEOHeadProps {
+  title: string;
+  description: string;
+  keywords?: string[];
+  image?: string;
+  url?: string;
+  type?: "website" | "article";
+  publishedTime?: string;
+  modifiedTime?: string;
+  author?: string;
+}
+
+export function generateSEOMetadata({
+  title,
+  description,
+  keywords = [],
+  image = "/og-image.jpg",
+  url = "https://www.kolayseyahat.tr",
+  type = "website",
+  publishedTime,
+  modifiedTime,
+  author = "Kolay Seyahat",
+}: SEOHeadProps): Metadata {
+  const fullTitle = `${title} | Kolay Seyahat`;
+  const fullUrl = url.startsWith("http") ? url : `https://www.kolayseyahat.tr${url}`;
+  const fullImage = image.startsWith("http") ? image : `https://www.kolayseyahat.tr${image}`;
+
+  return {
+    title: fullTitle,
+    description,
+    keywords: keywords.join(", "),
+    authors: [{ name: author }],
+    creator: author,
+    publisher: "Kolay Seyahat",
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-video-preview": -1,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+      },
+    },
+    openGraph: {
+      type,
+      locale: "tr_TR",
+      url: fullUrl,
+      title: fullTitle,
+      description,
+      siteName: "Kolay Seyahat",
+      images: [
+        {
+          url: fullImage,
+          width: 1200,
+          height: 630,
+          alt: title,
+        },
+      ],
+      ...(publishedTime && { publishedTime }),
+      ...(modifiedTime && { modifiedTime }),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: fullTitle,
+      description,
+      images: [fullImage],
+      creator: "@kolayseyahat",
+      site: "@kolayseyahat",
+    },
+    alternates: {
+      canonical: fullUrl,
+    },
+    verification: {
+      google: "your-google-verification-code",
+      yandex: "your-yandex-verification-code",
+    },
+  };
+}
+
+// JSON-LD Structured Data Generator
+export function generateOrganizationSchema() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "Kolay Seyahat",
+    url: "https://www.kolayseyahat.tr",
+    logo: "https://www.kolayseyahat.tr/logo.png",
+    description: "Profesyonel vize danışmanlık hizmeti",
+    address: {
+      "@type": "PostalAddress",
+      addressCountry: "TR",
+      addressLocality: "İstanbul",
+    },
+    contactPoint: {
+      "@type": "ContactPoint",
+      telephone: "+90-212-909-99-71",
+      contactType: "customer service",
+      availableLanguage: ["Turkish", "English"],
+    },
+    sameAs: [
+      "https://www.facebook.com/kolayseyahat",
+      "https://www.instagram.com/kolayseyahat",
+      "https://www.twitter.com/kolayseyahat",
+    ],
+  };
+}
+
+export function generateBreadcrumbSchema(items: { name: string; url: string }[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: items.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      item: `https://www.kolayseyahat.tr${item.url}`,
+    })),
+  };
+}
+
+export function generateArticleSchema({
+  title,
+  description,
+  image,
+  publishedTime,
+  modifiedTime,
+  author = "Kolay Seyahat",
+}: {
+  title: string;
+  description: string;
+  image: string;
+  publishedTime: string;
+  modifiedTime?: string;
+  author?: string;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: title,
+    description,
+    image,
+    datePublished: publishedTime,
+    dateModified: modifiedTime || publishedTime,
+    author: {
+      "@type": "Organization",
+      name: author,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "Kolay Seyahat",
+      logo: {
+        "@type": "ImageObject",
+        url: "https://www.kolayseyahat.tr/logo.png",
+      },
+    },
+  };
+}
+
+export function generateFAQSchema(faqs: { question: string; answer: string }[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((faq) => ({
+      "@type": "Question",
+      name: faq.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: faq.answer,
+      },
+    })),
+  };
+}

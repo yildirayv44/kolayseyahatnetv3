@@ -1,0 +1,197 @@
+"use client";
+
+import { useState } from "react";
+import { Send, CheckCircle2 } from "lucide-react";
+
+interface AskQuestionFormProps {
+  countryName: string;
+  locale?: string;
+}
+
+export function AskQuestionForm({ countryName, locale = "tr" }: AskQuestionFormProps) {
+  const t = locale === "en" ? {
+    title: "Questions from Users",
+    successTitle: "Question Received!",
+    successMessage: "We will get back to you as soon as possible. Thank you.",
+    namePlaceholder: "Your Name",
+    emailPlaceholder: "Email Address",
+    phonePlaceholder: "Phone (Optional)",
+    questionPlaceholder: "Your Question",
+    submitButton: "Send Question",
+    submittingButton: "Sending...",
+  } : {
+    title: "Sizden gelen sorular",
+    successTitle: "Sorunuz Alındı!",
+    successMessage: "En kısa sürede size dönüş yapacağız. Teşekkür ederiz.",
+    namePlaceholder: "Adınız Soyadınız",
+    emailPlaceholder: "E-posta Adresiniz",
+    phonePlaceholder: "Telefon (Opsiyonel)",
+    questionPlaceholder: "Sorunuz",
+    submitButton: "Soru Gönder",
+    submittingButton: "Gönderiliyor...",
+  };
+
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    question: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    // Simulate API call
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+
+    setIsSuccess(true);
+    setIsSubmitting(false);
+
+    // Reset form after 3 seconds
+    setTimeout(() => {
+      setIsSuccess(false);
+      setFormData({ name: "", email: "", phone: "", question: "" });
+    }, 3000);
+  };
+
+  if (isSuccess) {
+    return (
+      <div className="rounded-2xl border-2 border-emerald-200 bg-emerald-50 p-8 text-center">
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100">
+          <CheckCircle2 className="h-8 w-8 text-emerald-600" />
+        </div>
+        <h3 className="mb-2 text-xl font-bold text-slate-900">
+          {t.successTitle}
+        </h3>
+        <p className="text-sm text-slate-600">
+          {t.successMessage}
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-2xl border-2 border-slate-200 bg-white p-6 md:p-8">
+      <div className="mb-6">
+        <h3 className="mb-2 text-2xl font-bold text-slate-900">
+          {countryName} Vizesi Hakkında Soru Sor
+        </h3>
+        <p className="text-sm text-slate-600">
+          Uzman danışmanlarımız sorularınızı en kısa sürede yanıtlayacak.
+        </p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="grid gap-4 md:grid-cols-2">
+          <div>
+            <label
+              htmlFor="name"
+              className="mb-1.5 block text-sm font-semibold text-slate-700"
+            >
+              Adınız Soyadınız *
+            </label>
+            <input
+              type="text"
+              id="name"
+              required
+              value={formData.name}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
+              className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              placeholder={t.namePlaceholder}
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="phone"
+              className="mb-1.5 block text-sm font-semibold text-slate-700"
+            >
+              Telefon Numaranız *
+            </label>
+            <input
+              type="tel"
+              id="phone"
+              required
+              value={formData.phone}
+              onChange={(e) =>
+                setFormData({ ...formData, phone: e.target.value })
+              }
+              className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              placeholder={t.phonePlaceholder}
+            />
+          </div>
+        </div>
+
+        <div>
+          <label
+            htmlFor="email"
+            className="mb-1.5 block text-sm font-semibold text-slate-700"
+          >
+            E-posta Adresiniz *
+          </label>
+          <input
+            type="email"
+            id="email"
+            required
+            value={formData.email}
+            onChange={(e) =>
+              setFormData({ ...formData, email: e.target.value })
+            }
+            className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            placeholder={t.emailPlaceholder}
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="question"
+            className="mb-1.5 block text-sm font-semibold text-slate-700"
+          >
+            Sorunuz *
+          </label>
+          <textarea
+            id="question"
+            required
+            rows={5}
+            value={formData.question}
+            onChange={(e) =>
+              setFormData({ ...formData, question: e.target.value })
+            }
+            className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            placeholder={t.questionPlaceholder}
+          />
+        </div>
+
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-8 py-4 font-bold text-white shadow-lg transition-all hover:bg-primary/90 hover:shadow-xl disabled:opacity-50"
+        >
+          {isSubmitting ? (
+            <>
+              <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              <span>{t.submittingButton}</span>
+            </>
+          ) : (
+            <>
+              <span>{t.submitButton}</span>
+              <Send className="h-5 w-5" />
+            </>
+          )}
+        </button>
+
+        <p className="text-center text-xs text-slate-500">
+          Formunu göndererek{" "}
+          <a href="/gizlilik" className="text-primary hover:underline">
+            Gizlilik Politikası
+          </a>
+          &apos;nı kabul etmiş olursunuz.
+        </p>
+      </form>
+    </div>
+  );
+}
