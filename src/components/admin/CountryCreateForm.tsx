@@ -23,6 +23,9 @@ export function CountryCreateForm() {
     req_document: "",
     price_contents: "",
     image_url: "",
+    price: "",
+    original_price: "",
+    discount_percentage: "",
     sorted: 0,
     status: 1,
   });
@@ -163,6 +166,51 @@ export function CountryCreateForm() {
           label="Ülke Kapak Fotoğrafı"
           aspectRatio="16/9"
         />
+
+        {/* Fiyatlandırma */}
+        <div className="grid grid-cols-3 gap-4 rounded-lg border border-slate-200 p-4">
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-slate-900">
+              Güncel Fiyat (₺)
+            </label>
+            <input
+              type="number"
+              value={formData.price}
+              onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+              className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              placeholder="6800"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-slate-900">
+              Eski Fiyat (₺)
+            </label>
+            <input
+              type="number"
+              value={formData.original_price}
+              onChange={(e) => setFormData({ ...formData, original_price: e.target.value })}
+              className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              placeholder="8500"
+            />
+            <p className="text-xs text-slate-500">Üstü çizili gösterilir</p>
+          </div>
+
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-slate-900">
+              İndirim (%)
+            </label>
+            <input
+              type="number"
+              value={formData.discount_percentage}
+              onChange={(e) => setFormData({ ...formData, discount_percentage: e.target.value })}
+              className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              placeholder="20"
+              max="100"
+            />
+            <p className="text-xs text-slate-500">Badge olarak gösterilir</p>
+          </div>
+        </div>
 
         <div className="space-y-2">
           <label className="block text-sm font-semibold text-slate-900">

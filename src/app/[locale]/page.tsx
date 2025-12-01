@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Globe2, ShieldCheck, Users, Clock4, PhoneCall } from "lucide-react";
+import { ArrowRight, Globe2, ShieldCheck, Users, Clock4, PhoneCall, TrendingDown } from "lucide-react";
 import { getCountries, getBlogs, getConsultants } from "@/lib/queries";
 import { getCountrySlug, getBlogSlug } from "@/lib/helpers";
 import { getLocalizedUrl } from "@/lib/locale-link";
@@ -144,23 +144,60 @@ export default async function Home({ params }: HomePageProps) {
                 <h3 className="text-sm font-semibold text-slate-900">
                   {country.title || `${country.name} ${locale === "en" ? "Visa" : "Vizesi"}`}
                 </h3>
-                <p className="line-clamp-3 text-xs text-slate-600">
+                <p className="line-clamp-2 text-xs text-slate-600">
                   {country.description}
                 </p>
               </div>
-              <div className="mt-4 flex items-center justify-between text-xs text-slate-500">
-                <span className="inline-flex items-center gap-1">
-                  <ShieldCheck className="h-3 w-3 text-emerald-500" />
-                  {country.visa_required === false ? t.popular.visaFreeEntry : t.popular.secureApplication}
-                </span>
-                <Link
-                  href={getLocalizedUrl(country.slug || getCountrySlug(country.id), locale)}
-                  className="inline-flex items-center text-xs font-semibold text-primary hover:text-primary-dark"
-                >
-                  {t.popular.details}
-                  <ArrowRight className="ml-1 h-3 w-3" />
-                </Link>
-              </div>
+
+              {/* Fiyat Gösterimi */}
+              {country.price && (
+                <div className="mt-3 border-t border-slate-100 pt-3">
+                  <div className="flex items-end justify-between">
+                    <div>
+                      {country.original_price && country.original_price > country.price && (
+                        <div className="flex items-center gap-1">
+                          <span className="text-xs text-slate-400 line-through">
+                            ₺{country.original_price.toLocaleString('tr-TR')}
+                          </span>
+                          {country.discount_percentage && (
+                            <span className="inline-flex items-center gap-0.5 rounded-full bg-red-50 px-1.5 py-0.5 text-[10px] font-bold text-red-600">
+                              <TrendingDown className="h-2.5 w-2.5" />
+                              %{country.discount_percentage}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      <div className="text-2xl font-bold text-emerald-600">
+                        ₺{country.price.toLocaleString('tr-TR')}
+                      </div>
+                      <p className="text-[10px] text-slate-500">Başlangıç fiyatı</p>
+                    </div>
+                    <Link
+                      href={getLocalizedUrl(country.slug || getCountrySlug(country.id), locale)}
+                      className="rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-primary-dark"
+                    >
+                      Başvur
+                    </Link>
+                  </div>
+                </div>
+              )}
+
+              {/* Fiyat yoksa eski görünüm */}
+              {!country.price && (
+                <div className="mt-4 flex items-center justify-between text-xs text-slate-500">
+                  <span className="inline-flex items-center gap-1">
+                    <ShieldCheck className="h-3 w-3 text-emerald-500" />
+                    {country.visa_required === false ? t.popular.visaFreeEntry : t.popular.secureApplication}
+                  </span>
+                  <Link
+                    href={getLocalizedUrl(country.slug || getCountrySlug(country.id), locale)}
+                    className="inline-flex items-center text-xs font-semibold text-primary hover:text-primary-dark"
+                  >
+                    {t.popular.details}
+                    <ArrowRight className="ml-1 h-3 w-3" />
+                  </Link>
+                </div>
+              )}
             </div>
           ))}
         </div>
