@@ -32,12 +32,15 @@ export const metadata: Metadata = {
     url: "/",
   }),
   manifest: "/manifest.json",
-  themeColor: "#10b981",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
     title: "KolaySeyahat",
   },
+};
+
+export const viewport = {
+  themeColor: "#2563eb",
 };
 
 export async function generateStaticParams() {
@@ -49,9 +52,9 @@ export default async function LocaleLayout({
   params,
 }: {
   children: React.ReactNode;
-  params: Promise<{ locale: Locale }>;
+  params: Promise<{ locale: string }>;
 }) {
-  const { locale } = await params;
+  const { locale } = await params as { locale: Locale };
   const organizationSchema = generateOrganizationSchema();
 
   return (

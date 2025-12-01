@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
 import { ApplicationForm } from "@/components/forms/ApplicationForm";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "Vize Başvurusu | Kolay Seyahat",
   description:
     "Online vize başvuru formu ile hızlı ve güvenli şekilde başvurunuzu tamamlayın. Uzman danışmanlarımız en kısa sürede sizinle iletişime geçecek.",
 };
+
+// Dynamic page because it uses searchParams
+export const dynamic = "force-dynamic";
 
 export default function ApplicationPage() {
   return (
