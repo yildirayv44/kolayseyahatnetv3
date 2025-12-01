@@ -8,6 +8,7 @@ import { FavoriteButton } from "@/components/shared/FavoriteButton";
 import { SearchTooltip } from "@/components/home/SearchTooltip";
 import { UrgencyBanner } from "@/components/home/UrgencyBanner";
 import { TestimonialsSlider } from "@/components/home/TestimonialsSlider";
+import { ComparisonTable } from "@/components/home/ComparisonTable";
 import { translateArray } from "@/lib/translation";
 import { type Locale } from "@/i18n/config";
 
@@ -210,6 +211,9 @@ export default async function Home({ params }: HomePageProps) {
 
       {/* TESTIMONIALS SECTION */}
       <TestimonialsSlider />
+
+      {/* COMPARISON TABLE */}
+      <ComparisonTable />
 
       {/* BLOG SECTION */}
       {translatedBlogs.length > 0 && (
