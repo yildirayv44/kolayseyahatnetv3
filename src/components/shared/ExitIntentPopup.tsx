@@ -75,7 +75,7 @@ export function ExitIntentPopup() {
           {
             email: email.toLowerCase().trim(),
             source: "exit_intent",
-            discount_code: "WELCOME10",
+            discount_code: "HOSGELDIN10",
           },
         ]);
 
@@ -141,7 +141,7 @@ export function ExitIntentPopup() {
                 %10 indirim kodunuz email adresinize gönderildi.
               </p>
               <p className="mt-4 text-sm text-slate-500">
-                İndirim Kodu: <span className="font-bold text-primary">WELCOME10</span>
+                İndirim Kodu: <span className="font-bold text-primary">HOSGELDIN10</span>
               </p>
             </div>
           ) : (

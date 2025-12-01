@@ -7,7 +7,8 @@ import {
   TrendingUp,
   CheckCircle,
   Clock,
-  XCircle
+  XCircle,
+  Mail
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { getCountries, getBlogs, getConsultants } from "@/lib/queries";
@@ -202,6 +203,12 @@ export default async function AdminDashboard() {
               {pendingComments} bekliyor
             </span>
           )}
+        </a>
+
+        <a href="/admin/email-subscribers" className="card group hover:border-primary">
+          <Mail className="h-8 w-8 text-emerald-600" />
+          <h3 className="mt-4 font-semibold text-slate-900">Email Aboneleri</h3>
+          <p className="mt-1 text-sm text-slate-600">Exit intent ve diğer kaynaklardan emailler</p>
         </a>
       </div>
     </div>
