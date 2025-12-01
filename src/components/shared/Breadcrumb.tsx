@@ -20,7 +20,7 @@ export function Breadcrumb({ items }: BreadcrumbProps) {
             className="flex items-center gap-1 text-slate-600 transition-colors hover:text-primary"
           >
             <Home className="h-4 w-4" />
-            <span>Ana Sayfa</span>
+            <span>Anasayfa</span>
           </Link>
         </li>
 
