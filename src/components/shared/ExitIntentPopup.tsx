@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { X, Gift, Mail, ArrowRight } from "lucide-react";
-import Image from "next/image";
+import { supabase } from "@/lib/supabase";
 
 export function ExitIntentPopup() {
   const [isVisible, setIsVisible] = useState(false);
@@ -15,8 +15,8 @@ export function ExitIntentPopup() {
     const hasSeenPopup = localStorage.getItem("exit-intent-seen");
     const hasSubscribed = localStorage.getItem("exit-intent-subscribed");
     
-    if (hasSeenPopup || hasSubscribed) {
-      return; // Daha önce gösterildi veya abone oldu
+    if (hasSubscribed) {
+      return; // Abone oldu, bir daha gösterme
     }
 
     let hasShownPopup = false;
@@ -30,13 +30,24 @@ export function ExitIntentPopup() {
       }
     };
 
-    // 3 saniye sonra event listener ekle (hemen gösterme)
+    // TEST: 5 saniye sonra otomatik göster (test için)
+    // Production'da bu satırı kaldırın veya yorum yapın
+    const testTimer = setTimeout(() => {
+      if (!hasSeenPopup && !hasShownPopup) {
+        hasShownPopup = true;
+        setIsVisible(true);
+        console.log("🎁 Exit Intent Popup (Test Mode - 5 saniye sonra otomatik açıldı)");
+      }
+    }, 5000);
+
+    // 3 saniye sonra event listener ekle
     const timer = setTimeout(() => {
       document.addEventListener("mouseleave", handleMouseLeave);
     }, 3000);
 
     return () => {
       clearTimeout(timer);
+      clearTimeout(testTimer);
       document.removeEventListener("mouseleave", handleMouseLeave);
     };
   }, []);
@@ -57,8 +68,28 @@ export function ExitIntentPopup() {
     }
 
     try {
-      // TODO: Email'i backend'e kaydet (Supabase, Mailchimp, vb.)
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simülasyon
+      // Supabase'e kaydet
+      const { error } = await supabase
+        .from("email_subscribers")
+        .insert([
+          {
+            email: email.toLowerCase().trim(),
+            source: "exit_intent",
+            discount_code: "WELCOME10",
+          },
+        ]);
+
+      if (error) {
+        // Email zaten kayıtlı olabilir (unique constraint)
+        if (error.code === "23505") {
+          // Duplicate email - yine de success göster
+          console.log("Email zaten kayıtlı");
+        } else {
+          throw error;
+        }
+      }
+
+      console.log("✅ Email kaydedildi:", email);
 
       setIsSuccess(true);
       localStorage.setItem("exit-intent-subscribed", "true");
@@ -67,7 +98,8 @@ export function ExitIntentPopup() {
       setTimeout(() => {
         setIsVisible(false);
       }, 3000);
-    } catch (error) {
+    } catch (error: any) {
+      console.error("❌ Email kaydetme hatası:", error);
       alert("Bir hata oluştu. Lütfen tekrar deneyin.");
     } finally {
       setIsSubmitting(false);
