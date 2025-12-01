@@ -95,31 +95,42 @@ export function TestimonialsSlider() {
   const current = testimonials[currentIndex];
 
   return (
-    <section className="space-y-6">
-      {/* Header */}
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-slate-900 md:text-3xl">
-          Müşterilerimiz Ne Diyor?
-        </h2>
-        <p className="mt-2 text-slate-600">
-          15,000+ mutlu müşterimizden bazı yorumlar
-        </p>
+    <section className="space-y-4">
+      {/* Header - Kompakt */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-semibold text-slate-900">
+            Müşteri Yorumları
+          </h2>
+          <p className="text-xs text-slate-500">15,000+ mutlu müşteri</p>
+        </div>
+        {/* Stats - Inline */}
+        <div className="flex gap-4 text-center">
+          <div>
+            <div className="text-xl font-bold text-primary">4.9</div>
+            <div className="text-[10px] text-slate-500">Puan</div>
+          </div>
+          <div>
+            <div className="text-xl font-bold text-primary">%98</div>
+            <div className="text-[10px] text-slate-500">Onay</div>
+          </div>
+        </div>
       </div>
 
-      {/* Slider */}
+      {/* Slider - Kompakt */}
       <div className="relative">
-        <div className="card relative overflow-hidden bg-gradient-to-br from-slate-50 to-white p-8 md:p-12">
+        <div className="card relative overflow-hidden bg-gradient-to-br from-slate-50 to-white p-6">
           {/* Quote Icon */}
           <Quote className="absolute right-8 top-8 h-16 w-16 text-primary/10" />
 
           {/* Content */}
           <div className="relative z-10 mx-auto max-w-3xl">
-            {/* Stars */}
-            <div className="mb-4 flex justify-center gap-1">
+            {/* Stars - Küçük */}
+            <div className="mb-3 flex justify-center gap-0.5">
               {[...Array(5)].map((_, i) => (
                 <Star
                   key={i}
-                  className={`h-5 w-5 ${
+                  className={`h-4 w-4 ${
                     i < current.rating
                       ? "fill-yellow-400 text-yellow-400"
                       : "text-slate-300"
@@ -128,14 +139,14 @@ export function TestimonialsSlider() {
               ))}
             </div>
 
-            {/* Text */}
-            <blockquote className="mb-6 text-center text-lg text-slate-700 md:text-xl">
+            {/* Text - Kompakt */}
+            <blockquote className="mb-4 text-center text-sm text-slate-700 line-clamp-3">
               "{current.text}"
             </blockquote>
 
-            {/* Author */}
-            <div className="flex items-center justify-center gap-4">
-              <div className="relative h-12 w-12 overflow-hidden rounded-full">
+            {/* Author - Kompakt */}
+            <div className="flex items-center justify-center gap-3">
+              <div className="relative h-10 w-10 overflow-hidden rounded-full">
                 <Image
                   src={current.image}
                   alt={current.name}
@@ -144,10 +155,10 @@ export function TestimonialsSlider() {
                 />
               </div>
               <div className="text-left">
-                <div className="font-semibold text-slate-900">{current.name}</div>
-                <div className="text-sm text-slate-500">{current.country}</div>
+                <div className="text-sm font-semibold text-slate-900">{current.name}</div>
+                <div className="text-xs text-slate-500">{current.country}</div>
               </div>
-              <div className="ml-auto text-xs text-slate-400">{current.date}</div>
+              <div className="ml-auto text-[10px] text-slate-400">{current.date}</div>
             </div>
           </div>
 
@@ -168,36 +179,20 @@ export function TestimonialsSlider() {
           </button>
         </div>
 
-        {/* Dots */}
-        <div className="mt-6 flex justify-center gap-2">
+        {/* Dots - Küçük */}
+        <div className="mt-4 flex justify-center gap-1.5">
           {testimonials.map((_, index) => (
             <button
               key={index}
               onClick={() => goToSlide(index)}
-              className={`h-2 rounded-full transition-all ${
+              className={`h-1.5 rounded-full transition-all ${
                 index === currentIndex
-                  ? "w-8 bg-primary"
-                  : "w-2 bg-slate-300 hover:bg-slate-400"
+                  ? "w-6 bg-primary"
+                  : "w-1.5 bg-slate-300 hover:bg-slate-400"
               }`}
               aria-label={`${index + 1}. yoruma git`}
             />
           ))}
-        </div>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-4 text-center">
-        <div className="card">
-          <div className="text-3xl font-bold text-primary">4.9</div>
-          <div className="text-sm text-slate-600">Ortalama Puan</div>
-        </div>
-        <div className="card">
-          <div className="text-3xl font-bold text-primary">15,247</div>
-          <div className="text-sm text-slate-600">Mutlu Müşteri</div>
-        </div>
-        <div className="card">
-          <div className="text-3xl font-bold text-primary">%98</div>
-          <div className="text-sm text-slate-600">Onay Oranı</div>
         </div>
       </div>
     </section>
