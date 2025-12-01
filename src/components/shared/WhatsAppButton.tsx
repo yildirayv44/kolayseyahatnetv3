@@ -31,7 +31,7 @@ export function WhatsAppButton() {
     <a
       href="#"
       onClick={handleClick}
-      className={`fixed bottom-32 right-4 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg transition-all hover:scale-110 hover:shadow-xl md:bottom-6 ${
+      className={`fixed bottom-36 right-4 z-[60] flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg transition-all hover:scale-110 hover:shadow-xl md:bottom-6 ${
         isVisible ? "translate-y-0 opacity-100" : "translate-y-20 opacity-0"
       }`}
       aria-label="WhatsApp ile iletişime geç"
