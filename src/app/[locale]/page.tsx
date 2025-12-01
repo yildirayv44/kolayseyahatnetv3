@@ -7,6 +7,7 @@ import { TrustBadges } from "@/components/home/TrustBadges";
 import { FavoriteButton } from "@/components/shared/FavoriteButton";
 import { SearchTooltip } from "@/components/home/SearchTooltip";
 import { UrgencyBanner } from "@/components/home/UrgencyBanner";
+import { TestimonialsSlider } from "@/components/home/TestimonialsSlider";
 import { translateArray } from "@/lib/translation";
 import { type Locale } from "@/i18n/config";
 
@@ -206,6 +207,9 @@ export default async function Home({ params }: HomePageProps) {
           ))}
         </div>
       </section>
+
+      {/* TESTIMONIALS SECTION */}
+      <TestimonialsSlider />
 
       {/* BLOG SECTION */}
       {translatedBlogs.length > 0 && (
