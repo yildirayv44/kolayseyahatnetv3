@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowLeft, Calendar, User, Clock, MessageSquare } from "lucide-react";
 import { getBlogBySlug, getBlogComments } from "@/lib/queries";
 import { Breadcrumb } from "@/components/shared/Breadcrumb";
@@ -7,6 +8,7 @@ import { ContentWithIds } from "@/components/country/ContentWithIds";
 import { parseH2Headings } from "@/lib/helpers";
 import { GenericCommentSection } from "@/components/comments/GenericCommentSection";
 import { getLocalizedFields } from "@/lib/locale-content";
+import { getCleanImageUrl, getBlogCategoryImage } from "@/lib/image-helpers";
 
 interface BlogPageProps {
   params: Promise<{ slug: string[]; locale: string }>;
@@ -32,6 +34,9 @@ export default async function BlogPage({ params }: BlogPageProps) {
   // Get comments
   const comments = await getBlogComments(blog.id);
 
+  // Get clean image URL
+  const imageUrl = getCleanImageUrl(blog.image_url, "blog") || getBlogCategoryImage(blog.category);
+
   return (
     <div className="space-y-8 md:space-y-10">
       {/* BREADCRUMB */}
@@ -53,6 +58,18 @@ export default async function BlogPage({ params }: BlogPageProps) {
 
       {/* BLOG HEADER */}
       <article className="space-y-6">
+        {/* Featured Image */}
+        <div className="relative aspect-[21/9] w-full overflow-hidden rounded-2xl bg-slate-100">
+          <Image
+            src={imageUrl}
+            alt={blog.title}
+            fill
+            className="object-cover"
+            priority
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
+          />
+        </div>
+
         <header className="space-y-4">
           <h1 className="text-3xl font-bold text-slate-900 md:text-4xl">
             {blog.title}

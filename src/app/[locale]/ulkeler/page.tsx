@@ -1,8 +1,10 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Globe2, ArrowRight } from "lucide-react";
 import { getCountries } from "@/lib/queries";
 import { getCountrySlug } from "@/lib/helpers";
 import { generateSEOMetadata } from "@/components/shared/SEOHead";
+import { getCountryDefaultImage } from "@/lib/image-helpers";
 
 export const metadata = generateSEOMetadata({
   title: "Vize Başvurusu Yapılabilecek Ülkeler",
@@ -34,27 +36,36 @@ export default async function CountriesPage() {
       </section>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {countries.map((country: any) => (
-          <Link
-            key={country.id}
-            href={`/${getCountrySlug(country.id)}`}
-            className="card group hover:border-primary hover:shadow-lg"
-          >
-            <div className="flex items-start gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10 transition-colors group-hover:bg-primary/20">
-                <Globe2 className="h-6 w-6 text-primary" />
+        {countries.map((country: any) => {
+          const imageUrl = getCountryDefaultImage(country.name);
+          
+          return (
+            <Link
+              key={country.id}
+              href={`/${getCountrySlug(country.id)}`}
+              className="card group overflow-hidden p-0 hover:border-primary hover:shadow-lg"
+            >
+              {/* Country Image */}
+              <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-100">
+                <Image
+                  src={imageUrl}
+                  alt={country.name}
+                  fill
+                  className="object-cover transition-transform duration-300 group-hover:scale-105"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                />
+                {country.visa_required === false && (
+                  <div className="absolute right-3 top-3 rounded-full bg-emerald-500 px-3 py-1 text-xs font-bold text-white shadow-lg">
+                    Vizesiz
+                  </div>
+                )}
               </div>
-              <div className="flex-1 space-y-2">
-                <div className="flex items-center gap-2">
-                  <h2 className="text-lg font-semibold text-slate-900 group-hover:text-primary">
-                    {country.title || `${country.name} Vizesi`}
-                  </h2>
-                  {country.visa_required === false && (
-                    <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-600">
-                      Vizesiz
-                    </span>
-                  )}
-                </div>
+
+              {/* Country Content */}
+              <div className="space-y-3 p-4">
+                <h2 className="text-lg font-semibold text-slate-900 group-hover:text-primary">
+                  {country.title || `${country.name} Vizesi`}
+                </h2>
                 {country.description && (
                   <p className="line-clamp-2 text-sm text-slate-600">
                     {country.description}
@@ -65,9 +76,9 @@ export default async function CountriesPage() {
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </div>
               </div>
-            </div>
-          </Link>
-        ))}
+            </Link>
+          );
+        })}
       </div>
 
       {countries.length === 0 && (
