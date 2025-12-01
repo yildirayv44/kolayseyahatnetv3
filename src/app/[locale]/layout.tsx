@@ -5,6 +5,7 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { WhatsAppButton } from "@/components/shared/WhatsAppButton";
+import { WhatsAppWidget } from "@/components/shared/WhatsAppWidget";
 import { PWAInstallPrompt } from "@/components/shared/PWAInstallPrompt";
 import { PushNotificationPrompt } from "@/components/shared/PushNotificationPrompt";
 import { generateSEOMetadata, generateOrganizationSchema } from "@/components/shared/SEOHead";
@@ -70,7 +71,7 @@ export default async function LocaleLayout({
         <main className="mx-auto max-w-6xl px-4 py-6">{children}</main>
         <Footer />
         <MobileNav />
-        <WhatsAppButton />
+        <WhatsAppWidget />
         <PWAInstallPrompt />
         <PushNotificationPrompt />
       </body>
