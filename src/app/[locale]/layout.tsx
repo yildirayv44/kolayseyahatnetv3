@@ -6,6 +6,7 @@ import { Footer } from "@/components/layout/Footer";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { WhatsAppButton } from "@/components/shared/WhatsAppButton";
 import { WhatsAppWidget } from "@/components/shared/WhatsAppWidget";
+import { ExitIntentPopup } from "@/components/shared/ExitIntentPopup";
 import { PWAInstallPrompt } from "@/components/shared/PWAInstallPrompt";
 import { PushNotificationPrompt } from "@/components/shared/PushNotificationPrompt";
 import { generateSEOMetadata, generateOrganizationSchema } from "@/components/shared/SEOHead";
@@ -72,6 +73,7 @@ export default async function LocaleLayout({
         <Footer />
         <MobileNav />
         <WhatsAppWidget />
+        <ExitIntentPopup />
         <PWAInstallPrompt />
         <PushNotificationPrompt />
       </body>
