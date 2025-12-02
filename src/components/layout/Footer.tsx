@@ -22,16 +22,31 @@ export function Footer() {
 
         <div className="grid flex-1 grid-cols-2 gap-8 text-sm md:grid-cols-4">
           <div>
-            <h4 className="mb-3 font-semibold text-slate-900">Hakkımızda</h4>
+            <h4 className="mb-3 font-semibold text-slate-900">Hızlı Linkler</h4>
             <ul className="space-y-2 text-slate-600">
               <li>
-                <Link href={getLocalizedUrl("hakkimizda", locale)} className="hover:text-primary">
-                  Hakkımızda
+                <Link href={getLocalizedUrl("neden-biz", locale)} className="hover:text-primary">
+                  Neden Biz
                 </Link>
               </li>
               <li>
-                <Link href={getLocalizedUrl("kurumsal-vize-danismanligi", locale)} className="hover:text-primary">
-                  Kurumsal Vize Danışmanlığı
+                <Link href={getLocalizedUrl("sikca-sorulan-sorular", locale)} className="hover:text-primary">
+                  Sıkça Sorulan Sorular
+                </Link>
+              </li>
+              <li>
+                <Link href={getLocalizedUrl("sikayet-ve-oneri", locale)} className="hover:text-primary">
+                  Şikayet ve Öneri
+                </Link>
+              </li>
+              <li>
+                <Link href={getLocalizedUrl("ucret-politikamiz", locale)} className="hover:text-primary">
+                  Ücret Politikamız
+                </Link>
+              </li>
+              <li>
+                <Link href={getLocalizedUrl("kosullar-ve-isleyis", locale)} className="hover:text-primary">
+                  Koşullar ve İşleyiş
                 </Link>
               </li>
             </ul>
@@ -93,19 +108,15 @@ export function Footer() {
             </Link>
             <span>•</span>
             <Link href={getLocalizedUrl("bilgi-gizliligi", locale)} className="hover:text-primary">
-              Gizlilik Politikası
+              Bilgi Gizliliği
             </Link>
             <span>•</span>
-            <Link href={getLocalizedUrl("kosullar-ve-isleyis", locale)} className="hover:text-primary">
-              Kullanım Koşulları
+            <Link href={getLocalizedUrl("mesafeli-satis-sozlesmesi", locale)} className="hover:text-primary">
+              Mesafeli Satış Sözleşmesi
             </Link>
             <span>•</span>
-            <Link href={getLocalizedUrl("sikayet-ve-oneri", locale)} className="hover:text-primary">
-              Şikayet ve Öneri
-            </Link>
-            <span>•</span>
-            <Link href={getLocalizedUrl("sikca-sorulan-sorular", locale)} className="hover:text-primary">
-              SSS
+            <Link href={getLocalizedUrl("yasal-sorumluluk-reddi", locale)} className="hover:text-primary">
+              Yasal Sorumluluk Reddi
             </Link>
           </div>
           <div className="flex items-center justify-between text-xs text-slate-500">
