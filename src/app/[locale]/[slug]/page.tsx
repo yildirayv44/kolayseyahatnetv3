@@ -393,16 +393,29 @@ export default async function CountryPage({ params }: CountryPageParams) {
   // Parse H2 headings from content
   const h2Headings = fixedContents ? parseH2Headings(fixedContents) : [];
 
+  // Helper to strip HTML tags for schema
+  const stripHtml = (html: string) => {
+    return html
+      .replace(/<[^>]*>/g, ' ') // Remove HTML tags
+      .replace(/\s+/g, ' ') // Normalize whitespace
+      .replace(/&nbsp;/g, ' ') // Replace &nbsp;
+      .replace(/&amp;/g, '&') // Replace &amp;
+      .replace(/&lt;/g, '<') // Replace &lt;
+      .replace(/&gt;/g, '>') // Replace &gt;
+      .replace(/&quot;/g, '"') // Replace &quot;
+      .trim();
+  };
+
   // Generate FAQ Schema for SEO
   const faqSchema = faqParents.length > 0 ? generateFAQSchema(
     faqParents.map((q: any) => {
       const answers = getAnswersForQuestion(q.id);
       const answerText = answers.length > 0 
-        ? answers.map((a: any) => a.question).join(' ') 
-        : q.question; // Fallback to question if no answers
+        ? answers.map((a: any) => stripHtml(a.contents || a.title)).filter(Boolean).join(' ') 
+        : stripHtml(q.contents || q.title); // Use contents or title as fallback
       
       return {
-        question: q.question || '',
+        question: q.title || '',
         answer: answerText || ''
       };
     }).filter((faq: any) => faq.question && faq.answer) // Filter out empty ones
