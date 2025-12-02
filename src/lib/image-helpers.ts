@@ -156,3 +156,39 @@ export function getBlogCategoryImage(category?: string): string {
 
   return DEFAULT_IMAGES.blog;
 }
+
+/**
+ * Fix image URLs in HTML content
+ * Replaces old system URLs with placeholder or removes broken images
+ */
+export function fixHtmlImageUrls(htmlContent: string, countryName?: string): string {
+  if (!htmlContent) return htmlContent;
+
+  // Pattern to match img tags with old system URLs
+  const imgPattern = /<img([^>]*?)src=["']([^"']*?)["']([^>]*?)>/gi;
+  
+  return htmlContent.replace(imgPattern, (match, before, src, after) => {
+    // Check if it's an old system URL
+    const oldSystemPatterns = [
+      /https?:\/\/.*kolayseyahat\.tr\/.*\/uploads\//i,
+      /https?:\/\/.*kolayseyahat\.net\/.*\/uploads\//i,
+      /\/uploads\/.*\.(jpg|jpeg|png|gif|webp)/i,
+      /storage\/app\/public\//i,
+    ];
+
+    const isOldUrl = oldSystemPatterns.some(pattern => pattern.test(src));
+
+    if (isOldUrl) {
+      // Get a default image based on country
+      const defaultImage = countryName 
+        ? getCountryDefaultImage(countryName)
+        : DEFAULT_IMAGES.country;
+
+      // Return img tag with default image
+      return `<img${before}src="${defaultImage}"${after}>`;
+    }
+
+    // Return original if URL is valid
+    return match;
+  });
+}

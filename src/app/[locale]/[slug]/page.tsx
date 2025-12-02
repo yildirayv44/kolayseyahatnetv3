@@ -26,6 +26,7 @@ import { getLocalizedFields } from "@/lib/locale-content";
 import { getLocalizedUrl } from "@/lib/locale-link";
 import { supabase } from "@/lib/supabase";
 import { generateFAQSchema, generateBreadcrumbSchema } from "@/components/shared/SEOHead";
+import { fixHtmlImageUrls } from "@/lib/image-helpers";
 
 interface CountryPageParams {
   params: Promise<{ slug: string; locale: string }>;
@@ -299,6 +300,9 @@ export default async function CountryPage({ params }: CountryPageParams) {
         .maybeSingle()
         .then(({ data }) => data) : null;
       
+      // Fix image URLs in menu content
+      const fixedMenuContents = menu.contents ? fixHtmlImageUrls(menu.contents, menuCountry?.name) : null;
+      
       return (
         <div className="space-y-10 md:space-y-14">
           <Breadcrumb
@@ -318,8 +322,8 @@ export default async function CountryPage({ params }: CountryPageParams) {
               <p className="text-lg text-slate-600">{menu.description}</p>
             )}
             
-            {menu.contents && (
-              <ContentWithIds html={menu.contents} />
+            {fixedMenuContents && (
+              <ContentWithIds html={fixedMenuContents} />
             )}
             
             <div className="mt-8 rounded-xl border-2 border-primary/20 bg-primary/5 p-6">
@@ -381,8 +385,13 @@ export default async function CountryPage({ params }: CountryPageParams) {
   const getAnswersForQuestion = (id: number) =>
     faqChildren.filter((q: any) => q.parent_id === id);
 
+  // Fix image URLs in content
+  const fixedContents = country.contents ? fixHtmlImageUrls(country.contents, country.name) : null;
+  const fixedPriceContents = country.price_contents ? fixHtmlImageUrls(country.price_contents, country.name) : null;
+  const fixedReqDocument = country.req_document ? fixHtmlImageUrls(country.req_document, country.name) : null;
+
   // Parse H2 headings from content
-  const h2Headings = country.contents ? parseH2Headings(country.contents) : [];
+  const h2Headings = fixedContents ? parseH2Headings(fixedContents) : [];
 
   // Generate FAQ Schema for SEO
   const faqSchema = faqParents.length > 0 ? generateFAQSchema(
@@ -401,7 +410,7 @@ export default async function CountryPage({ params }: CountryPageParams) {
   // TOC items
   const tocItems = [
     ...(menus.length > 0 ? [{ id: "vize-turleri", title: "İlişkili Sayfalar" }] : []),
-    ...(country.contents
+    ...(fixedContents
       ? [
           {
             id: "genel-bilgiler",
@@ -411,7 +420,7 @@ export default async function CountryPage({ params }: CountryPageParams) {
         ]
       : []),
     ...(products.length > 0 ? [{ id: "vize-paketleri", title: t.visaPackages }] : []),
-    ...(country.req_document ? [{ id: "gerekli-belgeler", title: t.requiredDocuments }] : []),
+    ...(fixedReqDocument ? [{ id: "gerekli-belgeler", title: t.requiredDocuments }] : []),
     ...(faqParents.length > 0 ? [{ id: "sss", title: t.faq }] : []),
     { id: "soru-sor", title: t.askQuestion },
   ];
@@ -451,18 +460,18 @@ export default async function CountryPage({ params }: CountryPageParams) {
       {menus.length > 0 && <RelatedPages menus={menus} />}
 
       {/* ANA İÇERİK */}
-      {country.contents && (
+      {fixedContents && (
         <section id="genel-bilgiler" className="scroll-mt-20 space-y-3">
           <h2 className="text-2xl font-bold text-slate-900">Genel Bilgiler</h2>
-          <ContentWithIds html={country.contents} />
+          <ContentWithIds html={fixedContents} />
         </section>
       )}
 
       {/* FİYAT BİLGİLERİ */}
-      {country.price_contents && (
+      {fixedPriceContents && (
         <section id="vize-ucretleri" className="scroll-mt-20 space-y-3">
           <h2 className="text-2xl font-bold text-slate-900">Vize Ücretleri</h2>
-          <ContentWithIds html={country.price_contents} />
+          <ContentWithIds html={fixedPriceContents} />
         </section>
       )}
 
@@ -526,10 +535,10 @@ export default async function CountryPage({ params }: CountryPageParams) {
       )}
 
       {/* GEREKLİ BELGELER */}
-      {country.req_document && (
+      {fixedReqDocument && (
         <section id="gerekli-belgeler" className="scroll-mt-20 space-y-3">
           <h2 className="text-2xl font-bold text-slate-900">Gerekli Belgeler</h2>
-          <ContentWithIds html={country.req_document} />
+          <ContentWithIds html={fixedReqDocument} />
         </section>
       )}
 
