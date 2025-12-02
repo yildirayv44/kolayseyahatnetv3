@@ -67,7 +67,7 @@ export default async function ConsultantsPage() {
 
             <div className="mt-4 flex items-center gap-2">
               <Link
-                href={`/danisman/${consultant.id}`}
+                href={`/danismanlar/${consultant.id}`}
                 target="_blank"
                 className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-center text-sm font-medium text-slate-700 hover:bg-slate-50"
               >

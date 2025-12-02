@@ -99,7 +99,7 @@ export default function AboutPage() {
             >
               0212 909 99 71&apos;i Ara
             </a>
-            <Link href="/basvuru" className="btn-primary text-xs md:text-sm">
+            <Link href="/vize-basvuru-formu" className="btn-primary text-xs md:text-sm">
               Online Başvuru Yap
             </Link>
           </div>

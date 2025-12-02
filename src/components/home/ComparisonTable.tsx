@@ -126,7 +126,7 @@ export function ComparisonTable() {
           </p>
           <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
             <a
-              href="/basvuru"
+              href="/vize-basvuru-formu"
               className="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-6 py-3 font-semibold text-primary transition-all hover:bg-slate-50 hover:shadow-lg"
             >
               Hemen Başvur

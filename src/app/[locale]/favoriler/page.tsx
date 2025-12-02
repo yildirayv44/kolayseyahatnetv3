@@ -184,7 +184,7 @@ export default function FavoritesPage() {
                 <div className="absolute right-3 top-3 z-10">
                   <FavoriteButton id={consultant.id} type="consultant" size="sm" />
                 </div>
-                <Link href={`/danisman/${consultant.slug}`} className="block">
+                <Link href={`/danismanlar/${consultant.slug}`} className="block">
                   <h3 className="pr-10 font-semibold text-slate-900 hover:text-primary">
                     {consultant.name}
                   </h3>

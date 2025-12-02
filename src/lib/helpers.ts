@@ -59,7 +59,7 @@ export function getConsultantSlug(consultant: any): string {
   }
   
   // Fallback: ID kullan
-  return `/danisman/${consultant.id}`;
+  return `/danismanlar/${consultant.id}`;
 }
 
 // Blog slug helper - taxonomies'den slug kullan

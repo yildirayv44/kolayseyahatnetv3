@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -12,6 +13,38 @@ import { getCleanImageUrl, getBlogCategoryImage } from "@/lib/image-helpers";
 
 interface BlogPageProps {
   params: Promise<{ slug: string[]; locale: string }>;
+}
+
+export async function generateMetadata({ params }: BlogPageProps): Promise<Metadata> {
+  const { slug, locale } = await params;
+  const fullSlug = `blog/${slug.join("/")}`;
+
+  let blog = await getBlogBySlug(fullSlug);
+
+  if (blog) {
+    blog = getLocalizedFields(blog, locale as 'tr' | 'en');
+  }
+
+  if (!blog) {
+    return {
+      title: "Blog Yazısı Bulunamadı - Kolay Seyahat",
+      description: "Aradığınız blog yazısı bulunamadı.",
+    };
+  }
+
+  const title = blog.meta_title || blog.title;
+  const description = blog.meta_description || blog.description || blog.title;
+
+  return {
+    title: `${title} - Kolay Seyahat`,
+    description: description,
+    openGraph: {
+      title: `${title} - Kolay Seyahat`,
+      description: description,
+      type: "article",
+      images: blog.image_url ? [getCleanImageUrl(blog.image_url, "blog") || getBlogCategoryImage(blog.category)] : [],
+    },
+  };
 }
 
 export default async function BlogPage({ params }: BlogPageProps) {
@@ -148,7 +181,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
               <span>0212 909 99 71</span>
             </a>
             <Link
-              href="/basvuru"
+              href="/vize-basvuru-formu"
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-8 py-4 text-base font-bold text-white shadow-xl transition-all hover:bg-primary/90"
             >
               <span>Hemen Başvur</span>

@@ -20,6 +20,21 @@ export async function middleware(request: NextRequest) {
     (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
   );
 
+  // URL redirects for SEO consistency
+  const redirects: Record<string, string> = {
+    "/danisman": "/danismanlar",
+    "/basvuru": "/vize-basvuru-formu",
+  };
+
+  // Check for redirects (works for both with and without locale)
+  const pathWithoutLocale = pathname.replace(/^\/(en|tr)/, "");
+  if (redirects[pathWithoutLocale]) {
+    const url = request.nextUrl.clone();
+    const locale = pathname.startsWith("/en") ? "/en" : "";
+    url.pathname = `${locale}${redirects[pathWithoutLocale]}`;
+    return NextResponse.redirect(url, 301); // Permanent redirect for SEO
+  }
+
   // If pathname has /tr/ prefix, redirect to remove it (tr is default)
   if (pathname.startsWith("/tr/") || pathname === "/tr") {
     const url = request.nextUrl.clone();

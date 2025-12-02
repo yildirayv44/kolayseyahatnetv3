@@ -136,7 +136,7 @@ export function CountryHero({ country }: CountryHeroProps) {
           {/* CTA Buttons */}
           <div className="grid gap-3 sm:grid-cols-3">
             <Link
-              href="/basvuru"
+              href="/vize-basvuru-formu"
               className="group inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-4 text-base font-bold text-white shadow-xl transition-all hover:bg-primary/90 hover:shadow-2xl hover:scale-105"
             >
               <span>Hemen Başvur</span>

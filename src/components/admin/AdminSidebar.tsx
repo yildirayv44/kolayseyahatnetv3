@@ -12,6 +12,7 @@ import {
   Settings,
   LogOut,
   Package,
+  FileCode,
 } from "lucide-react";
 import { signOut } from "@/lib/auth";
 import { useRouter } from "next/navigation";
@@ -22,6 +23,7 @@ const menuItems = [
   { href: "/admin/vize-paketleri", label: "Vize Paketleri", icon: Package },
   { href: "/admin/bloglar", label: "Bloglar", icon: FileText },
   { href: "/admin/danismanlar", label: "Danışmanlar", icon: Users },
+  { href: "/admin/sayfalar", label: "Sayfa Yönetimi", icon: FileCode },
   { href: "/admin/basvurular", label: "Başvurular", icon: ClipboardList },
   { href: "/admin/yorumlar", label: "Yorumlar", icon: MessageSquare },
   { href: "/admin/ayarlar", label: "Ayarlar", icon: Settings },

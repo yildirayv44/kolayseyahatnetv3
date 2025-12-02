@@ -14,6 +14,9 @@ export async function getCountries() {
 
   if (!countries) return [];
 
+  // Import COUNTRY_ID_TO_SLUG from helpers
+  const { COUNTRY_ID_TO_SLUG } = await import("./helpers");
+
   // Her ülke için taxonomy'den slug çek
   const countriesWithSlugs = await Promise.all(
     countries.map(async (country) => {
@@ -24,9 +27,12 @@ export async function getCountries() {
         .eq("type", "Country\\CountryController@detail")
         .maybeSingle();
 
+      // Öncelik sırası: taxonomy slug > mapping > fallback
+      const slug = taxonomy?.slug || COUNTRY_ID_TO_SLUG[country.id] || `country-${country.id}`;
+
       return {
         ...country,
-        slug: taxonomy?.slug || `country-${country.id}`,
+        slug,
       };
     })
   );

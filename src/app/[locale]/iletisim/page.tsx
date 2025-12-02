@@ -71,7 +71,7 @@ export default function ContactPage() {
             Online başvuru formumuzu doldurarak vize sürecinizi hızlıca başlatabilirsiniz.
             Danışmanlarımız en kısa sürede sizinle iletişime geçecektir.
           </p>
-          <Link href="/basvuru" className="btn-primary inline-flex text-xs md:text-sm">
+          <Link href="/vize-basvuru-formu" className="btn-primary inline-flex text-xs md:text-sm">
             Online Başvuru Formu
           </Link>
         </div>

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowRight, PhoneCall, CheckCircle2, MessageSquare } from "lucide-react";
+import { ArrowRight, ArrowLeft, PhoneCall, CheckCircle2, MessageSquare } from "lucide-react";
 import {
   getCountryBySlug,
   getCountryMenus,
@@ -24,23 +24,46 @@ import { getBlogSlug, parseH2Headings, getMenuSlug } from "@/lib/helpers";
 import { GenericCommentSection } from "@/components/comments/GenericCommentSection";
 import { getLocalizedFields } from "@/lib/locale-content";
 import { getLocalizedUrl } from "@/lib/locale-link";
+import { supabase } from "@/lib/supabase";
 
 interface CountryPageParams {
   params: Promise<{ slug: string; locale: string }>;
 }
 
 export async function generateMetadata({ params }: CountryPageParams): Promise<Metadata> {
-  const { slug } = await params;
+  const { slug, locale } = await params;
   const decodedSlug = decodeURIComponent(slug);
 
-  const supabase = createClient(
+  const supabaseClient = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 
-  // Önce ülke olarak dene
+  // Önce custom page olarak kontrol et (en yüksek öncelik)
+  const { data: customPageMeta } = await supabaseClient
+    .from("custom_pages")
+    .select("*")
+    .eq("slug", decodedSlug)
+    .eq("is_published", true)
+    .maybeSingle();
+
+  if (customPageMeta) {
+    const isEnglish = locale === "en";
+    const title = isEnglish && customPageMeta.title_en ? customPageMeta.title_en : customPageMeta.title;
+    const description =
+      isEnglish && customPageMeta.meta_description_en
+        ? customPageMeta.meta_description_en
+        : customPageMeta.meta_description;
+
+    return {
+      title: `${title} - Kolay Seyahat`,
+      description: description || title,
+    };
+  }
+
+  // Custom page değilse, ülke olarak dene
   const [{ data: countryTax }, country] = await Promise.all([
-    supabase
+    supabaseClient
       .from("taxonomies")
       .select("title, description")
       .eq("slug", decodedSlug)
@@ -80,6 +103,29 @@ export async function generateMetadata({ params }: CountryPageParams): Promise<M
     };
   }
 
+  // Custom page olarak dene
+  const { data: customPage } = await supabase
+    .from("custom_pages")
+    .select("*")
+    .eq("slug", decodedSlug)
+    .eq("is_published", true)
+    .maybeSingle();
+
+  if (customPage) {
+    const { locale } = await params;
+    const isEnglish = locale === "en";
+    const title = isEnglish && customPage.title_en ? customPage.title_en : customPage.title;
+    const description =
+      isEnglish && customPage.meta_description_en
+        ? customPage.meta_description_en
+        : customPage.meta_description;
+
+    return {
+      title: `${title} - Kolay Seyahat`,
+      description: description || title,
+    };
+  }
+
   return {
     title: "Sayfa bulunamadı - Kolay Seyahat",
     description: "Aradığınız sayfa bulunamadı.",
@@ -109,7 +155,66 @@ export default async function CountryPage({ params }: CountryPageParams) {
 
   console.log("📄 CountryPage - Decoded slug:", decodedSlug);
 
-  // Önce ülke olarak dene
+  // Önce custom page olarak dene (en yüksek öncelik)
+  const { data: customPageData } = await supabase
+    .from("custom_pages")
+    .select("*")
+    .eq("slug", decodedSlug)
+    .eq("is_published", true)
+    .maybeSingle();
+
+  if (customPageData) {
+    const isEnglish = locale === "en";
+    const title = isEnglish && customPageData.title_en ? customPageData.title_en : customPageData.title;
+    const content = isEnglish && customPageData.content_en ? customPageData.content_en : customPageData.content;
+
+    return (
+      <div className="container mx-auto max-w-4xl space-y-8 px-4 py-8">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          {isEnglish ? "Back to Home" : "Ana Sayfaya Dön"}
+        </Link>
+
+        <article className="card space-y-6">
+          <h1 className="text-3xl font-bold text-slate-900 md:text-4xl">{title}</h1>
+          <div
+            className="prose prose-slate max-w-none prose-headings:text-slate-900 prose-p:text-slate-700 prose-a:text-primary prose-strong:text-slate-900 prose-ul:text-slate-700 prose-ol:text-slate-700"
+            dangerouslySetInnerHTML={{ __html: content }}
+          />
+        </article>
+
+        <div className="card border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-blue-50 text-center">
+          <h2 className="mb-2 text-2xl font-bold text-slate-900">
+            {isEnglish ? "Need Help?" : "Yardıma mı İhtiyacınız Var?"}
+          </h2>
+          <p className="mb-6 text-slate-600">
+            {isEnglish
+              ? "Our expert consultants are ready to help you"
+              : "Uzman danışmanlarımız size yardımcı olmak için hazır"}
+          </p>
+          <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
+            <Link
+              href="/vize-basvuru-formu"
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-8 py-3 font-semibold text-white shadow-lg transition-all hover:bg-primary/90"
+            >
+              {isEnglish ? "Apply Online" : "Online Başvuru Yap"}
+            </Link>
+            <a
+              href="tel:02129099971"
+              className="inline-flex items-center justify-center gap-2 rounded-lg border-2 border-primary bg-white px-8 py-3 font-semibold text-primary transition-all hover:bg-primary hover:text-white"
+            >
+              0212 909 99 71
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Custom page değilse, ülke olarak dene
   let country = await getCountryBySlug(decodedSlug);
 
   console.log("📄 CountryPage - Country result:", country ? "Found" : "Not found");
@@ -169,7 +274,7 @@ export default async function CountryPage({ params }: CountryPageParams) {
                   <span>0212 909 99 71</span>
                 </a>
                 <Link
-                  href="/basvuru"
+                  href="/vize-basvuru-formu"
                   className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-8 py-4 text-base font-bold text-white shadow-xl transition-all hover:bg-primary/90"
                 >
                   <span>Hemen Başvur</span>
@@ -399,7 +504,7 @@ export default async function CountryPage({ params }: CountryPageParams) {
             <PhoneCall className="mr-2 h-4 w-4" />
             0212 909 99 71&apos;i Ara
           </a>
-          <Link href="/basvuru" className="btn-primary text-xs md:text-sm">
+          <Link href="/vize-basvuru-formu" className="btn-primary text-xs md:text-sm">
             Online Başvuru Yap
           </Link>
         </div>

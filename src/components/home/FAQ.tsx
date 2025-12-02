@@ -129,7 +129,7 @@ export function FAQ() {
               0212 909 99 71
             </a>
             <Link
-              href="/basvuru"
+              href="/vize-basvuru-formu"
               className="flex-1 rounded-xl bg-primary px-8 py-4 text-base font-bold text-white shadow-xl transition-all hover:bg-primary/90 hover:shadow-2xl"
             >
               Hemen Başvur

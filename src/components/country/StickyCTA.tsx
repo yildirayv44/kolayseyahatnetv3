@@ -43,7 +43,7 @@ export function StickyCTA({ countryName }: StickyCTAProps) {
                 {countryName} Vizesi için Hemen Başvurun
               </p>
               <p className="text-xs text-slate-600">
-                %98 onay oranı • 7-14 gün süre • Ücretsiz danışmanlık
+                %98 onay oranı • 7-14 gün süre • Ücretsiz ön değerlendirme
               </p>
             </div>
 
@@ -57,7 +57,7 @@ export function StickyCTA({ countryName }: StickyCTAProps) {
                 <span>Ara</span>
               </a>
               <Link
-                href="/basvuru"
+                href="/vize-basvuru-formu"
                 className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-2 text-sm font-bold text-white shadow-lg transition-all hover:bg-primary/90"
               >
                 <span>Başvur</span>

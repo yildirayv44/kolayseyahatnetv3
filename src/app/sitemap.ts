@@ -1,10 +1,23 @@
 import type { MetadataRoute } from "next";
 import { getCountries, getBlogs } from "@/lib/queries";
+import { supabase } from "@/lib/supabase";
+
+async function getCustomPages() {
+  const { data } = await supabase
+    .from("custom_pages")
+    .select("slug, updated_at, page_type, is_published")
+    .eq("is_published", true);
+  return data || [];
+}
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = "https://kolayseyahat.net";
 
-  const [countries, blogs] = await Promise.all([getCountries(), getBlogs()]);
+  const [countries, blogs, customPages] = await Promise.all([
+    getCountries(), 
+    getBlogs(),
+    getCustomPages()
+  ]);
 
   const staticPages = [
     {
@@ -20,13 +33,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     },
     {
-      url: `${baseUrl}/danisman`,
+      url: `${baseUrl}/danismanlar`,
       lastModified: new Date(),
       changeFrequency: "weekly" as const,
       priority: 0.7,
     },
     {
-      url: `${baseUrl}/basvuru`,
+      url: `${baseUrl}/vize-basvuru-formu`,
       lastModified: new Date(),
       changeFrequency: "monthly" as const,
       priority: 0.9,
@@ -48,6 +61,36 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(),
       changeFrequency: "monthly" as const,
       priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/ulkeler`,
+      lastModified: new Date(),
+      changeFrequency: "weekly" as const,
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/sikca-sorulan-sorular`,
+      lastModified: new Date(),
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/duyurular`,
+      lastModified: new Date(),
+      changeFrequency: "daily" as const,
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/sikayet-ve-oneri`,
+      lastModified: new Date(),
+      changeFrequency: "monthly" as const,
+      priority: 0.5,
+    },
+    {
+      url: `${baseUrl}/affiliate`,
+      lastModified: new Date(),
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
     },
   ];
 
@@ -88,5 +131,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }));
 
-  return [...staticPages, ...countryPages, ...blogPages];
+  // Dynamic custom pages from database
+  const dynamicPages = customPages.map((page: any) => ({
+    url: `${baseUrl}/${page.slug}`,
+    lastModified: new Date(page.updated_at),
+    changeFrequency: (page.page_type === "legal" ? "yearly" : "monthly") as "yearly" | "monthly",
+    priority: page.page_type === "legal" ? 0.4 : page.page_type === "corporate" ? 0.6 : 0.5,
+  }));
+
+  return [...staticPages, ...countryPages, ...blogPages, ...dynamicPages];
 }
