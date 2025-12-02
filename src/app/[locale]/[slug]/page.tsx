@@ -395,10 +395,17 @@ export default async function CountryPage({ params }: CountryPageParams) {
 
   // Generate FAQ Schema for SEO
   const faqSchema = faqParents.length > 0 ? generateFAQSchema(
-    faqParents.map((q: any) => ({
-      question: q.question,
-      answer: getAnswersForQuestion(q.id).map((a: any) => a.question).join(' ') || q.question
-    }))
+    faqParents.map((q: any) => {
+      const answers = getAnswersForQuestion(q.id);
+      const answerText = answers.length > 0 
+        ? answers.map((a: any) => a.question).join(' ') 
+        : q.question; // Fallback to question if no answers
+      
+      return {
+        question: q.question || '',
+        answer: answerText || ''
+      };
+    }).filter((faq: any) => faq.question && faq.answer) // Filter out empty ones
   ) : null;
 
   // Generate Breadcrumb Schema for SEO

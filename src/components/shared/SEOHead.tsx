@@ -17,15 +17,15 @@ export function generateSEOMetadata({
   description,
   keywords = [],
   image = "/og-image.jpg",
-  url = "https://www.kolayseyahat.tr",
+  url = "https://www.kolayseyahat.net",
   type = "website",
   publishedTime,
   modifiedTime,
   author = "Kolay Seyahat",
 }: SEOHeadProps): Metadata {
   const fullTitle = `${title} | Kolay Seyahat`;
-  const fullUrl = url.startsWith("http") ? url : `https://www.kolayseyahat.tr${url}`;
-  const fullImage = image.startsWith("http") ? image : `https://www.kolayseyahat.tr${image}`;
+  const fullUrl = url.startsWith("http") ? url : `https://www.kolayseyahat.net${url}`;
+  const fullImage = image.startsWith("http") ? image : `https://www.kolayseyahat.net${image}`;
 
   return {
     title: fullTitle,
@@ -87,13 +87,16 @@ export function generateOrganizationSchema() {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: "Kolay Seyahat",
-    url: "https://www.kolayseyahat.tr",
-    logo: "https://www.kolayseyahat.tr/logo.png",
+    url: "https://www.kolayseyahat.net",
+    logo: "https://www.kolayseyahat.net/logo.png",
     description: "Profesyonel vize danışmanlık hizmeti",
     address: {
       "@type": "PostalAddress",
+      streetAddress: "Cami Mh. Niyaz Sk. No 5",
+      postalCode: "41200",
+      addressLocality: "Kocaeli",
+      addressRegion: "Kocaeli",
       addressCountry: "TR",
-      addressLocality: "İstanbul",
     },
     contactPoint: {
       "@type": "ContactPoint",
@@ -117,7 +120,7 @@ export function generateBreadcrumbSchema(items: { name: string; url: string }[])
       "@type": "ListItem",
       position: index + 1,
       name: item.name,
-      item: `https://www.kolayseyahat.tr${item.url}`,
+      item: item.url.startsWith('http') ? item.url : `https://www.kolayseyahat.net${item.url}`,
     })),
   };
 }
@@ -154,22 +157,29 @@ export function generateArticleSchema({
       name: "Kolay Seyahat",
       logo: {
         "@type": "ImageObject",
-        url: "https://www.kolayseyahat.tr/logo.png",
+        url: "https://www.kolayseyahat.net/logo.png",
       },
     },
   };
 }
 
 export function generateFAQSchema(faqs: { question: string; answer: string }[]) {
+  // Filter out empty questions and answers
+  const validFaqs = faqs.filter(faq => faq.question && faq.answer && faq.question.trim() !== '' && faq.answer.trim() !== '');
+  
+  if (validFaqs.length === 0) {
+    return null;
+  }
+
   return {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    mainEntity: faqs.map((faq) => ({
+    mainEntity: validFaqs.map((faq) => ({
       "@type": "Question",
-      name: faq.question,
+      name: faq.question.trim(),
       acceptedAnswer: {
         "@type": "Answer",
-        text: faq.answer,
+        text: faq.answer.trim(),
       },
     })),
   };
