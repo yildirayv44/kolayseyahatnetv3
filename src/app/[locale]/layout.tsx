@@ -66,6 +66,12 @@ export default async function LocaleLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
         />
+        {/* Ahrefs Web Analytics */}
+        <script
+          src="https://analytics.ahrefs.com/analytics.js"
+          data-key="Nom01ct23vxfXr8cZgauIg"
+          async
+        />
       </head>
       <body className={`${inter.className} antialiased pb-16 md:pb-0`}>
         <Header />
