@@ -9,8 +9,41 @@ export function ExitIntentPopup() {
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isEnabled, setIsEnabled] = useState(true);
 
   useEffect(() => {
+    // Admin ayarından kontrol et
+    const checkSettings = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("settings")
+          .select("val")
+          .eq("name", "exit_intent_popup_enabled")
+          .maybeSingle();
+
+        if (error) {
+          console.error("Settings fetch error:", error);
+          return;
+        }
+
+        const enabled = data?.val === "true";
+        setIsEnabled(enabled);
+
+        if (!enabled) {
+          console.log("🚫 Exit Intent Popup devre dışı (Admin ayarı)");
+          return;
+        }
+      } catch (error) {
+        console.error("Settings check error:", error);
+      }
+    };
+
+    checkSettings();
+  }, []);
+
+  useEffect(() => {
+    if (!isEnabled) return;
+
     // LocalStorage'dan kontrol et
     const hasSeenPopup = localStorage.getItem("exit-intent-seen");
     const hasSubscribed = localStorage.getItem("exit-intent-subscribed");
@@ -50,7 +83,7 @@ export function ExitIntentPopup() {
       clearTimeout(testTimer);
       document.removeEventListener("mouseleave", handleMouseLeave);
     };
-  }, []);
+  }, [isEnabled]);
 
   const handleClose = () => {
     setIsVisible(false);
