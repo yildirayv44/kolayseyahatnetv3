@@ -7,10 +7,11 @@ import Link from "next/link";
 import { ArrowLeft, Save } from "lucide-react";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
 
-export default function SayfaDuzenlePage({ params }: { params: { id: string } }) {
+export default function SayfaDuzenlePage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const [activeLocale, setActiveLocale] = useState<"tr" | "en">("tr");
   const [loading, setLoading] = useState(true);
+  const [pageId, setPageId] = useState<string>("");
   const [formData, setFormData] = useState({
     slug: "",
     title: "",
@@ -26,8 +27,18 @@ export default function SayfaDuzenlePage({ params }: { params: { id: string } })
   });
 
   useEffect(() => {
-    fetchPage();
-  }, [params.id]);
+    const initPage = async () => {
+      const { id } = await params;
+      setPageId(id);
+    };
+    initPage();
+  }, [params]);
+
+  useEffect(() => {
+    if (pageId) {
+      fetchPage();
+    }
+  }, [pageId]);
 
   const fetchPage = async () => {
     try {
@@ -35,7 +46,7 @@ export default function SayfaDuzenlePage({ params }: { params: { id: string } })
       const { data, error } = await supabase
         .from("custom_pages")
         .select("*")
-        .eq("id", params.id)
+        .eq("id", pageId)
         .single();
 
       if (error) throw error;
@@ -80,7 +91,7 @@ export default function SayfaDuzenlePage({ params }: { params: { id: string } })
           ...formData,
           updated_by: user.user?.id,
         })
-        .eq("id", params.id);
+        .eq("id", pageId);
 
       if (error) throw error;
 
