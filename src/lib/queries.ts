@@ -435,14 +435,28 @@ export async function getBlogs(options?: { home?: number; limit?: number }) {
 }
 
 export async function getBlogBySlug(slug: string) {
-  const { data: taxonomy, error: taxError } = await supabase
-    .from("taxonomies")
-    .select("model_id")
-    .eq("slug", slug)
-    .or("type.eq.Blog\\BlogController@detail,type.eq.Country\\CountryController@blogDetail")
-    .maybeSingle();
+  // Try with blog/ prefix first, then without
+  const slugsToTry = slug.startsWith('blog/') 
+    ? [slug, slug.replace('blog/', '')] 
+    : [slug, `blog/${slug}`];
 
-  if (taxError || !taxonomy) {
+  let taxonomy = null;
+  
+  for (const trySlug of slugsToTry) {
+    const { data, error } = await supabase
+      .from("taxonomies")
+      .select("model_id")
+      .eq("slug", trySlug)
+      .or("type.eq.Blog\\BlogController@detail,type.eq.Country\\CountryController@blogDetail")
+      .maybeSingle();
+    
+    if (!error && data) {
+      taxonomy = data;
+      break;
+    }
+  }
+
+  if (!taxonomy) {
     return null;
   }
 

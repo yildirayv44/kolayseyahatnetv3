@@ -1,5 +1,6 @@
 import { Metadata } from "next";
-import { MessageSquare, Send, AlertCircle } from "lucide-react";
+import { MessageSquare, CheckCircle, Clock, TrendingUp, AlertCircle } from "lucide-react";
+import { FeedbackForm } from "@/components/forms/FeedbackForm";
 
 export const metadata: Metadata = {
   title: "Şikayet ve Öneri | Kolay Seyahat",
@@ -86,139 +87,7 @@ export default function SikayetVeOneriPage() {
           <h2 className="mb-6 text-xl font-bold text-slate-900">
             Geri Bildirim Formu
           </h2>
-          <form className="space-y-4">
-            <div className="space-y-2">
-              <label htmlFor="name" className="block text-sm font-semibold text-slate-900">
-                Ad Soyad <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                required
-                className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                placeholder="Adınız ve soyadınız"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="email" className="block text-sm font-semibold text-slate-900">
-                E-posta <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                required
-                className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                placeholder="ornek@email.com"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="phone" className="block text-sm font-semibold text-slate-900">
-                Telefon
-              </label>
-              <input
-                type="tel"
-                id="phone"
-                name="phone"
-                className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                placeholder="0555 555 55 55"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="type" className="block text-sm font-semibold text-slate-900">
-                Geri Bildirim Türü <span className="text-red-500">*</span>
-              </label>
-              <select
-                id="type"
-                name="type"
-                required
-                className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-              >
-                <option value="">Seçiniz</option>
-                <option value="complaint">Şikayet</option>
-                <option value="suggestion">Öneri</option>
-                <option value="compliment">Teşekkür</option>
-                <option value="question">Soru</option>
-                <option value="other">Diğer</option>
-              </select>
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="subject" className="block text-sm font-semibold text-slate-900">
-                Konu <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                id="subject"
-                name="subject"
-                required
-                className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                placeholder="Geri bildiriminizin konusu"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="message" className="block text-sm font-semibold text-slate-900">
-                Mesajınız <span className="text-red-500">*</span>
-              </label>
-              <textarea
-                id="message"
-                name="message"
-                required
-                rows={6}
-                className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                placeholder="Lütfen geri bildiriminizi detaylı olarak yazınız..."
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="reference" className="block text-sm font-semibold text-slate-900">
-                Başvuru Referans Numarası
-              </label>
-              <input
-                type="text"
-                id="reference"
-                name="reference"
-                className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                placeholder="Varsa başvuru numaranızı giriniz"
-              />
-              <p className="text-xs text-slate-500">
-                Başvurunuzla ilgili bir geri bildirim ise lütfen referans numaranızı belirtiniz
-              </p>
-            </div>
-
-            <div className="flex items-start gap-2">
-              <input
-                type="checkbox"
-                id="consent"
-                name="consent"
-                required
-                className="mt-1 h-4 w-4 rounded border-slate-300 text-primary focus:ring-2 focus:ring-primary/20"
-              />
-              <label htmlFor="consent" className="text-xs text-slate-600">
-                <a href="/kvkk" className="text-primary hover:underline">
-                  KVKK
-                </a>{" "}
-                ve{" "}
-                <a href="/bilgi-gizliligi" className="text-primary hover:underline">
-                  Gizlilik Politikası
-                </a>
-                'nı okudum ve kabul ediyorum. <span className="text-red-500">*</span>
-              </label>
-            </div>
-
-            <button
-              type="submit"
-              className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 font-semibold text-white shadow-lg transition-all hover:bg-primary/90 hover:shadow-xl"
-            >
-              <Send className="h-5 w-5" />
-              Gönder
-            </button>
-          </form>
+          <FeedbackForm />
         </div>
       </div>
 

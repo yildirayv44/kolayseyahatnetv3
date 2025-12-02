@@ -8,14 +8,25 @@ import {
   CheckCircle,
   Clock,
   XCircle,
-  Mail
+  Mail,
+  HelpCircle,
+  UserPlus
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { getCountries, getBlogs, getConsultants } from "@/lib/queries";
 
 export default async function AdminDashboard() {
   // Fetch real stats from Supabase
-  const [countries, blogs, consultants, applicationsResult, commentsResult] = await Promise.all([
+  const [
+    countries, 
+    blogs, 
+    consultants, 
+    applicationsResult, 
+    commentsResult,
+    feedbackResult,
+    affiliateResult,
+    questionsResult
+  ] = await Promise.all([
     getCountries(),
     getBlogs({}),
     getConsultants(),
@@ -25,6 +36,9 @@ export default async function AdminDashboard() {
       supabase.from("blog_comments").select("status", { count: "exact" }),
       supabase.from("country_comments").select("status", { count: "exact" }),
     ]),
+    supabase.from("feedback").select("status", { count: "exact" }),
+    supabase.from("user_affiliates").select("status", { count: "exact" }),
+    supabase.from("questions").select("*", { count: "exact" }).eq("parent_id", 0),
   ]);
 
   const [userCommentsResult, blogCommentsResult, countryCommentsResult] = commentsResult;
@@ -38,6 +52,9 @@ export default async function AdminDashboard() {
     (blogCommentsResult.data?.filter(c => c.status === 0).length || 0) +
     (countryCommentsResult.data?.filter(c => c.status === 0).length || 0);
 
+  const pendingFeedbacks = feedbackResult.data?.filter((f: any) => f.status === "pending").length || 0;
+  const pendingAffiliates = affiliateResult.data?.filter((a: any) => a.status === "pending").length || 0;
+
   const stats = [
     {
       label: "Toplam Başvuru",
@@ -45,6 +62,27 @@ export default async function AdminDashboard() {
       change: "+12%",
       icon: ClipboardList,
       color: "bg-blue-500",
+    },
+    {
+      label: "Geri Bildirimler",
+      value: feedbackResult.count?.toString() || "0",
+      change: `${pendingFeedbacks} beklemede`,
+      icon: Mail,
+      color: "bg-indigo-500",
+    },
+    {
+      label: "Affiliate Başvuruları",
+      value: affiliateResult.count?.toString() || "0",
+      change: `${pendingAffiliates} beklemede`,
+      icon: UserPlus,
+      color: "bg-pink-500",
+    },
+    {
+      label: "Sorular (SSS)",
+      value: questionsResult.count?.toString() || "0",
+      change: `${questionsResult.data?.filter((q: any) => q.status === 1).length || 0} aktif`,
+      icon: HelpCircle,
+      color: "bg-cyan-500",
     },
     {
       label: "Toplam Yorum",
@@ -76,12 +114,16 @@ export default async function AdminDashboard() {
     },
   ];
 
-  // Fetch recent applications
-  const { data: recentApplications } = await supabase
-    .from("applications")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .limit(5);
+  // Fetch recent data
+  const [
+    { data: recentApplications },
+    { data: recentFeedbacks },
+    { data: recentAffiliates }
+  ] = await Promise.all([
+    supabase.from("applications").select("*").order("created_at", { ascending: false }).limit(5),
+    supabase.from("feedback").select("*").order("created_at", { ascending: false }).limit(5),
+    supabase.from("user_affiliates").select("*").order("created_at", { ascending: false }).limit(5),
+  ]);
 
   const statusConfig = {
     pending: { label: "Beklemede", color: "bg-amber-100 text-amber-700", icon: Clock },
@@ -173,6 +215,73 @@ export default async function AdminDashboard() {
         </div>
       </div>
 
+      {/* Recent Activity Grid */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Recent Feedbacks */}
+        <div className="card">
+          <div className="mb-4 flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-slate-900">Son Geri Bildirimler</h3>
+            <a href="/admin/geri-bildirimler" className="text-sm font-semibold text-primary hover:underline">
+              Tümünü Gör
+            </a>
+          </div>
+          <div className="space-y-3">
+            {recentFeedbacks && recentFeedbacks.length > 0 ? (
+              recentFeedbacks.map((feedback: any) => (
+                <div key={feedback.id} className="flex items-start gap-3 rounded-lg border border-slate-200 p-3">
+                  <Mail className="h-5 w-5 flex-shrink-0 text-slate-400" />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium text-slate-900">{feedback.name}</p>
+                      <span className="text-xs text-slate-500">{feedback.type}</span>
+                    </div>
+                    <p className="text-sm text-slate-600 truncate">{feedback.message}</p>
+                    <p className="text-xs text-slate-500">{new Date(feedback.created_at).toLocaleDateString("tr-TR")}</p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="py-4 text-center text-sm text-slate-500">Henüz geri bildirim yok</p>
+            )}
+          </div>
+        </div>
+
+        {/* Recent Affiliates */}
+        <div className="card">
+          <div className="mb-4 flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-slate-900">Son Affiliate Başvuruları</h3>
+            <a href="/admin/affiliate-basvurular" className="text-sm font-semibold text-primary hover:underline">
+              Tümünü Gör
+            </a>
+          </div>
+          <div className="space-y-3">
+            {recentAffiliates && recentAffiliates.length > 0 ? (
+              recentAffiliates.map((affiliate: any) => (
+                <div key={affiliate.id} className="flex items-start gap-3 rounded-lg border border-slate-200 p-3">
+                  <UserPlus className="h-5 w-5 flex-shrink-0 text-slate-400" />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium text-slate-900">{affiliate.name}</p>
+                      <span className={`text-xs px-2 py-0.5 rounded-full ${
+                        affiliate.status === "pending" ? "bg-amber-100 text-amber-700" :
+                        affiliate.status === "approved" ? "bg-green-100 text-green-700" :
+                        "bg-red-100 text-red-700"
+                      }`}>
+                        {affiliate.status}
+                      </span>
+                    </div>
+                    <p className="text-sm text-slate-600">{affiliate.email}</p>
+                    <p className="text-xs text-slate-500">{new Date(affiliate.created_at).toLocaleDateString("tr-TR")}</p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="py-4 text-center text-sm text-slate-500">Henüz başvuru yok</p>
+            )}
+          </div>
+        </div>
+      </div>
+
       {/* Quick Actions */}
       <div className="grid gap-6 md:grid-cols-4">
         <a href="/admin/ulkeler" className="card group hover:border-primary">
@@ -181,34 +290,34 @@ export default async function AdminDashboard() {
           <p className="mt-1 text-sm text-slate-600">Ülkeleri düzenle, ekle veya sil</p>
         </a>
 
-        <a href="/admin/bloglar" className="card group hover:border-primary">
-          <FileText className="h-8 w-8 text-primary" />
-          <h3 className="mt-4 font-semibold text-slate-900">Blog Yönetimi</h3>
-          <p className="mt-1 text-sm text-slate-600">Blog yazılarını yönet</p>
+        <a href="/admin/sorular" className="card group hover:border-primary">
+          <HelpCircle className="h-8 w-8 text-primary" />
+          <h3 className="mt-4 font-semibold text-slate-900">Soru Yönetimi</h3>
+          <p className="mt-1 text-sm text-slate-600">SSS sorularını yönet</p>
         </a>
 
-        <a href="/admin/basvurular" className="card group hover:border-primary">
-          <ClipboardList className="h-8 w-8 text-primary" />
-          <h3 className="mt-4 font-semibold text-slate-900">Başvuru Yönetimi</h3>
-          <p className="mt-1 text-sm text-slate-600">Başvuruları incele ve işle</p>
-        </a>
-
-        <a href="/admin/yorumlar" className="card group hover:border-primary">
-          <MessageSquare className="h-8 w-8 text-primary" />
-          <h3 className="mt-4 font-semibold text-slate-900">Yorum Yönetimi</h3>
-          <p className="mt-1 text-sm text-slate-600">Yorumları onayla veya reddet</p>
-          {pendingComments > 0 && (
+        <a href="/admin/geri-bildirimler" className="card group hover:border-primary">
+          <Mail className="h-8 w-8 text-primary" />
+          <h3 className="mt-4 font-semibold text-slate-900">Geri Bildirimler</h3>
+          <p className="mt-1 text-sm text-slate-600">Şikayet ve önerileri yönet</p>
+          {pendingFeedbacks > 0 && (
             <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-700">
               <Clock className="h-3 w-3" />
-              {pendingComments} bekliyor
+              {pendingFeedbacks} bekliyor
             </span>
           )}
         </a>
 
-        <a href="/admin/email-subscribers" className="card group hover:border-primary">
-          <Mail className="h-8 w-8 text-emerald-600" />
-          <h3 className="mt-4 font-semibold text-slate-900">Email Aboneleri</h3>
-          <p className="mt-1 text-sm text-slate-600">Exit intent ve diğer kaynaklardan emailler</p>
+        <a href="/admin/affiliate-basvurular" className="card group hover:border-primary">
+          <UserPlus className="h-8 w-8 text-primary" />
+          <h3 className="mt-4 font-semibold text-slate-900">Affiliate Başvuruları</h3>
+          <p className="mt-1 text-sm text-slate-600">Ortaklık başvurularını incele</p>
+          {pendingAffiliates > 0 && (
+            <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-700">
+              <Clock className="h-3 w-3" />
+              {pendingAffiliates} bekliyor
+            </span>
+          )}
         </a>
       </div>
     </div>

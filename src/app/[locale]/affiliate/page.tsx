@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import { Users, TrendingUp, DollarSign, Gift, CheckCircle, ArrowRight } from "lucide-react";
+import { AffiliateForm } from "@/components/forms/AffiliateForm";
 
 export const metadata: Metadata = {
   title: "Affiliate Programı | Kolay Seyahat",
@@ -297,118 +298,7 @@ export default function AffiliatePage() {
             <h2 className="mb-6 text-2xl font-bold text-slate-900">
               Affiliate Başvuru Formu
             </h2>
-            <form className="space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <label htmlFor="firstName" className="block text-sm font-semibold text-slate-900">
-                    Ad <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    id="firstName"
-                    required
-                    className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label htmlFor="lastName" className="block text-sm font-semibold text-slate-900">
-                    Soyad <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    id="lastName"
-                    required
-                    className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label htmlFor="email" className="block text-sm font-semibold text-slate-900">
-                  E-posta <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  required
-                  className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label htmlFor="phone" className="block text-sm font-semibold text-slate-900">
-                  Telefon <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="tel"
-                  id="phone"
-                  required
-                  className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label htmlFor="website" className="block text-sm font-semibold text-slate-900">
-                  Web Sitesi / Sosyal Medya <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="url"
-                  id="website"
-                  required
-                  placeholder="https://"
-                  className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label htmlFor="traffic" className="block text-sm font-semibold text-slate-900">
-                  Aylık Ziyaretçi/Takipçi Sayısı
-                </label>
-                <select
-                  id="traffic"
-                  className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                >
-                  <option value="">Seçiniz</option>
-                  <option value="0-1000">0 - 1,000</option>
-                  <option value="1000-5000">1,000 - 5,000</option>
-                  <option value="5000-10000">5,000 - 10,000</option>
-                  <option value="10000-50000">10,000 - 50,000</option>
-                  <option value="50000+">50,000+</option>
-                </select>
-              </div>
-
-              <div className="space-y-2">
-                <label htmlFor="experience" className="block text-sm font-semibold text-slate-900">
-                  Affiliate Deneyiminiz
-                </label>
-                <textarea
-                  id="experience"
-                  rows={4}
-                  placeholder="Daha önce affiliate programlarında çalıştınız mı? Deneyimlerinizi paylaşın..."
-                  className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                />
-              </div>
-
-              <div className="flex items-start gap-2">
-                <input
-                  type="checkbox"
-                  id="terms"
-                  required
-                  className="mt-1 h-4 w-4 rounded border-slate-300 text-primary focus:ring-2 focus:ring-primary/20"
-                />
-                <label htmlFor="terms" className="text-xs text-slate-600">
-                  Affiliate program şartlarını ve koşullarını okudum ve kabul ediyorum. <span className="text-red-500">*</span>
-                </label>
-              </div>
-
-              <button
-                type="submit"
-                className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 font-semibold text-white shadow-lg transition-all hover:bg-primary/90 hover:shadow-xl"
-              >
-                Başvuruyu Gönder
-                <ArrowRight className="h-5 w-5" />
-              </button>
-            </form>
+            <AffiliateForm />
           </div>
         </div>
       </section>

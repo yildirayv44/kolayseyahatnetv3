@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { ArrowRight, ArrowLeft, PhoneCall, CheckCircle2, MessageSquare } from "lucide-react";
 import {
   getCountryBySlug,
@@ -10,6 +10,7 @@ import {
   getCountryQuestions,
   getCountryBlogs,
   getCountryComments,
+  getBlogBySlug,
 } from "@/lib/queries";
 import { createClient } from "@supabase/supabase-js";
 import { Breadcrumb } from "@/components/shared/Breadcrumb";
@@ -284,7 +285,19 @@ export default async function CountryPage({ params }: CountryPageParams) {
   // Get comments if country found
   const comments = country ? await getCountryComments(country.id) : [];
 
-  // Ülke değilse, alt sayfa olarak dene
+  // Ülke değilse, blog olarak dene
+  if (!country) {
+    console.log("📄 CountryPage - Trying blog...");
+    const blog = await getBlogBySlug(decodedSlug);
+    console.log("📄 CountryPage - Blog result:", blog ? blog.title : "Not found");
+    
+    if (blog) {
+      // Blog bulundu - blog detay sayfasına 301 redirect
+      redirect(`/blog/${decodedSlug}`);
+    }
+  }
+
+  // Blog değilse, alt sayfa olarak dene
   if (!country) {
     console.log("📄 CountryPage - Trying menu...");
     const menu = await getCountryMenuBySlug(decodedSlug);
