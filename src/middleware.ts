@@ -24,6 +24,15 @@ export async function middleware(request: NextRequest) {
   const redirects: Record<string, string> = {
     "/danisman": "/danismanlar",
     "/basvuru": "/vize-basvuru-formu",
+    // Blog redirects (old URLs to new blog URLs)
+    "/kuveyt-gezilecek-yerler": "/blog/kuveyt-gezilecek-yerler",
+    "/kapida-vize-isteyen-ulkeler": "/blog/kapida-vize-isteyen-ulkeler",
+    "/amerika-green-card-basvuru-sartlari-ve-cekilis-rehberi": "/blog/amerika-green-card-basvuru-sartlari-ve-cekilis-rehberi",
+    "/amerika-yonetim-sekli-nufusu-ve-en-cok-merak-edilenler": "/blog/amerika-yonetim-sekli-nufusu-ve-en-cok-merak-edilenler",
+    "/dubai-marhaba-servisinin-tum-detaylari": "/blog/dubai-marhaba-servisinin-tum-detaylari",
+    "/dubai-sik-sorulan-sorular": "/blog/dubai-sik-sorulan-sorular",
+    "/kuveytte-colde-safari": "/blog/kuveytte-colde-safari",
+    "/yunanistan-adalari-kapi-vizesi-rehberi": "/blog/yunanistan-adalari-kapi-vizesi-rehberi",
   };
 
   // Check for redirects (works for both with and without locale)

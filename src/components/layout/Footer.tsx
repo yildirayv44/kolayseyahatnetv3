@@ -46,8 +46,13 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href={getLocalizedUrl("danisman", locale)} className="hover:text-primary">
+                <Link href={getLocalizedUrl("danismanlar", locale)} className="hover:text-primary">
                   Danışmanlar
+                </Link>
+              </li>
+              <li>
+                <Link href={getLocalizedUrl("affiliate", locale)} className="hover:text-primary">
+                  Affiliate Program
                 </Link>
               </li>
             </ul>
@@ -81,9 +86,32 @@ export function Footer() {
       </div>
 
       <div className="border-t border-slate-200 bg-slate-50 py-4">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 text-xs text-slate-500">
-          <span>© {year} Kolay Seyahat. Tüm hakları saklıdır.</span>
-          <span>Vize işlemlerinizde profesyonel destek.</span>
+        <div className="mx-auto max-w-6xl px-4">
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs text-slate-500 mb-3">
+            <Link href={getLocalizedUrl("kvkk", locale)} className="hover:text-primary">
+              KVKK
+            </Link>
+            <span>•</span>
+            <Link href={getLocalizedUrl("bilgi-gizliligi", locale)} className="hover:text-primary">
+              Gizlilik Politikası
+            </Link>
+            <span>•</span>
+            <Link href={getLocalizedUrl("kosullar-ve-isleyis", locale)} className="hover:text-primary">
+              Kullanım Koşulları
+            </Link>
+            <span>•</span>
+            <Link href={getLocalizedUrl("sikayet-ve-oneri", locale)} className="hover:text-primary">
+              Şikayet ve Öneri
+            </Link>
+            <span>•</span>
+            <Link href={getLocalizedUrl("sikca-sorulan-sorular", locale)} className="hover:text-primary">
+              SSS
+            </Link>
+          </div>
+          <div className="flex items-center justify-between text-xs text-slate-500">
+            <span>© {year} Kolay Seyahat. Tüm hakları saklıdır.</span>
+            <span>Vize işlemlerinizde profesyonel destek.</span>
+          </div>
         </div>
       </div>
     </footer>
