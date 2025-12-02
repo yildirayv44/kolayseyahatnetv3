@@ -9,6 +9,7 @@ import { WhatsAppWidget } from "@/components/shared/WhatsAppWidget";
 import { ExitIntentPopup } from "@/components/shared/ExitIntentPopup";
 import { PWAInstallPrompt } from "@/components/shared/PWAInstallPrompt";
 import { PushNotificationPrompt } from "@/components/shared/PushNotificationPrompt";
+import { PageLoadingBar } from "@/components/shared/PageLoadingBar";
 import { generateSEOMetadata, generateOrganizationSchema } from "@/components/shared/SEOHead";
 import { locales, type Locale } from "@/i18n/config";
 
@@ -78,6 +79,7 @@ export default async function LocaleLayout({
         <link rel="alternate" hrefLang="x-default" href={`https://www.kolayseyahat.net`} />
       </head>
       <body className={`${inter.className} antialiased pb-16 md:pb-0`}>
+        <PageLoadingBar />
         <Header />
         <main className="mx-auto max-w-6xl px-4 py-6">{children}</main>
         <Footer />

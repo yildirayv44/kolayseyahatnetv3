@@ -31,6 +31,7 @@ export function Header() {
   const [countries, setCountries] = useState<any[]>([]);
   const [filteredCountries, setFilteredCountries] = useState<any[]>([]);
   const [user, setUser] = useState<any>(null);
+  const [isNavigating, setIsNavigating] = useState(false);
   const { count: favoritesCount } = useFavorites();
 
   useEffect(() => {
@@ -68,9 +69,12 @@ export function Header() {
   }, [searchQuery, countries]);
 
   const handleCountrySelect = (country: any) => {
+    setIsNavigating(true);
     router.push(getLocalizedUrl(country.slug || getCountrySlug(country.id), locale));
     setSearchOpen(false);
     setSearchQuery("");
+    // Reset after navigation (fallback)
+    setTimeout(() => setIsNavigating(false), 3000);
   };
 
   return (
@@ -307,6 +311,24 @@ export function Header() {
               Hemen Başvur
             </Link>
           </nav>
+        </div>
+      )}
+
+      {/* Loading Overlay */}
+      {isNavigating && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="rounded-lg bg-white p-6 shadow-xl">
+            <div className="flex flex-col items-center gap-4">
+              <div className="relative">
+                <div className="h-12 w-12 animate-spin rounded-full border-4 border-slate-200 border-t-primary" />
+                <div className="absolute inset-0 h-12 w-12 animate-ping rounded-full bg-primary/20" />
+              </div>
+              <div className="text-center">
+                <p className="text-lg font-semibold text-slate-900">Sayfa Yükleniyor</p>
+                <p className="text-sm text-slate-600">Lütfen bekleyiniz...</p>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </header>
