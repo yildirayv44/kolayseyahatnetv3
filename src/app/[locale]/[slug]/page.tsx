@@ -25,6 +25,7 @@ import { GenericCommentSection } from "@/components/comments/GenericCommentSecti
 import { getLocalizedFields } from "@/lib/locale-content";
 import { getLocalizedUrl } from "@/lib/locale-link";
 import { supabase } from "@/lib/supabase";
+import { generateFAQSchema, generateBreadcrumbSchema } from "@/components/shared/SEOHead";
 
 interface CountryPageParams {
   params: Promise<{ slug: string; locale: string }>;
@@ -54,10 +55,32 @@ export async function generateMetadata({ params }: CountryPageParams): Promise<M
       isEnglish && customPageMeta.meta_description_en
         ? customPageMeta.meta_description_en
         : customPageMeta.meta_description;
+    const fullTitle = `${title} - Kolay Seyahat`;
+    const url = `https://www.kolayseyahat.net/${locale === 'en' ? 'en/' : ''}${decodedSlug}`;
 
     return {
-      title: `${title} - Kolay Seyahat`,
+      title: fullTitle,
       description: description || title,
+      openGraph: {
+        title: fullTitle,
+        description: description || title,
+        type: 'website',
+        url,
+        siteName: 'Kolay Seyahat',
+        locale: locale === 'en' ? 'en_US' : 'tr_TR',
+      },
+      twitter: {
+        card: 'summary',
+        title: fullTitle,
+        description: description || title,
+      },
+      alternates: {
+        canonical: url,
+        languages: {
+          'tr': `https://www.kolayseyahat.net/${decodedSlug}`,
+          'en': `https://www.kolayseyahat.net/en/${decodedSlug}`,
+        },
+      },
     };
   }
 
@@ -73,12 +96,45 @@ export async function generateMetadata({ params }: CountryPageParams): Promise<M
   ]);
 
   if (country) {
+    const title = country.meta_title || countryTax?.title || country.title || `${country.name} Vizesi - Kolay Seyahat`;
+    const description = countryTax?.description || country.description || `${country.name} vizesi için profesyonel danışmanlık. Kolay Seyahat ile başvurunuzu hızlı ve güvenli şekilde tamamlayın.`;
+    const imageUrl = country.image_url || '/default-country.jpg';
+    const url = `https://www.kolayseyahat.net/${locale === 'en' ? 'en/' : ''}${decodedSlug}`;
+
     return {
-      title: country.meta_title || countryTax?.title || country.title || `${country.name} Vizesi - Kolay Seyahat`,
-      description:
-        countryTax?.description ||
-        country.description ||
-        `${country.name} vizesi için profesyonel danışmanlık. Kolay Seyahat ile başvurunuzu hızlı ve güvenli şekilde tamamlayın.`,
+      title,
+      description,
+      openGraph: {
+        title,
+        description,
+        type: 'website',
+        url,
+        siteName: 'Kolay Seyahat',
+        locale: locale === 'en' ? 'en_US' : 'tr_TR',
+        images: [
+          {
+            url: imageUrl,
+            width: 1200,
+            height: 630,
+            alt: `${country.name} Vizesi`,
+          },
+        ],
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title,
+        description,
+        images: [imageUrl],
+        creator: '@kolayseyahat',
+        site: '@kolayseyahat',
+      },
+      alternates: {
+        canonical: url,
+        languages: {
+          'tr': `https://www.kolayseyahat.net/${decodedSlug}`,
+          'en': `https://www.kolayseyahat.net/en/${decodedSlug}`,
+        },
+      },
     };
   }
 
@@ -323,6 +379,20 @@ export default async function CountryPage({ params }: CountryPageParams) {
   // Parse H2 headings from content
   const h2Headings = country.contents ? parseH2Headings(country.contents) : [];
 
+  // Generate FAQ Schema for SEO
+  const faqSchema = faqParents.length > 0 ? generateFAQSchema(
+    faqParents.map((q: any) => ({
+      question: q.question,
+      answer: getAnswersForQuestion(q.id).map((a: any) => a.question).join(' ') || q.question
+    }))
+  ) : null;
+
+  // Generate Breadcrumb Schema for SEO
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: "Ana Sayfa", url: "/" },
+    { name: country.name, url: `/${country.slug || decodedSlug}` }
+  ]);
+
   // TOC items
   const tocItems = [
     ...(menus.length > 0 ? [{ id: "vize-turleri", title: "İlişkili Sayfalar" }] : []),
@@ -343,6 +413,18 @@ export default async function CountryPage({ params }: CountryPageParams) {
 
   return (
     <div className="space-y-10 md:space-y-14">
+      {/* SEO Schemas */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      {faqSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        />
+      )}
+
       {/* BREADCRUMB */}
       <Breadcrumb
         items={[

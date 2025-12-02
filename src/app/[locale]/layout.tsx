@@ -72,6 +72,10 @@ export default async function LocaleLayout({
           data-key="Nom01ct23vxfXr8cZgauIg"
           async
         />
+        {/* Hreflang Tags for Multi-language SEO */}
+        <link rel="alternate" hrefLang="tr" href={`https://www.kolayseyahat.net`} />
+        <link rel="alternate" hrefLang="en" href={`https://www.kolayseyahat.net/en`} />
+        <link rel="alternate" hrefLang="x-default" href={`https://www.kolayseyahat.net`} />
       </head>
       <body className={`${inter.className} antialiased pb-16 md:pb-0`}>
         <Header />
