@@ -12,10 +12,15 @@ import { PushNotificationPrompt } from "@/components/shared/PushNotificationProm
 import { PageLoadingBar } from "@/components/shared/PageLoadingBar";
 import { generateSEOMetadata, generateOrganizationSchema } from "@/components/shared/SEOHead";
 import { locales, type Locale } from "@/i18n/config";
+import { WebVitals } from "@/app/web-vitals";
 
 const inter = Inter({
   subsets: ["latin"],
   display: "swap",
+  preload: true,
+  fallback: ["system-ui", "arial"],
+  adjustFontFallback: true,
+  variable: "--font-inter",
 });
 
 export const metadata: Metadata = {
@@ -40,6 +45,17 @@ export const metadata: Metadata = {
     statusBarStyle: "default",
     title: "KolaySeyahat",
   },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
 };
 
 export const viewport = {
@@ -63,28 +79,51 @@ export default async function LocaleLayout({
   return (
     <html lang={locale}>
       <head>
-        {/* Google tag (gtag.js) */}
-        <script async src="https://www.googletagmanager.com/gtag/js?id=AW-10858300718"></script>
+        {/* DNS Prefetch & Preconnect for faster external resources */}
+        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+        <link rel="dns-prefetch" href="https://analytics.ahrefs.com" />
+        <link rel="dns-prefetch" href="https://images.unsplash.com" />
+        <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" crossOrigin="anonymous" />
+        
+        {/* Structured Data - Highest Priority */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        />
+        
+        {/* Google tag (gtag.js) - Deferred for performance */}
+        <script
+          async
+          src="https://www.googletagmanager.com/gtag/js?id=AW-10858300718"
+        />
         <script
           dangerouslySetInnerHTML={{
             __html: `
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
               gtag('js', new Date());
-              gtag('config', 'AW-10858300718');
+              gtag('config', 'AW-10858300718', {
+                'send_page_view': false
+              });
+              
+              // Send pageview after page is interactive
+              if (document.readyState === 'complete') {
+                gtag('event', 'page_view');
+              } else {
+                window.addEventListener('load', function() {
+                  gtag('event', 'page_view');
+                });
+              }
             `,
           }}
         />
         
+        {/* Ahrefs Web Analytics - Lowest Priority */}
         <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
-        />
-        {/* Ahrefs Web Analytics */}
-        <script
+          defer
           src="https://analytics.ahrefs.com/analytics.js"
           data-key="Nom01ct23vxfXr8cZgauIg"
-          async
         />
         {/* Hreflang Tags for Multi-language SEO */}
         <link rel="alternate" hrefLang="tr" href={`https://www.kolayseyahat.net`} />
@@ -92,6 +131,7 @@ export default async function LocaleLayout({
         <link rel="alternate" hrefLang="x-default" href={`https://www.kolayseyahat.net`} />
       </head>
       <body className={`${inter.className} antialiased pb-16 md:pb-0`}>
+        <WebVitals />
         <PageLoadingBar />
         <Header />
         <main className="mx-auto max-w-6xl px-4 py-6">{children}</main>
