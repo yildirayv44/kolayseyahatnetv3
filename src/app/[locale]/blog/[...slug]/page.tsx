@@ -10,6 +10,7 @@ import { parseH2Headings } from "@/lib/helpers";
 import { GenericCommentSection } from "@/components/comments/GenericCommentSection";
 import { getLocalizedFields } from "@/lib/locale-content";
 import { getCleanImageUrl, getBlogCategoryImage } from "@/lib/image-helpers";
+import { generateArticleSchema } from "@/components/shared/SEOHead";
 
 interface BlogPageProps {
   params: Promise<{ slug: string[]; locale: string }>;
@@ -70,8 +71,22 @@ export default async function BlogPage({ params }: BlogPageProps) {
   // Get clean image URL
   const imageUrl = getCleanImageUrl(blog.image_url, "blog") || getBlogCategoryImage(blog.category);
 
+  // Generate Article Schema for SEO
+  const articleSchema = generateArticleSchema({
+    title: blog.title,
+    description: blog.description || blog.title,
+    image: imageUrl,
+    publishedTime: blog.created_at,
+    modifiedTime: blog.updated_at,
+  });
+
   return (
     <div className="space-y-8 md:space-y-10">
+      {/* Article Schema */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+      />
       {/* BREADCRUMB */}
       <Breadcrumb
         items={[
