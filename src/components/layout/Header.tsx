@@ -162,7 +162,7 @@ export function Header() {
                     .map((country: any) => (
                       <button
                         key={country.id}
-                        onClick={() => handleCountrySelect(country.id)}
+                        onClick={() => handleCountrySelect(country)}
                         className="flex w-full items-center gap-3 border-b border-slate-100 px-4 py-3 text-left hover:bg-primary/5 last:border-0"
                       >
                         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
