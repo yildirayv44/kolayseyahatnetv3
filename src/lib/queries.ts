@@ -92,12 +92,13 @@ export async function getCountryBySlug(slug: string) {
   
   console.log("🌍 getCountryBySlug - Taxonomy result:", tax);
 
-  // 2. Kayıt bulunamazsa sadece slug ile tekrar dene
+  // 2. Kayıt bulunamazsa type kontrolü YAPARAK tekrar dene (menu type'larını hariç tut)
   if (!tax && !taxError) {
     const fallback = await supabase
       .from("taxonomies")
-      .select("model_id, slug")
+      .select("model_id, slug, type")
       .eq("slug", slug)
+      .not("type", "like", "%menuDetail%")
       .maybeSingle();
 
     tax = fallback.data ?? null;

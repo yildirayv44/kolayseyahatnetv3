@@ -290,9 +290,14 @@ export default async function CountryPage({ params }: CountryPageParams) {
     console.log("📄 CountryPage - Menu result:", menu ? menu.name : "Not found");
     
     if (menu) {
-      // Alt sayfa bulundu - slug'dan ülke bilgisini çıkar
-      const countrySlug = decodedSlug.split('-')[0]; // "amerika-f2m2-..." -> "amerika"
-      const menuCountry = await getCountryBySlug(countrySlug);
+      // Alt sayfa bulundu - menu'nun parent_id'sinden ülkeyi bul
+      const menuCountry = menu.parent_id ? await supabase
+        .from("countries")
+        .select("*")
+        .eq("id", menu.parent_id)
+        .eq("status", 1)
+        .maybeSingle()
+        .then(({ data }) => data) : null;
       
       return (
         <div className="space-y-10 md:space-y-14">
