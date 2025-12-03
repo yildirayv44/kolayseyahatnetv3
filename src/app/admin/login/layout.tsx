@@ -1,4 +1,3 @@
-import "../../globals.css";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -11,9 +10,5 @@ export default function LoginLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <html lang="tr">
-      <body>{children}</body>
-    </html>
-  );
+  return <>{children}</>;
 }
