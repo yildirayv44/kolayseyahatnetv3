@@ -610,7 +610,7 @@ export default async function CountryPage({ params }: CountryPageParams) {
 
       {/* SORU SORMA FORMU */}
       <section id="soru-sor" className="scroll-mt-20">
-        <AskQuestionForm countryId={country.id} countryName={country.name} locale={locale} />
+        <AskQuestionForm countryId={country.id} countryName={country.name} locale={locale as 'tr' | 'en'} />
       </section>
 
       {/* İLGİLİ BLOG YAZILARI */}
