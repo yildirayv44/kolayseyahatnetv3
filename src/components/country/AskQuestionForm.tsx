@@ -64,10 +64,10 @@ export function AskQuestionForm({ countryId, countryName, locale = "tr" }: AskQu
           <CheckCircle2 className="h-8 w-8 text-emerald-600" />
         </div>
         <h3 className="mb-2 text-xl font-bold text-slate-900">
-          {t.successTitle}
+          {t(locale, "successTitle")}
         </h3>
         <p className="text-sm text-slate-600">
-          {t.successMessage}
+          {t(locale, "successMessage")}
         </p>
       </div>
     );
@@ -102,7 +102,7 @@ export function AskQuestionForm({ countryId, countryName, locale = "tr" }: AskQu
                 setFormData({ ...formData, name: e.target.value })
               }
               className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-              placeholder={t.namePlaceholder}
+              placeholder={t(locale, "namePlaceholder")}
             />
           </div>
           <div>
@@ -121,7 +121,7 @@ export function AskQuestionForm({ countryId, countryName, locale = "tr" }: AskQu
                 setFormData({ ...formData, phone: e.target.value })
               }
               className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-              placeholder={t.phonePlaceholder}
+              placeholder={t(locale, "phonePlaceholder")}
             />
           </div>
         </div>
@@ -142,7 +142,7 @@ export function AskQuestionForm({ countryId, countryName, locale = "tr" }: AskQu
               setFormData({ ...formData, email: e.target.value })
             }
             className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-            placeholder={t.emailPlaceholder}
+            placeholder={t(locale, "emailPlaceholder")}
           />
         </div>
 
@@ -162,7 +162,7 @@ export function AskQuestionForm({ countryId, countryName, locale = "tr" }: AskQu
               setFormData({ ...formData, question: e.target.value })
             }
             className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-            placeholder={t.questionPlaceholder}
+            placeholder={t(locale, "questionPlaceholder")}
           />
         </div>
 
@@ -174,11 +174,11 @@ export function AskQuestionForm({ countryId, countryName, locale = "tr" }: AskQu
           {isSubmitting ? (
             <>
               <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-              <span>{t.submittingButton}</span>
+              <span>{t(locale, "submittingButton")}</span>
             </>
           ) : (
             <>
-              <span>{t.submitButton}</span>
+              <span>{t(locale, "submitButton")}</span>
               <Send className="h-5 w-5" />
             </>
           )}
