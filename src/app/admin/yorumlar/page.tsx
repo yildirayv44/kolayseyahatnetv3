@@ -14,7 +14,7 @@ export default async function CommentsPage() {
       .order("created_at", { ascending: false }),
     supabase
       .from("country_comments")
-      .select("id, contents, status, created_at, user_name, country_id")
+      .select("id, comment, rating, status, created_at, name, country_id")
       .order("created_at", { ascending: false }),
   ]);
 
@@ -64,11 +64,11 @@ export default async function CommentsPage() {
       type: "country" as const,
       typeLabel: "Ülke",
       typeIcon: Globe2,
-      content: c.contents,
-      rating: 0,
+      content: c.comment,
+      rating: c.rating || 0,
       status: c.status,
       created_at: c.created_at,
-      userName: c.user_name || "Anonim",
+      userName: c.name || "Anonim",
       entityName: `Ülke #${c.country_id}`,
     })),
   ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());

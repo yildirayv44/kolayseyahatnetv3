@@ -34,7 +34,7 @@ export default function SorularPage() {
         .from("questions")
         .select("*")
         .eq("parent_id", 0)
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false, nullsFirst: false });
 
       if (error) throw error;
 

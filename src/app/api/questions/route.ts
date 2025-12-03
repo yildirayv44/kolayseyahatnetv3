@@ -31,6 +31,8 @@ export async function POST(request: NextRequest) {
         contents: `${question}\n\nİletişim: ${name} (${email}${phone ? `, ${phone}` : ""})`,
         parent_id: 0,
         status: 0, // Pending approval
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       })
       .select()
       .single();
