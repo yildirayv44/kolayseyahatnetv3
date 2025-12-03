@@ -1,3 +1,4 @@
+import { Metadata } from "next";
 import { 
   Users, 
   Globe2, 
@@ -14,6 +15,11 @@ import {
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { getCountries, getBlogs, getConsultants } from "@/lib/queries";
+
+export const metadata: Metadata = {
+  title: "Dashboard | Admin Panel | Kolay Seyahat",
+  description: "Kolay Seyahat yönetim paneli ana sayfa",
+};
 
 export default async function AdminDashboard() {
   // Fetch real stats from Supabase

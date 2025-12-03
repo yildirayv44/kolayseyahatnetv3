@@ -1,6 +1,12 @@
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { AdminHeader } from "@/components/admin/AdminHeader";
+import { Metadata } from "next";
 import "../globals.css";
+
+export const metadata: Metadata = {
+  title: "Admin Panel | Kolay Seyahat",
+  description: "Kolay Seyahat yönetim paneli",
+};
 
 export default function AdminLayout({
   children,
