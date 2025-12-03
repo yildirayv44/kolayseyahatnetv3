@@ -4,8 +4,14 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { Send } from "lucide-react";
 import { getCountries, getCountryProducts, submitApplication } from "@/lib/queries";
+import { t } from "@/i18n/translations";
+import type { Locale } from "@/i18n/translations";
 
-export function ApplicationForm() {
+interface ApplicationFormProps {
+  locale?: Locale;
+}
+
+export function ApplicationForm({ locale = "tr" }: ApplicationFormProps) {
   const searchParams = useSearchParams();
   const [countries, setCountries] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
@@ -90,7 +96,7 @@ export function ApplicationForm() {
         notes: "",
       });
     } else {
-      setError("Başvurunuz kaydedilemedi. Lütfen tekrar deneyin veya bizi arayın.");
+      setError(t(locale, "applicationError"));
     }
   };
 
@@ -98,7 +104,7 @@ export function ApplicationForm() {
     <form onSubmit={handleSubmit} className="card space-y-5">
       {success && (
         <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-          Başvurunuz başarıyla alındı! En kısa sürede sizinle iletişime geçeceğiz.
+          {t(locale, "applicationSent")}
         </div>
       )}
 
@@ -110,7 +116,7 @@ export function ApplicationForm() {
 
       <div className="space-y-2">
         <label htmlFor="full_name" className="block text-sm font-medium text-slate-700">
-          Ad Soyad <span className="text-red-500">*</span>
+          {t(locale, "fullName")} <span className="text-red-500">*</span>
         </label>
         <input
           type="text"
@@ -119,13 +125,13 @@ export function ApplicationForm() {
           value={formData.full_name}
           onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
           className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-          placeholder="Adınız ve soyadınız"
+          placeholder={t(locale, "fullName")}
         />
       </div>
 
       <div className="space-y-2">
         <label htmlFor="email" className="block text-sm font-medium text-slate-700">
-          E-posta <span className="text-red-500">*</span>
+          {t(locale, "email")} <span className="text-red-500">*</span>
         </label>
         <input
           type="email"
@@ -140,7 +146,7 @@ export function ApplicationForm() {
 
       <div className="space-y-2">
         <label htmlFor="phone" className="block text-sm font-medium text-slate-700">
-          Telefon <span className="text-red-500">*</span>
+          {t(locale, "phone")} <span className="text-red-500">*</span>
         </label>
         <input
           type="tel"
@@ -155,7 +161,7 @@ export function ApplicationForm() {
 
       <div className="space-y-2">
         <label htmlFor="country_id" className="block text-sm font-medium text-slate-700">
-          Ülke Seçin <span className="text-red-500">*</span>
+          {t(locale, "country")} <span className="text-red-500">*</span>
         </label>
         <select
           id="country_id"
@@ -164,7 +170,7 @@ export function ApplicationForm() {
           onChange={handleCountryChange}
           className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
         >
-          <option value="">-- Ülke seçin --</option>
+          <option value="">-- {t(locale, "selectCountry")} --</option>
           {countries.map((country) => (
             <option key={country.id} value={country.id}>
               {country.name}
@@ -176,7 +182,7 @@ export function ApplicationForm() {
       {products.length > 0 && (
         <div className="space-y-2">
           <label htmlFor="package_id" className="block text-sm font-medium text-slate-700">
-            Vize Paketi (Opsiyonel)
+            {t(locale, "selectPackage")}
           </label>
           <select
             id="package_id"
@@ -184,7 +190,7 @@ export function ApplicationForm() {
             onChange={handlePackageChange}
             className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
           >
-            <option value="">-- Paket seçin (opsiyonel) --</option>
+            <option value="">-- {t(locale, "selectPackage")} --</option>
             {products.map((product) => (
               <option key={product.id} value={product.id}>
                 {product.name} - ${Number(product.price).toFixed(2)}
@@ -196,7 +202,7 @@ export function ApplicationForm() {
 
       <div className="space-y-2">
         <label htmlFor="notes" className="block text-sm font-medium text-slate-700">
-          Notlar / Ek Bilgiler
+          {t(locale, "notes")}
         </label>
         <textarea
           id="notes"
@@ -204,7 +210,7 @@ export function ApplicationForm() {
           value={formData.notes}
           onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
           className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-          placeholder="Başvurunuzla ilgili eklemek istediğiniz notlar..."
+          placeholder={t(locale, "notesPlaceholder")}
         />
       </div>
 
@@ -219,17 +225,17 @@ export function ApplicationForm() {
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            Gönderiliyor...
+            {t(locale, "sending")}
           </span>
         ) : (
           <span className="flex items-center justify-center gap-2">
             <Send className="h-5 w-5 transition-transform group-hover:translate-x-1" />
-            Başvuruyu Gönder
+            {t(locale, "submitApplication")}
           </span>
         )}
       </button>
       <p className="text-center text-xs text-slate-500">
-        Formu göndererek <a href="/gizlilik" className="underline hover:text-primary">gizlilik politikamızı</a> kabul etmiş olursunuz.
+        {t(locale, "privacyAccept")} <a href="/gizlilik" className="underline hover:text-primary">{t(locale, "privacyPolicy")}</a> {t(locale, "privacyAcceptEnd")}
       </p>
     </form>
   );
