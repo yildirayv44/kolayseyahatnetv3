@@ -125,8 +125,14 @@ export default async function DuyurularPage() {
       {/* Regular Announcements */}
       <section className="container mx-auto px-4">
         <h2 className="mb-6 text-2xl font-bold text-slate-900">Tüm Duyurular</h2>
-        <div className="space-y-4">
-          {regularAnnouncements.map((announcement) => (
+        {announcements.length === 0 ? (
+          <div className="card text-center py-12">
+            <Megaphone className="mx-auto h-12 w-12 text-slate-300 mb-4" />
+            <p className="text-slate-600">Henüz duyuru bulunmamaktadır.</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {regularAnnouncements.map((announcement) => (
             <Link
               key={announcement.id}
               href={`/duyuru/${getSlug(announcement)}`}
@@ -155,7 +161,8 @@ export default async function DuyurularPage() {
               </div>
             </Link>
           ))}
-        </div>
+          </div>
+        )}
       </section>
 
       {/* Newsletter Subscription */}
