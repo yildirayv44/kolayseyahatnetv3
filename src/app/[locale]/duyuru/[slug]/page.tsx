@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
 type Props = {
-  params: { slug: string; locale: string };
+  params: Promise<{ slug: string; locale: string }>;
 };
 
 async function getAnnouncement(slug: string) {
@@ -52,7 +52,8 @@ async function getAnnouncement(slug: string) {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const announcement = await getAnnouncement(params.slug);
+  const { slug } = await params;
+  const announcement = await getAnnouncement(slug);
   
   if (!announcement) {
     return {
@@ -70,7 +71,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function DuyuruDetayPage({ params }: Props) {
-  const announcement = await getAnnouncement(params.slug);
+  const { slug } = await params;
+  const announcement = await getAnnouncement(slug);
 
   if (!announcement) {
     notFound();
