@@ -4,11 +4,12 @@ import { useState } from "react";
 import { Send, CheckCircle2 } from "lucide-react";
 
 interface AskQuestionFormProps {
+  countryId: number;
   countryName: string;
   locale?: string;
 }
 
-export function AskQuestionForm({ countryName, locale = "tr" }: AskQuestionFormProps) {
+export function AskQuestionForm({ countryId, countryName, locale = "tr" }: AskQuestionFormProps) {
   const t = locale === "en" ? {
     title: "Questions from Users",
     successTitle: "Question Received!",
@@ -44,17 +45,35 @@ export function AskQuestionForm({ countryName, locale = "tr" }: AskQuestionFormP
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    try {
+      const response = await fetch("/api/questions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          country_id: countryId,
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          question: formData.question,
+        }),
+      });
 
-    setIsSuccess(true);
-    setIsSubmitting(false);
-
-    // Reset form after 3 seconds
-    setTimeout(() => {
-      setIsSuccess(false);
-      setFormData({ name: "", email: "", phone: "", question: "" });
-    }, 3000);
+      if (response.ok) {
+        setIsSuccess(true);
+        // Reset form after 3 seconds
+        setTimeout(() => {
+          setIsSuccess(false);
+          setFormData({ name: "", email: "", phone: "", question: "" });
+        }, 3000);
+      } else {
+        alert("Soru gönderilirken bir hata oluştu. Lütfen tekrar deneyin.");
+      }
+    } catch (error) {
+      console.error("Question submit error:", error);
+      alert("Soru gönderilirken bir hata oluştu. Lütfen tekrar deneyin.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (isSuccess) {
