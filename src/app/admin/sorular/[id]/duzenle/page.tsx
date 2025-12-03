@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Save, Plus, X, Trash2 } from "lucide-react";
@@ -176,7 +176,7 @@ export default function SoruDuzenlePage({ params }: PageProps) {
 
         if (answer.isNew) {
           // Insert new answer
-          const { error } = await supabase.from("questions").insert({
+          const { error } = await supabaseAdmin.from("questions").insert({
             title: answer.title,
             contents: answer.contents,
             parent_id: Number(questionId),

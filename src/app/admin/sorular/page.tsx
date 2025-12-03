@@ -30,7 +30,7 @@ export default function SorularPage() {
       setLoading(true);
       
       // Fetch parent questions (parent_id = 0)
-      const { data: questionsData, error } = await supabase
+      const { data: questionsData, error } = await supabaseAdmin
         .from("questions")
         .select("*")
         .eq("parent_id", 0)
@@ -41,7 +41,7 @@ export default function SorularPage() {
       // Fetch country counts for each question
       const questionsWithCounts = await Promise.all(
         (questionsData || []).map(async (q) => {
-          const { count } = await supabase
+          const { count } = await supabaseAdmin
             .from("question_to_countries")
             .select("*", { count: "exact", head: true })
             .eq("question_id", q.id);
@@ -87,7 +87,7 @@ export default function SorularPage() {
 
   const toggleStatus = async (id: number, currentStatus: number) => {
     try {
-      const { error } = await supabase
+      const { error } = await supabaseAdmin
         .from("questions")
         .update({ status: currentStatus === 1 ? 0 : 1 })
         .eq("id", id);

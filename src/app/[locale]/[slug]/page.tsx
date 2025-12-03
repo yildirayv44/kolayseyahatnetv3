@@ -29,6 +29,9 @@ import { supabase } from "@/lib/supabase";
 import { generateFAQSchema, generateBreadcrumbSchema } from "@/components/shared/SEOHead";
 import { fixHtmlImageUrls } from "@/lib/image-helpers";
 
+// Revalidate every 1 hour (3600 seconds)
+export const revalidate = 3600;
+
 interface CountryPageParams {
   params: Promise<{ slug: string; locale: string }>;
 }
