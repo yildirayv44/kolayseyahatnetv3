@@ -135,7 +135,7 @@ export default async function LocaleLayout({
         <PageLoadingBar />
         <Header />
         <main className="mx-auto max-w-6xl px-4 py-6">{children}</main>
-        <Footer />
+        <Footer locale={locale as 'tr' | 'en'} />
         <MobileNav />
         <WhatsAppWidget />
         <ExitIntentPopup />

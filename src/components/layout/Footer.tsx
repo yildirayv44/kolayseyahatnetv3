@@ -1,13 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { getLocalizedUrl, getLocaleFromPathname } from "@/lib/locale-link";
+import { getLocalizedUrl } from "@/lib/locale-link";
+import { t } from "@/i18n/translations";
+import type { Locale } from "@/i18n/translations";
 
-export function Footer() {
+interface FooterProps {
+  locale?: Locale;
+}
+
+export function Footer({ locale = "tr" }: FooterProps) {
   const year = new Date().getFullYear();
-  const pathname = usePathname();
-  const locale = getLocaleFromPathname(pathname);
 
   return (
     <footer className="border-t border-slate-200 bg-slate-50 mt-10">
