@@ -2,15 +2,25 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [loading, setLoading] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
 
+  // Skip auth check for login page
+  const isLoginPage = pathname === "/admin/login";
+
   useEffect(() => {
+    if (isLoginPage) {
+      setLoading(false);
+      setAuthenticated(true);
+      return;
+    }
+
     checkAuth();
 
     // Listen for auth changes
@@ -25,7 +35,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     return () => {
       subscription.unsubscribe();
     };
-  }, [router]);
+  }, [router, isLoginPage]);
 
   const checkAuth = async () => {
     try {
