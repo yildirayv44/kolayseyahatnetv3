@@ -2,35 +2,16 @@
 
 import { useState } from "react";
 import { Send, CheckCircle2 } from "lucide-react";
+import { t } from "@/i18n/translations";
+import type { Locale } from "@/i18n/translations";
 
 interface AskQuestionFormProps {
   countryId: number;
   countryName: string;
-  locale?: string;
+  locale?: Locale;
 }
 
 export function AskQuestionForm({ countryId, countryName, locale = "tr" }: AskQuestionFormProps) {
-  const t = locale === "en" ? {
-    title: "Questions from Users",
-    successTitle: "Question Received!",
-    successMessage: "We will get back to you as soon as possible. Thank you.",
-    namePlaceholder: "Your Name",
-    emailPlaceholder: "Email Address",
-    phonePlaceholder: "Phone (Optional)",
-    questionPlaceholder: "Your Question",
-    submitButton: "Send Question",
-    submittingButton: "Sending...",
-  } : {
-    title: "Sizden gelen sorular",
-    successTitle: "Sorunuz Alındı!",
-    successMessage: "En kısa sürede size dönüş yapacağız. Teşekkür ederiz.",
-    namePlaceholder: "Adınız Soyadınız",
-    emailPlaceholder: "E-posta Adresiniz",
-    phonePlaceholder: "Telefon (Opsiyonel)",
-    questionPlaceholder: "Sorunuz",
-    submitButton: "Soru Gönder",
-    submittingButton: "Gönderiliyor...",
-  };
 
   const [formData, setFormData] = useState({
     name: "",

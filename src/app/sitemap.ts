@@ -12,6 +12,7 @@ async function getCustomPages() {
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = "https://kolayseyahat.net";
+  const locales = ["tr", "en"];
 
   const [countries, blogs, customPages] = await Promise.all([
     getCountries(), 
@@ -22,6 +23,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPages = [
     {
       url: baseUrl,
+      lastModified: new Date(),
+      changeFrequency: "daily" as const,
+      priority: 1,
+    },
+    {
+      url: `${baseUrl}/en`,
       lastModified: new Date(),
       changeFrequency: "daily" as const,
       priority: 1,
@@ -117,12 +124,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     3: "kuveyt",
   };
 
-  const countryPages = countries.map((country: any) => ({
-    url: `${baseUrl}/${countrySlugMap[country.id] || `country-${country.id}`}`,
-    lastModified: new Date(country.updated_at || country.created_at),
-    changeFrequency: "weekly" as const,
-    priority: 0.8,
-  }));
+  // Country pages - both TR and EN
+  const countryPages = countries.flatMap((country: any) => {
+    const slug = countrySlugMap[country.id] || `country-${country.id}`;
+    return [
+      // Turkish version (no prefix)
+      {
+        url: `${baseUrl}/${slug}`,
+        lastModified: new Date(country.updated_at || country.created_at),
+        changeFrequency: "weekly" as const,
+        priority: 0.8,
+      },
+      // English version (with /en prefix)
+      {
+        url: `${baseUrl}/en/${slug}`,
+        lastModified: new Date(country.updated_at || country.created_at),
+        changeFrequency: "weekly" as const,
+        priority: 0.8,
+      },
+    ];
+  });
 
   const blogPages = blogs.map((blog: any) => ({
     url: `${baseUrl}/blog/${blog.type || "genel"}/${blog.id}`,
