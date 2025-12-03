@@ -25,7 +25,7 @@ export function Footer({ locale = "tr" }: FooterProps) {
 
         <div className="grid flex-1 grid-cols-2 gap-8 text-sm md:grid-cols-4">
           <div>
-            <h4 className="mb-3 font-semibold text-slate-900">Hızlı Linkler</h4>
+            <h4 className="mb-3 font-semibold text-slate-900">{t(locale, "quickLinks")}</h4>
             <ul className="space-y-2 text-slate-600">
               <li>
                 <Link href={getLocalizedUrl("neden-biz", locale)} className="hover:text-primary">
@@ -82,7 +82,7 @@ export function Footer({ locale = "tr" }: FooterProps) {
           </div>
 
           <div>
-            <h4 className="mb-3 font-semibold text-slate-900">İletişim</h4>
+            <h4 className="mb-3 font-semibold text-slate-900">{t(locale, "contact")}</h4>
             <ul className="space-y-2 text-slate-600 text-sm">
               <li>Telefon: 0212 909 99 71</li>
               <li>E-posta: vize@kolayseyahat.net</li>
@@ -91,7 +91,7 @@ export function Footer({ locale = "tr" }: FooterProps) {
           </div>
 
           <div>
-            <h4 className="mb-3 font-semibold text-slate-900">Sosyal Medya</h4>
+            <h4 className="mb-3 font-semibold text-slate-900">{t(locale, "followUs")}</h4>
             <ul className="space-y-2 text-slate-600">
               <li>
                 <a href="#" className="hover:text-primary">
@@ -128,7 +128,7 @@ export function Footer({ locale = "tr" }: FooterProps) {
             </Link>
           </div>
           <div className="flex items-center justify-between text-xs text-slate-500">
-            <span>© {year} Kolay Seyahat. Tüm hakları saklıdır.</span>
+            <span>© {year} Kolay Seyahat. {t(locale, "allRightsReserved")}</span>
             <span>Vize işlemlerinizde profesyonel destek.</span>
           </div>
         </div>
