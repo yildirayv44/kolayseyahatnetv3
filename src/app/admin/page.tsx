@@ -194,9 +194,9 @@ export default async function AdminDashboard() {
                   return (
                     <tr key={app.id} className="border-b border-slate-100 last:border-0">
                       <td className="py-3 text-sm font-medium text-slate-900">
-                        {app.first_name} {app.last_name}
+                        {app.full_name || "-"}
                       </td>
-                      <td className="py-3 text-sm text-slate-600">{app.country_id || "-"}</td>
+                      <td className="py-3 text-sm text-slate-600">{app.country_name || app.country_id || "-"}</td>
                       <td className="py-3">
                         <span className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-semibold ${status.color}`}>
                           <StatusIcon className="h-3 w-3" />
