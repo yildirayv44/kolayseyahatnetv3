@@ -9,13 +9,17 @@ type Props = {
 };
 
 async function getAnnouncement(slug: string) {
+  console.log("🔍 getAnnouncement called with slug:", slug);
+  
   // Önce slug ile taxonomy'den model_id bul
-  const { data: taxonomy } = await supabase
+  const { data: taxonomy, error: taxError } = await supabase
     .from("taxonomies")
     .select("model_id")
     .eq("slug", `duyuru/${slug}`)
     .like("type", "%Announcement%")
     .maybeSingle();
+
+  console.log("📊 Taxonomy result:", taxonomy, "Error:", taxError);
 
   let announcementId = taxonomy?.model_id;
 

@@ -297,7 +297,23 @@ export default async function CountryPage({ params }: CountryPageParams) {
     }
   }
 
-  // Blog değilse, alt sayfa olarak dene
+  // Blog değilse, duyuru olarak dene
+  if (!country) {
+    console.log("📄 CountryPage - Trying announcement...");
+    const { data: announcementTaxonomy } = await supabase
+      .from("taxonomies")
+      .select("model_id")
+      .eq("slug", `duyuru/${decodedSlug}`)
+      .like("type", "%Announcement%")
+      .maybeSingle();
+    
+    if (announcementTaxonomy?.model_id) {
+      console.log("📄 CountryPage - Announcement found, redirecting...");
+      redirect(`/duyuru/${decodedSlug}`);
+    }
+  }
+
+  // Duyuru değilse, alt sayfa olarak dene
   if (!country) {
     console.log("📄 CountryPage - Trying menu...");
     const menu = await getCountryMenuBySlug(decodedSlug);
