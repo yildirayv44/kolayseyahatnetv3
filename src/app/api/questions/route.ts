@@ -28,6 +28,7 @@ export async function POST(request: NextRequest) {
     const { data: questionData, error: questionError } = await supabase
       .from("questions")
       .insert({
+        title: question.substring(0, 200), // First 200 chars as title
         contents: `${question}\n\nİletişim: ${name} (${email}${phone ? `, ${phone}` : ""})`,
         parent_id: 0,
         status: 0, // Pending approval
