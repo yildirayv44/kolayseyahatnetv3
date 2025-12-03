@@ -12,6 +12,7 @@ import { useFavorites } from "@/hooks/useFavorites";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 import { getLocalizedUrl, getLocaleFromPathname } from "@/lib/locale-link";
 import { type Locale } from "@/i18n/config";
+import { t } from "@/i18n/translations";
 
 const menuItems = [
   { path: "kurumsal-vize-danismanligi", label: "Kurumsal Vize Danışmanlığı" },
@@ -97,7 +98,7 @@ export function Header() {
               <>
                 <Link href="/admin" className="flex items-center gap-1 text-slate-700 hover:text-primary">
                   <User className="h-3 w-3" />
-                  Admin Panel
+                  {t(locale as Locale, "adminPanel")}
                 </Link>
                 <button
                   onClick={async () => {
@@ -109,18 +110,18 @@ export function Header() {
                   className="flex items-center gap-1 text-red-600 hover:text-red-700"
                 >
                   <LogIn className="h-3 w-3" />
-                  Çıkış
+                  {t(locale as Locale, "logout")}
                 </button>
               </>
             ) : (
               <>
                 <Link href={getLocalizedUrl("giris", locale)} className="flex items-center gap-1 text-slate-700 hover:text-primary">
                   <LogIn className="h-3 w-3" />
-                  Giriş Yap
+                  {t(locale as Locale, "login")}
                 </Link>
                 <Link href={getLocalizedUrl("kayit", locale)} className="flex items-center gap-1 text-slate-700 hover:text-primary">
                   <UserPlus className="h-3 w-3" />
-                  Kayıt Ol
+                  {t(locale as Locale, "register")}
                 </Link>
               </>
             )}
@@ -144,7 +145,7 @@ export function Header() {
             <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-primary z-10 md:h-4 md:w-4" />
             <input
               type="text"
-              placeholder="Ülke ara..."
+              placeholder={t(locale as Locale, "searchCountry")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => setSearchOpen(true)}
@@ -158,7 +159,7 @@ export function Header() {
               {!searchQuery && (
                 <>
                   <div className="border-b border-slate-200 bg-gradient-to-r from-primary/10 to-blue-50 px-4 py-2">
-                    <h3 className="text-xs font-semibold text-primary">⭐ Popüler Ülkeler</h3>
+                    <h3 className="text-xs font-semibold text-primary">⭐ {t(locale as Locale, "popularCountries")}</h3>
                   </div>
                   {countries
                     .filter((c: any) => ['Amerika', 'İngiltere', 'Kanada', 'Almanya', 'Fransa', 'İtalya'].includes(c.name))
@@ -187,7 +188,7 @@ export function Header() {
               {searchQuery && filteredCountries.length > 0 && (
                 <>
                   <div className="border-b border-slate-200 bg-slate-50 px-4 py-2">
-                    <h3 className="text-xs font-semibold text-slate-700">Arama Sonuçları ({filteredCountries.length})</h3>
+                    <h3 className="text-xs font-semibold text-slate-700">{t(locale as Locale, "searchResults")} ({filteredCountries.length})</h3>
                   </div>
                   {filteredCountries.map((country) => (
                     <button
@@ -213,7 +214,7 @@ export function Header() {
               {/* No Results */}
               {searchQuery && filteredCountries.length === 0 && (
                 <div className="px-4 py-8 text-center">
-                  <p className="text-sm text-slate-500">Sonuç bulunamadı</p>
+                  <p className="text-sm text-slate-500">{t(locale as Locale, "noResults")}</p>
                 </div>
               )}
             </div>
@@ -227,7 +228,7 @@ export function Header() {
               onClick={() => setMenuOpen(!menuOpen)}
               className="flex items-center gap-1 text-sm font-medium text-slate-700 hover:text-primary"
             >
-              Menü
+              {t(locale as Locale, "menu")}
               <ChevronDown className="h-4 w-4" />
             </button>
 
@@ -264,7 +265,7 @@ export function Header() {
             </Link>
 
             <Link href={getLocalizedUrl("basvuru", locale)} className="btn-primary text-sm">
-              Hemen Başvur
+              {t(locale as Locale, "applyNow")}
             </Link>
           </div>
         </div>

@@ -14,7 +14,6 @@ export const translations = {
     search: "Ara",
     filter: "Filtrele",
     loading: "Yükleniyor...",
-    noResults: "Sonuç bulunamadı",
     today: "Bugün",
     peopleApplied: "kişi başvuru yaptı",
     successRate: "Başarı Oranı",
@@ -30,12 +29,21 @@ export const translations = {
     generalInfo: "Genel Bilgiler",
     
     // Navigation
-    home: "Ana Sayfa",
+    home: "Anasayfa",
     countries: "Ülkeler",
     visaPackages: "Vize Paketleri",
     blog: "Blog",
     about: "Hakkımızda",
-    faq: "Sıkça Sorulan Sorular",
+    faq: "SSS",
+    menu: "Menü",
+    searchCountry: "Ülke ara...",
+    popularCountries: "Popüler Ülkeler",
+    searchResults: "Arama Sonuçları",
+    noResults: "Sonuç bulunamadı",
+    login: "Giriş Yap",
+    register: "Kayıt Ol",
+    logout: "Çıkış",
+    adminPanel: "Admin Panel",
     
     // Country Page
     visaInfo: "Vize Bilgileri",
@@ -147,6 +155,15 @@ export const translations = {
     blog: "Blog",
     about: "About Us",
     faq: "FAQ",
+    menu: "Menu",
+    searchCountry: "Search country...",
+    popularCountries: "Popular Countries",
+    searchResults: "Search Results",
+    noResults: "No results found",
+    login: "Login",
+    register: "Register",
+    logout: "Logout",
+    adminPanel: "Admin Panel",
     
     // Country Page
     visaInfo: "Visa Information",
