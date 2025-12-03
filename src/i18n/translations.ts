@@ -14,6 +14,7 @@ export const translations = {
     search: "Ara",
     filter: "Filtrele",
     loading: "Yükleniyor...",
+    noResults: "Sonuç bulunamadı",
     today: "Bugün",
     peopleApplied: "kişi başvuru yaptı",
     successRate: "Başarı Oranı",
