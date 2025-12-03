@@ -49,7 +49,7 @@ export default function SoruDuzenlePage({ params }: PageProps) {
 
   const fetchCountries = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from("countries")
         .select("id, name")
         .eq("status", 1)
@@ -67,7 +67,7 @@ export default function SoruDuzenlePage({ params }: PageProps) {
       setLoading(true);
 
       // Fetch question
-      const { data: question, error: questionError } = await supabase
+      const { data: question, error: questionError } = await supabaseAdmin
         .from("questions")
         .select("*")
         .eq("id", id)
@@ -82,7 +82,7 @@ export default function SoruDuzenlePage({ params }: PageProps) {
       });
 
       // Fetch answers
-      const { data: answersData, error: answersError } = await supabase
+      const { data: answersData, error: answersError } = await supabaseAdmin
         .from("questions")
         .select("*")
         .eq("parent_id", id)
@@ -92,7 +92,7 @@ export default function SoruDuzenlePage({ params }: PageProps) {
       setAnswers(answersData || []);
 
       // Fetch country relations
-      const { data: relations, error: relationsError } = await supabase
+      const { data: relations, error: relationsError } = await supabaseAdmin
         .from("question_to_countries")
         .select("country_id")
         .eq("question_id", id);
@@ -149,7 +149,7 @@ export default function SoruDuzenlePage({ params }: PageProps) {
       setSaving(true);
 
       // Update question
-      const { error: questionError } = await supabase
+      const { error: questionError } = await supabaseAdmin
         .from("questions")
         .update({
           title: formData.title,
@@ -162,7 +162,7 @@ export default function SoruDuzenlePage({ params }: PageProps) {
 
       // Delete removed answers
       if (deletedAnswers.length > 0) {
-        const { error: deleteError } = await supabase
+        const { error: deleteError } = await supabaseAdmin
           .from("questions")
           .delete()
           .in("id", deletedAnswers);
@@ -188,7 +188,7 @@ export default function SoruDuzenlePage({ params }: PageProps) {
           if (error) throw error;
         } else {
           // Update existing answer
-          const { error } = await supabase
+          const { error } = await supabaseAdmin
             .from("questions")
             .update({
               title: answer.title,
@@ -202,7 +202,7 @@ export default function SoruDuzenlePage({ params }: PageProps) {
 
       // Update country relations
       // Delete old relations
-      await supabase
+      await supabaseAdmin
         .from("question_to_countries")
         .delete()
         .eq("question_id", questionId);
@@ -213,7 +213,7 @@ export default function SoruDuzenlePage({ params }: PageProps) {
         country_id: countryId,
       }));
 
-      const { error: relationsError } = await supabase
+      const { error: relationsError } = await supabaseAdmin
         .from("question_to_countries")
         .insert(countryRelations);
 
