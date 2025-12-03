@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 import Link from "next/link";
 import { Plus, Edit, Trash2, MessageSquare, Search, Filter } from "lucide-react";
 
@@ -67,13 +67,13 @@ export default function SorularPage() {
 
     try {
       // Delete related answers first
-      await supabase.from("questions").delete().eq("parent_id", id);
+      await supabaseAdmin.from("questions").delete().eq("parent_id", id);
       
       // Delete country relations
-      await supabase.from("question_to_countries").delete().eq("question_id", id);
+      await supabaseAdmin.from("question_to_countries").delete().eq("question_id", id);
       
       // Delete the question
-      const { error } = await supabase.from("questions").delete().eq("id", id);
+      const { error } = await supabaseAdmin.from("questions").delete().eq("id", id);
 
       if (error) throw error;
 

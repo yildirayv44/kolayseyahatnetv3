@@ -1,18 +1,18 @@
 import { MessageSquare, CheckCircle, XCircle, Clock, User, Globe2, FileText } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 
 export default async function CommentsPage() {
-  // Fetch all comments from all tables (updated 2025-12-03)
+  // Fetch all comments from all tables (using admin client to bypass RLS)
   const [userCommentsResult, blogCommentsResult, countryCommentsResult] = await Promise.all([
-    supabase
+    supabaseAdmin
       .from("user_comments")
       .select("id, contents, star, status, created_at, user_id, comment_user_id")
       .order("created_at", { ascending: false }),
-    supabase
+    supabaseAdmin
       .from("blog_comments")
       .select("id, contents, status, created_at, user_name, blog_id")
       .order("created_at", { ascending: false }),
-    supabase
+    supabaseAdmin
       .from("country_comments")
       .select("id, comment, rating, status, created_at, name, country_id")
       .order("created_at", { ascending: false }),
@@ -26,7 +26,7 @@ export default async function CommentsPage() {
   const userIds = [...new Set(userComments.map(c => c.user_id).filter(Boolean))];
   const consultantIds = [...new Set(userComments.map(c => c.comment_user_id).filter(Boolean))];
   
-  const { data: users } = await supabase
+  const { data: users } = await supabaseAdmin
     .from("users")
     .select("id, name")
     .in("id", [...userIds, ...consultantIds]);
