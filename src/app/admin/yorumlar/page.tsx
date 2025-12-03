@@ -2,7 +2,7 @@ import { MessageSquare, CheckCircle, XCircle, Clock, User, Globe2, FileText } fr
 import { supabase } from "@/lib/supabase";
 
 export default async function CommentsPage() {
-  // Fetch all comments from all tables
+  // Fetch all comments from all tables (updated 2025-12-03)
   const [userCommentsResult, blogCommentsResult, countryCommentsResult] = await Promise.all([
     supabase
       .from("user_comments")
