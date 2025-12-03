@@ -111,7 +111,6 @@ export const translations = {
     
     // Footer
     quickLinks: "Hızlı Bağlantılar",
-    popularCountries: "Popüler Ülkeler",
     followUs: "Bizi Takip Edin",
     allRightsReserved: "Tüm hakları saklıdır.",
     
@@ -231,7 +230,6 @@ export const translations = {
     
     // Footer
     quickLinks: "Quick Links",
-    popularCountries: "Popular Countries",
     followUs: "Follow Us",
     allRightsReserved: "All rights reserved.",
     
