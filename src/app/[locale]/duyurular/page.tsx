@@ -1,76 +1,67 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import { Megaphone, Calendar, ArrowRight, Bell } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 export const metadata: Metadata = {
   title: "Duyurular | Kolay Seyahat",
   description: "Kolay Seyahat duyuruları, haberler ve güncellemeler. Vize süreçleri, kampanyalar ve önemli bildirimler.",
 };
 
-export default function DuyurularPage() {
-  // Bu veriler normalde veritabanından gelecek
-  const announcements = [
-    {
-      id: 1,
-      title: "Yeni Kolay Seyahat Üyelerine Özel İndirim",
-      slug: "yeni-kolay-seyahat-uyelerine-ozel-indirim",
-      excerpt: "Yeni üyelerimize özel %20 indirim fırsatı! Vize başvurularınızda geçerli bu kampanyadan yararlanın.",
-      date: "2024-05-04",
-      category: "Kampanya",
-      featured: true
-    },
-    {
-      id: 2,
-      title: "Schengen Vizesi Başvuru Süreci Güncellendi",
-      slug: "schengen-vizesi-basvuru-sureci-guncellendi",
-      excerpt: "Schengen ülkeleri için vize başvuru prosedürlerinde önemli değişiklikler yapıldı. Detaylar için duyurumuzu okuyun.",
-      date: "2024-04-15",
-      category: "Güncelleme",
-      featured: false
-    },
-    {
-      id: 3,
-      title: "Amerika Vize Randevu Süreleri Kısaldı",
-      slug: "amerika-vize-randevu-sureleri-kisaldi",
-      excerpt: "Amerika Büyükelçiliği vize randevu bekleme sürelerini kısalttı. Artık daha hızlı randevu alabilirsiniz.",
-      date: "2024-03-28",
-      category: "Haber",
-      featured: false
-    },
-    {
-      id: 4,
-      title: "Yaz Dönemi Özel Kampanyası Başladı",
-      slug: "yaz-donemi-ozel-kampanyasi-basladi",
-      excerpt: "Yaz tatili için vize başvurusu yapacaklara özel indirimli fiyatlar. Kampanya 30 Haziran'a kadar geçerli.",
-      date: "2024-05-20",
-      category: "Kampanya",
-      featured: true
-    },
-    {
-      id: 5,
-      title: "İngiltere Vizesi İçin Yeni Belgeler Gerekiyor",
-      slug: "ingiltere-vizesi-icin-yeni-belgeler-gerekiyor",
-      excerpt: "İngiltere konsolosluğu vize başvuruları için ek belge talep etmeye başladı. Hangi belgeler gerekli?",
-      date: "2024-04-02",
-      category: "Güncelleme",
-      featured: false
-    }
-  ];
+interface Announcement {
+  id: number;
+  title: string;
+  slug: string | null;
+  contents: string;
+  created_at: string;
+  views: number;
+}
 
-  const featuredAnnouncements = announcements.filter(a => a.featured);
-  const regularAnnouncements = announcements.filter(a => !a.featured);
+export default async function DuyurularPage() {
+  // Database'den duyuruları çek
+  const { data: dbAnnouncements } = await supabase
+    .from("announcements")
+    .select(`
+      id,
+      title,
+      contents,
+      created_at,
+      views
+    `)
+    .eq("status", 1)
+    .order("created_at", { ascending: false });
 
-  const getCategoryColor = (category: string) => {
-    switch (category) {
-      case "Kampanya":
-        return "bg-green-100 text-green-700";
-      case "Güncelleme":
-        return "bg-blue-100 text-blue-700";
-      case "Haber":
-        return "bg-amber-100 text-amber-700";
-      default:
-        return "bg-slate-100 text-slate-700";
+  // Taxonomies'den slug'ları çek
+  const { data: taxonomies } = await supabase
+    .from("taxonomies")
+    .select("model_id, slug")
+    .like("type", "%Announcement%");
+
+  // Slug'ları eşleştir
+  const announcements: Announcement[] = (dbAnnouncements || []).map((ann: any) => {
+    const taxonomy = taxonomies?.find((t) => t.model_id === ann.id);
+    return {
+      ...ann,
+      slug: taxonomy?.slug || null,
+    };
+  });
+
+  // İlk 2 duyuru featured olsun
+  const featuredAnnouncements = announcements.slice(0, 2);
+  const regularAnnouncements = announcements.slice(2);
+
+  // Excerpt oluştur (HTML'den text çıkar)
+  const getExcerpt = (html: string) => {
+    const text = html.replace(/<[^>]*>/g, "");
+    return text.length > 150 ? text.substring(0, 150) + "..." : text;
+  };
+
+  // Slug oluştur (eğer yoksa)
+  const getSlug = (announcement: Announcement) => {
+    if (announcement.slug) {
+      return announcement.slug.replace("duyuru/", "");
     }
+    return `${announcement.id}`;
   };
 
   return (
@@ -103,23 +94,23 @@ export default function DuyurularPage() {
             {featuredAnnouncements.map((announcement) => (
               <Link
                 key={announcement.id}
-                href={`/duyuru/${announcement.slug}`}
+                href={`/duyuru/${getSlug(announcement)}`}
                 className="card group border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-blue-50 transition-all hover:shadow-xl"
               >
                 <div className="mb-3 flex items-center justify-between">
-                  <span className={`rounded-full px-3 py-1 text-xs font-semibold ${getCategoryColor(announcement.category)}`}>
-                    {announcement.category}
+                  <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                    Duyuru
                   </span>
                   <div className="flex items-center gap-1 text-sm text-slate-600">
                     <Calendar className="h-4 w-4" />
-                    <span>{new Date(announcement.date).toLocaleDateString("tr-TR")}</span>
+                    <span>{new Date(announcement.created_at).toLocaleDateString("tr-TR")}</span>
                   </div>
                 </div>
                 <h3 className="mb-2 text-xl font-bold text-slate-900 group-hover:text-primary">
                   {announcement.title}
                 </h3>
                 <p className="mb-4 text-slate-700">
-                  {announcement.excerpt}
+                  {getExcerpt(announcement.contents)}
                 </p>
                 <div className="flex items-center gap-2 font-semibold text-primary">
                   <span>Devamını Oku</span>
@@ -138,24 +129,24 @@ export default function DuyurularPage() {
           {regularAnnouncements.map((announcement) => (
             <Link
               key={announcement.id}
-              href={`/duyuru/${announcement.slug}`}
+              href={`/duyuru/${getSlug(announcement)}`}
               className="card group flex flex-col gap-4 transition-all hover:shadow-lg sm:flex-row sm:items-center"
             >
               <div className="flex-1">
                 <div className="mb-2 flex flex-wrap items-center gap-3">
-                  <span className={`rounded-full px-3 py-1 text-xs font-semibold ${getCategoryColor(announcement.category)}`}>
-                    {announcement.category}
+                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                    Duyuru
                   </span>
                   <div className="flex items-center gap-1 text-sm text-slate-600">
                     <Calendar className="h-4 w-4" />
-                    <span>{new Date(announcement.date).toLocaleDateString("tr-TR")}</span>
+                    <span>{new Date(announcement.created_at).toLocaleDateString("tr-TR")}</span>
                   </div>
                 </div>
                 <h3 className="mb-2 text-lg font-bold text-slate-900 group-hover:text-primary">
                   {announcement.title}
                 </h3>
                 <p className="text-sm text-slate-700">
-                  {announcement.excerpt}
+                  {getExcerpt(announcement.contents)}
                 </p>
               </div>
               <div className="flex items-center gap-2 font-semibold text-primary sm:flex-col sm:items-end">

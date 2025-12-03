@@ -40,13 +40,16 @@ export default function SettingsPage() {
     setSaveMessage("");
 
     try {
+      // Upsert kullan - kayıt yoksa ekle, varsa güncelle
       const { error } = await supabase
         .from("settings")
-        .update({ 
+        .upsert({ 
+          name: "exit_intent_popup_enabled",
           val: exitIntentEnabled ? "true" : "false",
           updated_at: new Date().toISOString()
-        })
-        .eq("name", "exit_intent_popup_enabled");
+        }, {
+          onConflict: "name"
+        });
 
       if (error) throw error;
 
@@ -54,7 +57,7 @@ export default function SettingsPage() {
       setTimeout(() => setSaveMessage(""), 3000);
     } catch (error: any) {
       console.error("Save error:", error);
-      setSaveMessage("❌ Kaydetme hatası!");
+      setSaveMessage(`❌ Kaydetme hatası: ${error.message}`);
     } finally {
       setIsSaving(false);
     }

@@ -1,47 +1,54 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { Calendar, ArrowLeft, Share2 } from "lucide-react";
+import { Calendar, ArrowLeft, Share2, Eye } from "lucide-react";
 import { notFound } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 
 type Props = {
   params: { slug: string; locale: string };
 };
 
-// Bu normalde veritabanından gelecek
-const announcements: Record<string, any> = {
-  "yeni-kolay-seyahat-uyelerine-ozel-indirim": {
-    title: "Yeni Kolay Seyahat Üyelerine Özel İndirim",
-    date: "2024-05-04",
-    category: "Kampanya",
-    content: `
-      <p>Sevgili müşterilerimiz,</p>
-      
-      <p>Kolay Seyahat ailesine yeni katılan üyelerimize özel harika bir kampanya başlattık! İlk vize başvurunuzda <strong>%20 indirim</strong> fırsatından yararlanabilirsiniz.</p>
-      
-      <h2>Kampanya Detayları</h2>
-      <ul>
-        <li>Kampanya süresi: 1 Mayıs - 31 Mayıs 2024</li>
-        <li>Tüm vize türleri için geçerlidir</li>
-        <li>İlk başvurunuzda otomatik olarak uygulanır</li>
-        <li>Diğer kampanyalarla birleştirilemez</li>
-      </ul>
-      
-      <h2>Nasıl Yararlanabilirsiniz?</h2>
-      <ol>
-        <li>Web sitemizden üye olun</li>
-        <li>Vize başvuru formunu doldurun</li>
-        <li>İndirim otomatik olarak uygulanacaktır</li>
-      </ol>
-      
-      <p>Bu fırsatı kaçırmayın! Profesyonel danışmanlık hizmetimizle vize sürecinizi kolaylaştırın ve %20 tasarruf edin.</p>
-      
-      <p>Sorularınız için bizimle iletişime geçebilirsiniz: <strong>0212 909 99 71</strong></p>
-    `
+async function getAnnouncement(slug: string) {
+  // Önce slug ile taxonomy'den model_id bul
+  const { data: taxonomy } = await supabase
+    .from("taxonomies")
+    .select("model_id")
+    .eq("slug", `duyuru/${slug}`)
+    .like("type", "%Announcement%")
+    .maybeSingle();
+
+  let announcementId = taxonomy?.model_id;
+
+  // Eğer slug ile bulunamadıysa, direkt ID olarak dene
+  if (!announcementId && !isNaN(Number(slug))) {
+    announcementId = Number(slug);
   }
-};
+
+  if (!announcementId) {
+    return null;
+  }
+
+  // Duyuruyu çek
+  const { data: announcement } = await supabase
+    .from("announcements")
+    .select("*")
+    .eq("id", announcementId)
+    .eq("status", 1)
+    .maybeSingle();
+
+  if (announcement) {
+    // Görüntülenme sayısını artır
+    await supabase
+      .from("announcements")
+      .update({ views: (announcement.views || 0) + 1 })
+      .eq("id", announcementId);
+  }
+
+  return announcement;
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const announcement = announcements[params.slug];
+  const announcement = await getAnnouncement(params.slug);
   
   if (!announcement) {
     return {
@@ -49,30 +56,34 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   }
 
+  // HTML'den text çıkar
+  const description = announcement.contents.replace(/<[^>]*>/g, "").substring(0, 160);
+
   return {
     title: `${announcement.title} | Kolay Seyahat`,
-    description: announcement.title,
+    description,
   };
 }
 
-export default function DuyuruDetayPage({ params }: Props) {
-  const announcement = announcements[params.slug];
+export default async function DuyuruDetayPage({ params }: Props) {
+  const announcement = await getAnnouncement(params.slug);
 
   if (!announcement) {
     notFound();
   }
 
-  const getCategoryColor = (category: string) => {
-    switch (category) {
-      case "Kampanya":
-        return "bg-green-100 text-green-700";
-      case "Güncelleme":
-        return "bg-blue-100 text-blue-700";
-      case "Haber":
-        return "bg-amber-100 text-amber-700";
-      default:
-        return "bg-slate-100 text-slate-700";
-    }
+  // Diğer duyuruları çek
+  const { data: relatedAnnouncements } = await supabase
+    .from("announcements")
+    .select("id, title, contents, created_at")
+    .eq("status", 1)
+    .neq("id", announcement.id)
+    .order("created_at", { ascending: false })
+    .limit(2);
+
+  const getExcerpt = (html: string) => {
+    const text = html.replace(/<[^>]*>/g, "");
+    return text.length > 100 ? text.substring(0, 100) + "..." : text;
   };
 
   return (
@@ -90,16 +101,20 @@ export default function DuyuruDetayPage({ params }: Props) {
       <article className="card space-y-6">
         <div className="space-y-4">
           <div className="flex flex-wrap items-center gap-3">
-            <span className={`rounded-full px-3 py-1 text-xs font-semibold ${getCategoryColor(announcement.category)}`}>
-              {announcement.category}
+            <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+              Duyuru
             </span>
             <div className="flex items-center gap-1 text-sm text-slate-600">
               <Calendar className="h-4 w-4" />
-              <span>{new Date(announcement.date).toLocaleDateString("tr-TR", { 
+              <span>{new Date(announcement.created_at).toLocaleDateString("tr-TR", { 
                 year: 'numeric', 
                 month: 'long', 
                 day: 'numeric' 
               })}</span>
+            </div>
+            <div className="flex items-center gap-1 text-sm text-slate-600">
+              <Eye className="h-4 w-4" />
+              <span>{announcement.views || 0} görüntülenme</span>
             </div>
           </div>
 
@@ -117,8 +132,8 @@ export default function DuyuruDetayPage({ params }: Props) {
 
         {/* Content */}
         <div 
-          className="prose prose-slate max-w-none"
-          dangerouslySetInnerHTML={{ __html: announcement.content }}
+          className="prose prose-slate max-w-none prose-headings:text-slate-900 prose-p:text-slate-700 prose-a:text-primary prose-strong:text-slate-900"
+          dangerouslySetInnerHTML={{ __html: announcement.contents }}
         />
       </article>
 
@@ -147,33 +162,30 @@ export default function DuyuruDetayPage({ params }: Props) {
       </div>
 
       {/* Related Announcements */}
-      <div className="space-y-4">
-        <h2 className="text-2xl font-bold text-slate-900">Diğer Duyurular</h2>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Link href="/duyurular" className="card group transition-all hover:shadow-lg">
-            <span className="mb-2 inline-block rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
-              Güncelleme
-            </span>
-            <h3 className="font-semibold text-slate-900 group-hover:text-primary">
-              Schengen Vizesi Başvuru Süreci Güncellendi
-            </h3>
-            <p className="mt-2 text-sm text-slate-600">
-              Schengen ülkeleri için vize başvuru prosedürlerinde önemli değişiklikler...
-            </p>
-          </Link>
-          <Link href="/duyurular" className="card group transition-all hover:shadow-lg">
-            <span className="mb-2 inline-block rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
-              Haber
-            </span>
-            <h3 className="font-semibold text-slate-900 group-hover:text-primary">
-              Amerika Vize Randevu Süreleri Kısaldı
-            </h3>
-            <p className="mt-2 text-sm text-slate-600">
-              Amerika Büyükelçiliği vize randevu bekleme sürelerini kısalttı...
-            </p>
-          </Link>
+      {relatedAnnouncements && relatedAnnouncements.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-2xl font-bold text-slate-900">Diğer Duyurular</h2>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {relatedAnnouncements.map((related: any) => (
+              <Link 
+                key={related.id}
+                href={`/duyuru/${related.id}`} 
+                className="card group transition-all hover:shadow-lg"
+              >
+                <span className="mb-2 inline-block rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                  Duyuru
+                </span>
+                <h3 className="font-semibold text-slate-900 group-hover:text-primary">
+                  {related.title}
+                </h3>
+                <p className="mt-2 text-sm text-slate-600">
+                  {getExcerpt(related.contents)}
+                </p>
+              </Link>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

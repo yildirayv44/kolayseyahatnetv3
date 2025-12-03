@@ -30,6 +30,11 @@ export function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href={getLocalizedUrl("duyurular", locale)} className="hover:text-primary">
+                  Duyurular
+                </Link>
+              </li>
+              <li>
                 <Link href={getLocalizedUrl("sikca-sorulan-sorular", locale)} className="hover:text-primary">
                   Sıkça Sorulan Sorular
                 </Link>
