@@ -2,14 +2,22 @@
 
 import { useEffect, useState } from "react";
 import { getCurrentUser, User } from "@/lib/auth";
-import { Bell, User as UserIcon } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { useRouter } from "next/navigation";
+import { Bell, User as UserIcon, LogOut } from "lucide-react";
 
 export function AdminHeader() {
+  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     getCurrentUser().then(setUser);
   }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push("/admin/login");
+  };
 
   return (
     <header className="border-b border-slate-200 bg-white px-6 py-4">
@@ -34,6 +42,15 @@ export function AdminHeader() {
               <p className="text-xs text-slate-500">{user?.role || "admin"}</p>
             </div>
           </div>
+
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-red-50 hover:text-red-600"
+            title="Çıkış Yap"
+          >
+            <LogOut className="h-4 w-4" />
+            <span>Çıkış</span>
+          </button>
         </div>
       </div>
     </header>

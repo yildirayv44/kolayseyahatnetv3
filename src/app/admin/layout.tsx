@@ -1,5 +1,6 @@
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { AdminHeader } from "@/components/admin/AdminHeader";
+import { AuthGuard } from "@/components/admin/AuthGuard";
 import { Metadata } from "next";
 import "../globals.css";
 
@@ -16,16 +17,18 @@ export default function AdminLayout({
   return (
     <html lang="tr" suppressHydrationWarning>
       <body suppressHydrationWarning>
-        <div className="flex h-screen overflow-hidden bg-slate-50">
-          {/* Sidebar */}
-          <AdminSidebar />
+        <AuthGuard>
+          <div className="flex h-screen overflow-hidden bg-slate-50">
+            {/* Sidebar */}
+            <AdminSidebar />
 
-          {/* Main Content */}
-          <div className="flex flex-1 flex-col overflow-hidden">
-            <AdminHeader />
-            <main className="flex-1 overflow-y-auto p-6">{children}</main>
+            {/* Main Content */}
+            <div className="flex flex-1 flex-col overflow-hidden">
+              <AdminHeader />
+              <main className="flex-1 overflow-y-auto p-6">{children}</main>
+            </div>
           </div>
-        </div>
+        </AuthGuard>
       </body>
     </html>
   );
