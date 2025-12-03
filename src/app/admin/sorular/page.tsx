@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import { Plus, Edit, Trash2, MessageSquare, Search, Filter } from "lucide-react";
 
@@ -28,10 +29,31 @@ export default function SorularPage() {
     try {
       setLoading(true);
       
-      const response = await fetch("/api/admin/questions");
-      const { data } = await response.json();
+      // Fetch parent questions (parent_id = 0)
+      const { data: questionsData, error } = await supabase
+        .from("questions")
+        .select("*")
+        .eq("parent_id", 0)
+        .order("created_at", { ascending: false, nullsFirst: false });
 
-      setQuestions(data || []);
+      if (error) throw error;
+
+      // Fetch country counts for each question
+      const questionsWithCounts = await Promise.all(
+        (questionsData || []).map(async (q) => {
+          const { count } = await supabase
+            .from("question_to_countries")
+            .select("*", { count: "exact", head: true })
+            .eq("question_id", q.id);
+
+          return {
+            ...q,
+            country_count: count || 0,
+          };
+        })
+      );
+
+      setQuestions(questionsWithCounts);
     } catch (error) {
       console.error("Error fetching questions:", error);
       alert("Sorular yüklenirken hata oluştu");
@@ -45,13 +67,13 @@ export default function SorularPage() {
 
     try {
       // Delete related answers first
-      await supabaseAdmin.from("questions").delete().eq("parent_id", id);
+      await supabase.from("questions").delete().eq("parent_id", id);
       
       // Delete country relations
-      await supabaseAdmin.from("question_to_countries").delete().eq("question_id", id);
+      await supabase.from("question_to_countries").delete().eq("question_id", id);
       
       // Delete the question
-      const { error } = await supabaseAdmin.from("questions").delete().eq("id", id);
+      const { error } = await supabase.from("questions").delete().eq("id", id);
 
       if (error) throw error;
 
@@ -65,13 +87,12 @@ export default function SorularPage() {
 
   const toggleStatus = async (id: number, currentStatus: number) => {
     try {
-      const response = await fetch("/api/admin/questions", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, status: currentStatus === 1 ? 0 : 1 }),
-      });
+      const { error } = await supabase
+        .from("questions")
+        .update({ status: currentStatus === 1 ? 0 : 1 })
+        .eq("id", id);
 
-      if (!response.ok) throw new Error("Failed to update");
+      if (error) throw error;
 
       fetchQuestions();
     } catch (error) {

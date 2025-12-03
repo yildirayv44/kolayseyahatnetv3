@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { supabaseAdmin } from "@/lib/supabase-admin";
+import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Save, Plus, X, Trash2 } from "lucide-react";
@@ -49,7 +49,7 @@ export default function SoruDuzenlePage({ params }: PageProps) {
 
   const fetchCountries = async () => {
     try {
-      const { data, error } = await supabaseAdmin
+      const { data, error } = await supabase
         .from("countries")
         .select("id, name")
         .eq("status", 1)
@@ -67,7 +67,7 @@ export default function SoruDuzenlePage({ params }: PageProps) {
       setLoading(true);
 
       // Fetch question
-      const { data: question, error: questionError } = await supabaseAdmin
+      const { data: question, error: questionError } = await supabase
         .from("questions")
         .select("*")
         .eq("id", id)
@@ -82,7 +82,7 @@ export default function SoruDuzenlePage({ params }: PageProps) {
       });
 
       // Fetch answers
-      const { data: answersData, error: answersError } = await supabaseAdmin
+      const { data: answersData, error: answersError } = await supabase
         .from("questions")
         .select("*")
         .eq("parent_id", id)
@@ -92,7 +92,7 @@ export default function SoruDuzenlePage({ params }: PageProps) {
       setAnswers(answersData || []);
 
       // Fetch country relations
-      const { data: relations, error: relationsError } = await supabaseAdmin
+      const { data: relations, error: relationsError } = await supabase
         .from("question_to_countries")
         .select("country_id")
         .eq("question_id", id);
@@ -149,7 +149,7 @@ export default function SoruDuzenlePage({ params }: PageProps) {
       setSaving(true);
 
       // Update question
-      const { error: questionError } = await supabaseAdmin
+      const { error: questionError } = await supabase
         .from("questions")
         .update({
           title: formData.title,
@@ -162,7 +162,7 @@ export default function SoruDuzenlePage({ params }: PageProps) {
 
       // Delete removed answers
       if (deletedAnswers.length > 0) {
-        const { error: deleteError } = await supabaseAdmin
+        const { error: deleteError } = await supabase
           .from("questions")
           .delete()
           .in("id", deletedAnswers);
@@ -176,7 +176,7 @@ export default function SoruDuzenlePage({ params }: PageProps) {
 
         if (answer.isNew) {
           // Insert new answer
-          const { error } = await supabaseAdmin.from("questions").insert({
+          const { error } = await supabase.from("questions").insert({
             title: answer.title,
             contents: answer.contents,
             parent_id: Number(questionId),
@@ -188,7 +188,7 @@ export default function SoruDuzenlePage({ params }: PageProps) {
           if (error) throw error;
         } else {
           // Update existing answer
-          const { error } = await supabaseAdmin
+          const { error } = await supabase
             .from("questions")
             .update({
               title: answer.title,
@@ -202,7 +202,7 @@ export default function SoruDuzenlePage({ params }: PageProps) {
 
       // Update country relations
       // Delete old relations
-      await supabaseAdmin
+      await supabase
         .from("question_to_countries")
         .delete()
         .eq("question_id", questionId);
@@ -213,7 +213,7 @@ export default function SoruDuzenlePage({ params }: PageProps) {
         country_id: countryId,
       }));
 
-      const { error: relationsError } = await supabaseAdmin
+      const { error: relationsError } = await supabase
         .from("question_to_countries")
         .insert(countryRelations);
 
