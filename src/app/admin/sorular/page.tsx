@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabaseAdmin } from "@/lib/supabase-admin";
 import Link from "next/link";
 import { Plus, Edit, Trash2, MessageSquare, Search, Filter } from "lucide-react";
 
@@ -29,31 +28,10 @@ export default function SorularPage() {
     try {
       setLoading(true);
       
-      // Fetch parent questions (parent_id = 0)
-      const { data: questionsData, error } = await supabaseAdmin
-        .from("questions")
-        .select("*")
-        .eq("parent_id", 0)
-        .order("created_at", { ascending: false, nullsFirst: false });
+      const response = await fetch("/api/admin/questions");
+      const { data } = await response.json();
 
-      if (error) throw error;
-
-      // Fetch country counts for each question
-      const questionsWithCounts = await Promise.all(
-        (questionsData || []).map(async (q) => {
-          const { count } = await supabaseAdmin
-            .from("question_to_countries")
-            .select("*", { count: "exact", head: true })
-            .eq("question_id", q.id);
-
-          return {
-            ...q,
-            country_count: count || 0,
-          };
-        })
-      );
-
-      setQuestions(questionsWithCounts);
+      setQuestions(data || []);
     } catch (error) {
       console.error("Error fetching questions:", error);
       alert("Sorular yüklenirken hata oluştu");
@@ -87,12 +65,13 @@ export default function SorularPage() {
 
   const toggleStatus = async (id: number, currentStatus: number) => {
     try {
-      const { error } = await supabaseAdmin
-        .from("questions")
-        .update({ status: currentStatus === 1 ? 0 : 1 })
-        .eq("id", id);
+      const response = await fetch("/api/admin/questions", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, status: currentStatus === 1 ? 0 : 1 }),
+      });
 
-      if (error) throw error;
+      if (!response.ok) throw new Error("Failed to update");
 
       fetchQuestions();
     } catch (error) {
