@@ -14,8 +14,8 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="tr">
-      <body>
+    <html lang="tr" suppressHydrationWarning>
+      <body suppressHydrationWarning>
         <div className="flex h-screen overflow-hidden bg-slate-50">
           {/* Sidebar */}
           <AdminSidebar />
