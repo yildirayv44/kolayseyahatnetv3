@@ -102,7 +102,7 @@ export default function SorularPage() {
   };
 
   const filteredQuestions = questions.filter((q) => {
-    const matchesSearch = q.title?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false;
+    const matchesSearch = (q.title || "").toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus =
       statusFilter === "all" ||
       (statusFilter === "active" && q.status === 1) ||
