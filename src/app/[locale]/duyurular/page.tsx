@@ -18,8 +18,8 @@ interface Announcement {
 }
 
 export default async function DuyurularPage() {
-  // Database'den duyuruları çek
-  const { data: dbAnnouncements } = await supabase
+  // Database'den duyuruları ve slug'ları birlikte çek
+  const { data: dbAnnouncements, error } = await supabase
     .from("announcements")
     .select(`
       id,
@@ -31,18 +31,30 @@ export default async function DuyurularPage() {
     .eq("status", 1)
     .order("created_at", { ascending: false });
 
+  if (error) {
+    console.error("Announcements fetch error:", error);
+  }
+
   // Taxonomies'den slug'ları çek
-  const { data: taxonomies } = await supabase
+  const { data: taxonomies, error: taxError } = await supabase
     .from("taxonomies")
     .select("model_id, slug")
     .like("type", "%Announcement%");
 
+  if (taxError) {
+    console.error("Taxonomies fetch error:", taxError);
+  }
+
+  console.log("Taxonomies data:", taxonomies);
+
   // Slug'ları eşleştir
   const announcements: Announcement[] = (dbAnnouncements || []).map((ann: any) => {
     const taxonomy = taxonomies?.find((t) => t.model_id === ann.id);
+    const slug = taxonomy?.slug || null;
+    console.log(`Announcement ${ann.id} (${ann.title}): slug=${slug}`);
     return {
       ...ann,
-      slug: taxonomy?.slug || null,
+      slug,
     };
   });
 
