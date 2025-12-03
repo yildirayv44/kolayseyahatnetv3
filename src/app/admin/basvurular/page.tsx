@@ -13,6 +13,7 @@ export default async function ApplicationsPage() {
   }
 
   const statusConfig = {
+    new: { label: "Yeni", color: "bg-blue-100 text-blue-700", icon: Clock },
     pending: { label: "Beklemede", color: "bg-amber-100 text-amber-700", icon: Clock },
     approved: { label: "Onaylandı", color: "bg-emerald-100 text-emerald-700", icon: CheckCircle },
     processing: { label: "İşlemde", color: "bg-blue-100 text-blue-700", icon: TrendingUp },
@@ -46,15 +47,15 @@ export default async function ApplicationsPage() {
           <p className="mt-2 text-3xl font-bold text-slate-900">{applications?.length || 0}</p>
         </div>
         <div className="card">
-          <p className="text-sm text-slate-600">Beklemede</p>
-          <p className="mt-2 text-3xl font-bold text-amber-600">
-            {applications?.filter((a: any) => a.status === "pending").length || 0}
+          <p className="text-sm text-slate-600">Yeni</p>
+          <p className="mt-2 text-3xl font-bold text-blue-600">
+            {applications?.filter((a: any) => a.status === "new").length || 0}
           </p>
         </div>
         <div className="card">
           <p className="text-sm text-slate-600">İşlemde</p>
-          <p className="mt-2 text-3xl font-bold text-blue-600">
-            {applications?.filter((a: any) => a.status === "processing").length || 0}
+          <p className="mt-2 text-3xl font-bold text-amber-600">
+            {applications?.filter((a: any) => a.status === "processing" || a.status === "pending").length || 0}
           </p>
         </div>
         <div className="card">
@@ -91,11 +92,11 @@ export default async function ApplicationsPage() {
                     <tr key={app.id} className="border-b border-slate-100 hover:bg-slate-50">
                       <td className="px-6 py-4 text-sm text-slate-600">{app.id}</td>
                       <td className="px-6 py-4 text-sm font-medium text-slate-900">
-                        {app.first_name} {app.last_name}
+                        {app.full_name}
                       </td>
                       <td className="px-6 py-4 text-sm text-slate-600">{app.email}</td>
                       <td className="px-6 py-4 text-sm text-slate-600">{app.phone}</td>
-                      <td className="px-6 py-4 text-sm text-slate-600">{app.country_id || "-"}</td>
+                      <td className="px-6 py-4 text-sm text-slate-600">{app.country_name || "-"}</td>
                       <td className="px-6 py-4">
                         <span className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-semibold ${status.color}`}>
                           <StatusIcon className="h-3 w-3" />
