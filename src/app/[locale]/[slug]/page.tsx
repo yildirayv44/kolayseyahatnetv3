@@ -500,13 +500,13 @@ export default async function CountryPage({ params }: CountryPageParams) {
       />
 
       {/* HERO - New Improved Version */}
-      <CountryHero country={country} />
+      <CountryHero country={country} locale={locale as 'tr' | 'en'} />
 
       {/* STICKY CTA */}
       <StickyCTA countryName={country.name} />
 
       {/* TABLE OF CONTENTS */}
-      {tocItems.length > 0 && <TableOfContents items={tocItems} />}
+      {tocItems.length > 0 && <TableOfContents items={tocItems} locale={locale as 'tr' | 'en'} />}
 
       {/* İLİŞKİLİ SAYFALAR - Compact Version */}
       {menus.length > 0 && <RelatedPages menus={menus} />}
@@ -514,7 +514,9 @@ export default async function CountryPage({ params }: CountryPageParams) {
       {/* ANA İÇERİK */}
       {fixedContents && (
         <section id="genel-bilgiler" className="scroll-mt-20 space-y-3">
-          <h2 className="text-2xl font-bold text-slate-900">Genel Bilgiler</h2>
+          <h2 className="text-2xl font-bold text-slate-900">
+            {locale === 'en' ? 'General Information' : 'Genel Bilgiler'}
+          </h2>
           <ContentWithIds html={fixedContents} />
         </section>
       )}

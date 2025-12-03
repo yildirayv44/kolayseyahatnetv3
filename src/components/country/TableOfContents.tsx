@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { ChevronDown, List } from "lucide-react";
+import { t } from "@/i18n/translations";
+import type { Locale } from "@/i18n/translations";
 
 interface TOCItem {
   id: string;
@@ -11,9 +13,10 @@ interface TOCItem {
 
 interface TableOfContentsProps {
   items: TOCItem[];
+  locale?: Locale;
 }
 
-export function TableOfContents({ items }: TableOfContentsProps) {
+export function TableOfContents({ items, locale = "tr" }: TableOfContentsProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   const scrollToSection = (id: string) => {
@@ -41,7 +44,7 @@ export function TableOfContents({ items }: TableOfContentsProps) {
       >
         <div className="flex items-center gap-2">
           <List className="h-5 w-5 text-primary" />
-          <span className="font-bold text-slate-900">İçindekiler</span>
+          <span className="font-bold text-slate-900">{t(locale, "tableOfContents")}</span>
         </div>
         <ChevronDown
           className={`h-5 w-5 text-slate-400 transition-transform ${
