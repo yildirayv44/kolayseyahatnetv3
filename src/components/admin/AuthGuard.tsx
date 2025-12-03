@@ -35,7 +35,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     return () => {
       subscription.unsubscribe();
     };
-  }, [router, isLoginPage]);
+  }, [router, pathname]);
 
   const checkAuth = async () => {
     try {
