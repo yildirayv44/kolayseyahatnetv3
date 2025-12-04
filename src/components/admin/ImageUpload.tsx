@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { Upload, X, Loader2, Image as ImageIcon, Search } from "lucide-react";
 import { PexelsImagePicker } from "./PexelsImagePicker";
@@ -21,10 +21,14 @@ export function ImageUpload({
   aspectRatio = "16/9",
 }: ImageUploadProps) {
   const [uploading, setUploading] = useState(false);
-  const [preview, setPreview] = useState<string | null>(currentImageUrl || null);
+  const [preview, setPreview] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showPexelsPicker, setShowPexelsPicker] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setPreview(currentImageUrl || null);
+  }, [currentImageUrl]);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -32,7 +36,6 @@ export function ImageUpload({
 
     setError(null);
 
-    // Validate file
     const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"];
     if (!validTypes.includes(file.type)) {
       setError("Sadece JPG, PNG, WebP ve GIF formatları destekleniyor.");
@@ -45,39 +48,7 @@ export function ImageUpload({
       return;
     }
 
-    // Show preview
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setPreview(reader.result as string);
-    };
-    reader.readAsDataURL(file);
-
-    // Upload to server
-    setUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("bucket", bucket);
-
-      const response = await fetch("/api/upload-image", {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Yükleme başarısız");
-      }
-
-      setPreview(data.url);
-      onImageChange(data.url);
-    } catch (err: any) {
-      setError(err.message);
-      setPreview(currentImageUrl || null);
-    } finally {
-      setUploading(false);
-    }
+    await handleFileUpload(file);
   };
 
   const handleRemove = () => {
@@ -88,7 +59,7 @@ export function ImageUpload({
     }
   };
 
-  const handlePexelsSelect = async (url: string) => {
+  const handlePexelsSelect = (url: string) => {
     setPreview(url);
     onImageChange(url);
     setShowPexelsPicker(false);
@@ -154,6 +125,7 @@ export function ImageUpload({
               fill
               className="object-cover"
               unoptimized={preview.startsWith("data:")}
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
             {uploading && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/50">
@@ -219,24 +191,11 @@ export function ImageUpload({
         Önerilen boyut: {aspectRatio === "16/9" ? "1200x675" : aspectRatio === "21/9" ? "1200x514" : "1200x1200"} px
       </p>
 
-      {/* Pexels Image Picker Modal */}
       {showPexelsPicker && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-          <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-lg bg-white p-6">
-            <PexelsImagePicker
-              onSelect={handlePexelsSelect}
-              onUpload={handleFileUpload}
-              currentImage={preview || undefined}
-              title={label}
-            />
-            <button
-              onClick={() => setShowPexelsPicker(false)}
-              className="mt-4 w-full rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-            >
-              İptal
-            </button>
-          </div>
-        </div>
+        <PexelsImagePicker
+          onSelect={handlePexelsSelect}
+          onClose={() => setShowPexelsPicker(false)}
+        />
       )}
     </div>
   );

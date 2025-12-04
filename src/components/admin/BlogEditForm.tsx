@@ -207,18 +207,6 @@ export function BlogEditForm({ blog }: { blog: any }) {
           />
         </div>
 
-        <div className="space-y-2">
-          <label className="block text-sm font-semibold text-slate-900">
-            Görsel URL
-          </label>
-          <input
-            type="url"
-            value={formData.image}
-            onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-            className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-            placeholder="https://..."
-          />
-        </div>
 
         <div className="space-y-2">
           <label className="block text-sm font-semibold text-slate-900">
