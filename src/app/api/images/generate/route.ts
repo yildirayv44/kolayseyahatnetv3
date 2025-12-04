@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
       photos: result.photos.map(photo => ({
         id: photo.id,
         url: photo.src.large,
-        thumbnail: photo.src.medium,
+        thumbnail: photo.src.large, // Use large instead of medium for better quality
         alt: photo.alt,
         photographer: photo.photographer,
         photographer_url: photo.photographer_url,

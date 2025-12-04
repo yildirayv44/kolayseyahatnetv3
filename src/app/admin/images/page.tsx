@@ -322,18 +322,20 @@ export default function ImageDetectionPage() {
                     {img.url}
                   </p>
 
-                  {img.status === 'error' && (
-                    <button
-                      onClick={() => {
-                        setSelectedImage(img);
-                        setPexelsQuery(img.alt || img.source.title);
-                        setShowReplaceModal(true);
-                      }}
-                      className="w-full rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-                    >
-                      Değiştir
-                    </button>
-                  )}
+                  <button
+                    onClick={() => {
+                      setSelectedImage(img);
+                      setPexelsQuery(img.alt || img.source.title);
+                      setShowReplaceModal(true);
+                    }}
+                    className={`w-full rounded-lg px-4 py-2 text-sm font-medium text-white ${
+                      img.status === 'error'
+                        ? 'bg-red-600 hover:bg-red-700'
+                        : 'bg-blue-600 hover:bg-blue-700'
+                    }`}
+                  >
+                    {img.status === 'error' ? 'Düzelt' : 'Değiştir'}
+                  </button>
                 </div>
               </div>
             ))}
@@ -359,10 +361,26 @@ export default function ImageDetectionPage() {
               </div>
 
               <div className="mb-4 rounded-lg bg-gray-50 p-4">
-                <p className="text-sm font-medium text-gray-700">Mevcut Görsel:</p>
-                <p className="mt-1 text-xs text-gray-600">{selectedImage.url}</p>
-                <p className="mt-2 text-sm text-gray-700">
-                  <strong>Kaynak:</strong> {selectedImage.source.title}
+                <p className="mb-2 text-sm font-medium text-gray-700">Mevcut Görsel:</p>
+                
+                {selectedImage.status === 'ok' && (
+                  <div className="mb-3 overflow-hidden rounded-lg">
+                    <img
+                      src={selectedImage.url}
+                      alt={selectedImage.alt}
+                      className="h-48 w-full object-cover"
+                    />
+                  </div>
+                )}
+                
+                <p className="mb-1 truncate text-xs text-gray-600" title={selectedImage.url}>
+                  {selectedImage.url}
+                </p>
+                <p className="text-sm text-gray-700">
+                  <strong>Kaynak:</strong> {selectedImage.source.title} ({selectedImage.source.type === 'blog' ? 'Blog' : 'Ülke'})
+                </p>
+                <p className="text-xs text-gray-500">
+                  <strong>Alan:</strong> {selectedImage.source.field}
                 </p>
               </div>
 
@@ -422,13 +440,14 @@ export default function ImageDetectionPage() {
                   {pexelsResults.map((photo) => (
                     <div
                       key={photo.id}
-                      className="group relative cursor-pointer overflow-hidden rounded-lg"
+                      className="group relative cursor-pointer overflow-hidden rounded-lg bg-gray-100"
                       onClick={() => replaceImage(photo.url)}
                     >
                       <img
-                        src={photo.thumbnail}
+                        src={photo.url}
                         alt={photo.alt}
                         className="aspect-video w-full object-cover transition-transform group-hover:scale-110"
+                        loading="lazy"
                       />
                       <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 transition-all group-hover:bg-opacity-50">
                         <button
