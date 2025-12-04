@@ -16,7 +16,9 @@ import {
   Heading3,
   Quote,
   Loader2,
+  Search,
 } from "lucide-react";
+import { PexelsImagePicker } from "./PexelsImagePicker";
 
 interface RichTextEditorProps {
   value: string;
@@ -27,6 +29,7 @@ interface RichTextEditorProps {
 export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorProps) {
   const [showPreview, setShowPreview] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [showPexelsPicker, setShowPexelsPicker] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -136,6 +139,12 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
     }
   };
 
+  const handlePexelsSelect = (imageUrl: string) => {
+    // Insert image tag at cursor position
+    insertText(`<img src="${imageUrl}" alt="Pexels image" class="w-full rounded-lg my-4" />`, "");
+    setShowPexelsPicker(false);
+  };
+
   const toolbarButtons = [
     { icon: Heading2, action: () => insertText("<h2>", "</h2>"), title: "Başlık 2" },
     { icon: Heading3, action: () => insertText("<h3>", "</h3>"), title: "Başlık 3" },
@@ -189,6 +198,16 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
           className="hidden"
         />
 
+        {/* Pexels Search */}
+        <button
+          type="button"
+          onClick={() => setShowPexelsPicker(true)}
+          title="Pexels'ten Ara"
+          className="rounded p-2 text-purple-600 hover:bg-white hover:text-purple-700"
+        >
+          <Search className="h-4 w-4" />
+        </button>
+
         <div className="mx-2 h-6 w-px bg-slate-300" />
 
         {/* Preview Toggle */}
@@ -232,8 +251,16 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
       {/* Helper Text */}
       <div className="text-xs text-slate-500">
         <strong>İpucu:</strong> Metni seçip butonlara tıklayarak HTML etiketleri ekleyebilirsiniz.
-        Resim yüklemek için resim butonuna tıklayın.
+        Resim yüklemek için resim butonuna veya Pexels'ten aramak için mor arama butonuna tıklayın.
       </div>
+
+      {/* Pexels Image Picker Modal */}
+      {showPexelsPicker && (
+        <PexelsImagePicker
+          onSelect={handlePexelsSelect}
+          onClose={() => setShowPexelsPicker(false)}
+        />
+      )}
     </div>
   );
 }
