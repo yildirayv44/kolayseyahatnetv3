@@ -2,7 +2,8 @@
 
 import { useState, useRef } from "react";
 import Image from "next/image";
-import { Upload, X, Loader2, Image as ImageIcon } from "lucide-react";
+import { Upload, X, Loader2, Image as ImageIcon, Search } from "lucide-react";
+import { PexelsImagePicker } from "./PexelsImagePicker";
 
 interface ImageUploadProps {
   currentImageUrl?: string | null;
@@ -22,6 +23,7 @@ export function ImageUpload({
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(currentImageUrl || null);
   const [error, setError] = useState<string | null>(null);
+  const [showPexelsPicker, setShowPexelsPicker] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -86,6 +88,42 @@ export function ImageUpload({
     }
   };
 
+  const handlePexelsSelect = async (url: string) => {
+    setPreview(url);
+    onImageChange(url);
+    setShowPexelsPicker(false);
+  };
+
+  const handleFileUpload = async (file: File) => {
+    setError(null);
+    setUploading(true);
+    
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("bucket", bucket);
+
+      const response = await fetch("/api/upload-image", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Yükleme başarısız");
+      }
+
+      setPreview(data.url);
+      onImageChange(data.url);
+    } catch (err: any) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const aspectRatioClass = {
     "16/9": "aspect-[16/9]",
     "21/9": "aspect-[21/9]",
@@ -95,7 +133,17 @@ export function ImageUpload({
 
   return (
     <div className="space-y-2">
-      <label className="block text-sm font-semibold text-slate-900">{label}</label>
+      <div className="flex items-center justify-between">
+        <label className="block text-sm font-semibold text-slate-900">{label}</label>
+        <button
+          type="button"
+          onClick={() => setShowPexelsPicker(true)}
+          className="flex items-center gap-2 rounded-lg bg-purple-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-purple-700"
+        >
+          <Search className="h-3 w-3" />
+          Pexels'ten Ara
+        </button>
+      </div>
 
       {preview ? (
         <div className="relative">
@@ -170,6 +218,26 @@ export function ImageUpload({
       <p className="text-xs text-slate-500">
         Önerilen boyut: {aspectRatio === "16/9" ? "1200x675" : aspectRatio === "21/9" ? "1200x514" : "1200x1200"} px
       </p>
+
+      {/* Pexels Image Picker Modal */}
+      {showPexelsPicker && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-lg bg-white p-6">
+            <PexelsImagePicker
+              onSelect={handlePexelsSelect}
+              onUpload={handleFileUpload}
+              currentImage={preview || undefined}
+              title={label}
+            />
+            <button
+              onClick={() => setShowPexelsPicker(false)}
+              className="mt-4 w-full rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
+              İptal
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
