@@ -216,17 +216,6 @@ export default async function CountryPage({ params }: CountryPageParams) {
 
   console.log("📄 CountryPage - Decoded slug:", decodedSlug);
 
-  // Özel slug kontrolleri (database'de yanlış kayıtlı olanlar)
-  const blogSlugsInCountryTable = [
-    'ev-alana-vatandaslik-veren-ulkeler',
-    // Buraya diğer yanlış kayıtlı slug'ları ekleyebilirsiniz
-  ];
-  
-  if (blogSlugsInCountryTable.includes(decodedSlug)) {
-    console.log("📄 CountryPage - Redirecting to blog:", decodedSlug);
-    redirect(`/blog/${decodedSlug}`);
-  }
-
   // Önce custom page olarak dene (en yüksek öncelik)
   const { data: customPageData } = await supabase
     .from("custom_pages")

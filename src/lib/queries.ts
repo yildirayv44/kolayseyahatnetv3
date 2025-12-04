@@ -98,8 +98,8 @@ export async function getCountryBySlug(slug: string) {
       .from("taxonomies")
       .select("model_id, slug, type")
       .eq("slug", slug)
-      .not("type", "like", "%menuDetail%")
-      .not("type", "like", "%blogDetail%")
+      .not("type", "ilike", "%menuDetail%")
+      .not("type", "ilike", "%blog%")
       .maybeSingle();
 
     tax = fallback.data ?? null;
@@ -435,20 +435,26 @@ export async function getBlogs(options?: { home?: number; limit?: number }) {
 }
 
 export async function getBlogBySlug(slug: string) {
+  console.log("📝 getBlogBySlug - Original slug:", slug);
+  
   // Try with blog/ prefix first, then without
   const slugsToTry = slug.startsWith('blog/') 
     ? [slug, slug.replace('blog/', '')] 
     : [slug, `blog/${slug}`];
+
+  console.log("📝 getBlogBySlug - Trying slugs:", slugsToTry);
 
   let taxonomy = null;
   
   for (const trySlug of slugsToTry) {
     const { data, error } = await supabase
       .from("taxonomies")
-      .select("model_id")
+      .select("model_id, slug, type")
       .eq("slug", trySlug)
       .or("type.eq.Blog\\BlogController@detail,type.eq.Country\\CountryController@blogDetail")
       .maybeSingle();
+    
+    console.log(`📝 getBlogBySlug - Tried "${trySlug}":`, data ? "Found" : "Not found");
     
     if (!error && data) {
       taxonomy = data;
