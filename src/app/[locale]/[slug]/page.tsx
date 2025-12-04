@@ -325,7 +325,7 @@ export default async function CountryPage({ params }: CountryPageParams) {
     if (menu) {
       // Alt sayfa bulundu - menu'nun parent_id'sinden ülkeyi bul
       console.log("📄 CountryPage - Menu parent_id:", menu.parent_id);
-      const menuCountry = menu.parent_id ? await supabase
+      let menuCountry = menu.parent_id ? await supabase
         .from("countries")
         .select("*")
         .eq("id", menu.parent_id)
@@ -334,6 +334,26 @@ export default async function CountryPage({ params }: CountryPageParams) {
         .then(({ data }) => data) : null;
       
       console.log("📄 CountryPage - Menu country:", menuCountry ? menuCountry.name : "Not found");
+      
+      // Fallback: Eğer menuCountry bulunamazsa veya yanlışsa, slug'dan ülkeyi bul
+      if (!menuCountry || menuCountry.slug === 'bahreyn') {
+        // Slug'dan ülke adını çıkar (örn: "amerika-vize-yenileme" -> "amerika")
+        const countrySlugFromMenu = decodedSlug.split('-')[0];
+        console.log("📄 CountryPage - Trying to find country by slug:", countrySlugFromMenu);
+        
+        const fallbackCountry = await supabase
+          .from("countries")
+          .select("*")
+          .eq("slug", countrySlugFromMenu)
+          .eq("status", 1)
+          .maybeSingle()
+          .then(({ data }) => data);
+        
+        if (fallbackCountry) {
+          console.log("📄 CountryPage - Fallback country found:", fallbackCountry.name);
+          menuCountry = fallbackCountry;
+        }
+      }
       
       // Fix image URLs in menu content
       const fixedMenuContents = menu.contents ? fixHtmlImageUrls(menu.contents, menuCountry?.name) : null;
