@@ -33,8 +33,8 @@ export async function POST(request: NextRequest) {
       success: true,
       photos: result.photos.map(photo => ({
         id: photo.id,
-        url: photo.src.large,
-        thumbnail: photo.src.large, // Use large instead of medium for better quality
+        url: photo.src.original, // Use original for best quality
+        thumbnail: photo.src.large, // Use large for preview
         alt: photo.alt,
         photographer: photo.photographer,
         photographer_url: photo.photographer_url,

@@ -444,10 +444,15 @@ export default function ImageDetectionPage() {
                       onClick={() => replaceImage(photo.url)}
                     >
                       <img
-                        src={photo.url}
+                        src={`/api/images/proxy?url=${encodeURIComponent(photo.thumbnail)}`}
                         alt={photo.alt}
                         className="aspect-video w-full object-cover transition-transform group-hover:scale-110"
                         loading="lazy"
+                        onError={(e) => {
+                          console.error('Image load error:', photo.thumbnail);
+                          // Fallback to direct URL
+                          e.currentTarget.src = photo.thumbnail;
+                        }}
                       />
                       <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 transition-all group-hover:bg-opacity-50">
                         <button
