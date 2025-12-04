@@ -335,6 +335,18 @@ export default async function CountryPage({ params }: CountryPageParams) {
       // Fix image URLs in menu content
       const fixedMenuContents = menu.contents ? fixHtmlImageUrls(menu.contents, menuCountry?.name) : null;
       
+      // Parse H2 headings for TOC
+      const menuH2Headings = fixedMenuContents ? parseH2Headings(fixedMenuContents) : [];
+      
+      // TOC items for menu page
+      const menuTocItems = menuH2Headings.length > 0 ? [
+        {
+          id: "icerik",
+          title: "İçerik",
+          subItems: menuH2Headings,
+        },
+      ] : [];
+      
       return (
         <div className="space-y-10 md:space-y-14">
           <Breadcrumb
@@ -344,6 +356,9 @@ export default async function CountryPage({ params }: CountryPageParams) {
               { label: menu.name },
             ]}
           />
+          
+          {/* TABLE OF CONTENTS */}
+          {menuTocItems.length > 0 && <TableOfContents items={menuTocItems} locale={locale as 'tr' | 'en'} />}
           
           <div className="space-y-6">
             <h1 className="text-3xl font-bold text-slate-900 md:text-4xl">
@@ -380,6 +395,9 @@ export default async function CountryPage({ params }: CountryPageParams) {
               </div>
             </div>
           </div>
+          
+          {/* STICKY CTA */}
+          <StickyCTA countryName={menuCountry?.name || menu.name} />
         </div>
       );
     }
