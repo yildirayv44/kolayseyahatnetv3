@@ -98,7 +98,12 @@ export function PexelsImagePicker({ onSelect, onClose }: PexelsImagePickerProps)
             <div
               key={photo.id}
               className="group relative cursor-pointer overflow-hidden rounded-lg bg-gray-100"
-              style={{ aspectRatio: '16/9', minHeight: '150px' }}
+              style={{ 
+                aspectRatio: '16/9', 
+                minHeight: '150px',
+                height: '150px',
+                position: 'relative'
+              }}
               onClick={() => handleSelect(photo)}
             >
               <img

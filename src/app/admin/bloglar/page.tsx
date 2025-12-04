@@ -26,10 +26,10 @@ export default async function BlogsPage() {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {blogs.map((blog: any) => (
           <div key={blog.id} className="card group">
-            {blog.image && (
+            {blog.image_url && (
               <div className="mb-4 overflow-hidden rounded-lg">
                 <img
-                  src={blog.image}
+                  src={blog.image_url}
                   alt={blog.title}
                   className="h-48 w-full object-cover transition-transform group-hover:scale-105"
                 />

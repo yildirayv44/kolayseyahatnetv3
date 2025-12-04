@@ -15,6 +15,13 @@ export default async function EditBlogPage({ params }: { params: Promise<{ id: s
     notFound();
   }
 
+  console.log('📖 Blog loaded from database:', {
+    id: blog.id,
+    title: blog.title,
+    image_url: blog.image_url,
+    has_image: !!blog.image_url
+  });
+
   return (
     <div className="space-y-6">
       <div>
