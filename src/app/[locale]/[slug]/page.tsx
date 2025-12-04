@@ -324,6 +324,7 @@ export default async function CountryPage({ params }: CountryPageParams) {
     
     if (menu) {
       // Alt sayfa bulundu - menu'nun parent_id'sinden ülkeyi bul
+      console.log("📄 CountryPage - Menu parent_id:", menu.parent_id);
       const menuCountry = menu.parent_id ? await supabase
         .from("countries")
         .select("*")
@@ -331,6 +332,8 @@ export default async function CountryPage({ params }: CountryPageParams) {
         .eq("status", 1)
         .maybeSingle()
         .then(({ data }) => data) : null;
+      
+      console.log("📄 CountryPage - Menu country:", menuCountry ? menuCountry.name : "Not found");
       
       // Fix image URLs in menu content
       const fixedMenuContents = menu.contents ? fixHtmlImageUrls(menu.contents, menuCountry?.name) : null;
