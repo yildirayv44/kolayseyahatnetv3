@@ -126,54 +126,15 @@ export async function isImageBroken(url: string): Promise<boolean> {
 
 /**
  * HTML içeriğindeki kırık görselleri Pexels'ten yenileriyle değiştir
+ * NOT: Bu fonksiyon artık kullanılmıyor. Bunun yerine API endpoint'leri kullanın.
+ * @deprecated Use /api/admin/images/replace instead
  */
 export async function replacebrokenImagesInHTML(
   html: string,
   context: string
 ): Promise<{ html: string; replacedCount: number }> {
-  const imgRegex = /<img[^>]+src="([^"]+)"[^>]*>/g;
-  const matches = Array.from(html.matchAll(imgRegex));
-  
-  let replacedCount = 0;
-  let updatedHtml = html;
-  
-  for (const match of matches) {
-    const fullTag = match[0];
-    const imageUrl = match[1];
-    
-    // URL'yi kontrol et
-    const isBroken = await isImageBroken(imageUrl);
-    
-    if (isBroken) {
-      console.log('🔍 Broken image found:', imageUrl);
-      
-      // Alt text'i çıkar veya context kullan
-      const altMatch = fullTag.match(/alt="([^"]+)"/);
-      const altText = altMatch ? altMatch[1] : context;
-      
-      // Pexels'ten yeni görsel bul
-      const searchQuery = extractKeywordsFromContent(altText, context);
-      const pexelsResult = await searchPexelsPhotos(searchQuery, {
-        perPage: 1,
-        orientation: 'landscape',
-      });
-      
-      if (pexelsResult && pexelsResult.photos.length > 0) {
-        const newPhoto = pexelsResult.photos[0];
-        const newImageUrl = newPhoto.src.large;
-        
-        // Yeni img tag oluştur
-        const newTag = `<img src="${newImageUrl}" alt="${newPhoto.alt || altText}" />`;
-        
-        updatedHtml = updatedHtml.replace(fullTag, newTag);
-        replacedCount++;
-        
-        console.log('✅ Replaced with Pexels image:', newImageUrl);
-      }
-    }
-  }
-  
-  return { html: updatedHtml, replacedCount };
+  console.warn('replacebrokenImagesInHTML is deprecated. Use /api/admin/images/replace instead.');
+  return { html, replacedCount: 0 };
 }
 
 /**

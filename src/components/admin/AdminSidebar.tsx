@@ -16,6 +16,7 @@ import {
   HelpCircle,
   Mail,
   UserPlus,
+  Image,
 } from "lucide-react";
 import { signOut } from "@/lib/auth";
 import { useRouter } from "next/navigation";
@@ -25,6 +26,7 @@ const menuItems = [
   { href: "/admin/ulkeler", label: "Ülkeler", icon: Globe2 },
   { href: "/admin/vize-paketleri", label: "Vize Paketleri", icon: Package },
   { href: "/admin/bloglar", label: "Bloglar", icon: FileText },
+  { href: "/admin/images", label: "Görsel Tespiti", icon: Image },
   { href: "/admin/sorular", label: "Sorular", icon: HelpCircle },
   { href: "/admin/danismanlar", label: "Danışmanlar", icon: Users },
   { href: "/admin/sayfalar", label: "Sayfa Yönetimi", icon: FileCode },

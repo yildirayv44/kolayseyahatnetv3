@@ -127,3 +127,61 @@ export function validateImageFile(file: File): { valid: boolean; error?: string 
 
   return { valid: true };
 }
+
+/**
+ * Download image from URL and upload to Supabase Storage
+ */
+export async function downloadAndUploadImage(
+  imageUrl: string,
+  bucket: string,
+  path?: string
+): Promise<{ url: string; path: string } | { error: string }> {
+  try {
+    // Download image
+    const response = await fetch(imageUrl);
+    if (!response.ok) {
+      return { error: "Görsel indirilemedi" };
+    }
+
+    // Get image data
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    // Determine file extension from content-type or URL
+    const contentType = response.headers.get("content-type") || "image/jpeg";
+    const ext = contentType.split("/")[1] || "jpg";
+
+    // Generate unique filename
+    const timestamp = Date.now();
+    const randomStr = Math.random().toString(36).substring(7);
+    const filename = `${timestamp}-${randomStr}.${ext}`;
+    const filePath = path ? `${path}/${filename}` : filename;
+
+    // Upload to Supabase Storage
+    const { data, error } = await supabaseAdmin.storage
+      .from(bucket)
+      .upload(filePath, buffer, {
+        contentType,
+        cacheControl: "3600",
+        upsert: false,
+      });
+
+    if (error) {
+      console.error("Upload error:", error);
+      return { error: error.message };
+    }
+
+    // Get public URL
+    const { data: urlData } = supabaseAdmin.storage
+      .from(bucket)
+      .getPublicUrl(data.path);
+
+    return {
+      url: urlData.publicUrl,
+      path: data.path,
+    };
+  } catch (error: any) {
+    console.error("Download and upload exception:", error);
+    return { error: error.message };
+  }
+}
