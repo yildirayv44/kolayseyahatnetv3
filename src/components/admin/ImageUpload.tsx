@@ -60,8 +60,11 @@ export function ImageUpload({
   };
 
   const handlePexelsSelect = (url: string) => {
+    console.log('🖼️ Pexels image selected:', url);
     setPreview(url);
+    console.log('✅ Preview set to:', url);
     onImageChange(url);
+    console.log('✅ onImageChange called with:', url);
     setShowPexelsPicker(false);
   };
 

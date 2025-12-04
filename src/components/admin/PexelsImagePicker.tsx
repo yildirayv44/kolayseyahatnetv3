@@ -104,8 +104,19 @@ export function PexelsImagePicker({ onSelect, onClose }: PexelsImagePickerProps)
               <img
                 src={photo.thumbnail}
                 alt={photo.alt}
-                className="absolute inset-0 h-full w-full object-cover transition-transform group-hover:scale-110"
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  transition: 'transform 0.3s ease'
+                }}
                 loading="lazy"
+                onLoad={(e) => {
+                  console.log('Image loaded successfully:', photo.thumbnail);
+                }}
                 onError={(e) => {
                   console.error('Image load error:', photo.thumbnail);
                   e.currentTarget.style.display = 'none';

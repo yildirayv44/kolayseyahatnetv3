@@ -30,18 +30,26 @@ export function BlogEditForm({ blog }: { blog: any }) {
     e.preventDefault();
     setLoading(true);
 
+    console.log('💾 Saving blog with formData:', formData);
+    console.log('🖼️ Image URL being saved:', formData.image_url);
+
     try {
       const { error } = await supabase
         .from("blogs")
         .update(formData)
         .eq("id", blog.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Supabase error:', error);
+        throw error;
+      }
 
+      console.log('✅ Blog saved successfully!');
       alert("Blog başarıyla güncellendi!");
       router.push("/admin/bloglar");
       router.refresh();
     } catch (error: any) {
+      console.error('❌ Save error:', error);
       alert("Hata: " + error.message);
     } finally {
       setLoading(false);
@@ -172,7 +180,11 @@ export function BlogEditForm({ blog }: { blog: any }) {
         {activeLocale === 'tr' && (
           <ImageUpload
             currentImageUrl={formData.image_url}
-            onImageChange={(url) => setFormData({ ...formData, image_url: url })}
+            onImageChange={(url) => {
+              console.log('📸 Blog image changed to:', url);
+              setFormData({ ...formData, image_url: url });
+              console.log('📝 FormData updated, new image_url:', url);
+            }}
             bucket="blog-images"
             label="Blog Kapak Fotoğrafı"
             aspectRatio="21/9"
