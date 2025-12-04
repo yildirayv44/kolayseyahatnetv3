@@ -2,12 +2,28 @@ import { NextRequest, NextResponse } from 'next/server';
 import { searchPexelsPhotos, generateImageFromPrompt } from '@/lib/pexels';
 
 /**
+ * GET /api/images/generate?prompt=...&perPage=...&orientation=...
  * POST /api/images/generate
  * Prompt'tan görsel oluştur
  */
-export async function POST(request: NextRequest) {
+async function handleRequest(request: NextRequest) {
   try {
-    const { prompt, orientation = 'landscape', perPage = 5 } = await request.json();
+    let prompt: string;
+    let orientation: 'landscape' | 'portrait' | 'square' = 'landscape';
+    let perPage = 5;
+
+    // Handle both GET and POST
+    if (request.method === 'GET') {
+      prompt = request.nextUrl.searchParams.get('prompt') || '';
+      const orientationParam = request.nextUrl.searchParams.get('orientation');
+      orientation = (orientationParam === 'portrait' || orientationParam === 'square') ? orientationParam : 'landscape';
+      perPage = parseInt(request.nextUrl.searchParams.get('perPage') || '5');
+    } else {
+      const body = await request.json();
+      prompt = body.prompt;
+      orientation = body.orientation || 'landscape';
+      perPage = body.perPage || 5;
+    }
     
     if (!prompt) {
       return NextResponse.json(
@@ -48,4 +64,12 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+export async function GET(request: NextRequest) {
+  return handleRequest(request);
+}
+
+export async function POST(request: NextRequest) {
+  return handleRequest(request);
 }
