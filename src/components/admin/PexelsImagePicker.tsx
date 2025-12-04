@@ -107,6 +107,7 @@ export function PexelsImagePicker({ onSelect, onClose }: PexelsImagePickerProps)
                 fill
                 sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
                 className="object-cover transition-transform group-hover:scale-110"
+                unoptimized
               />
               <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 transition-all group-hover:bg-opacity-50">
                 <span className="flex items-center gap-2 translate-y-4 rounded-full bg-white px-4 py-2 text-sm font-medium text-gray-900 opacity-0 transition-all group-hover:translate-y-0 group-hover:opacity-100">

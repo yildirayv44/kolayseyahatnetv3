@@ -17,6 +17,7 @@ import {
   Quote,
   Loader2,
   Search,
+  Wand2,
 } from "lucide-react";
 import { PexelsImagePicker } from "./PexelsImagePicker";
 
@@ -146,6 +147,23 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
     setShowPexelsPicker(false);
   };
 
+  // HTML'i formatla (okunabilir hale getir)
+  const formatHtml = () => {
+    const formatted = value
+      // Her tag'den sonra yeni satır
+      .replace(/(<\/h[23]>)/g, '$1\n\n')
+      .replace(/(<\/p>)/g, '$1\n\n')
+      .replace(/(<img[^>]+>)/g, '\n$1\n\n')
+      .replace(/(<\/blockquote>)/g, '$1\n\n')
+      .replace(/(<\/ul>)/g, '$1\n\n')
+      .replace(/(<\/ol>)/g, '$1\n\n')
+      // Çoklu boş satırları tek satıra indir
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+    
+    onChange(formatted);
+  };
+
   // Basit modda HTML'i temizle ve düz metne çevir
   const htmlToSimpleText = (html: string): string => {
     return html
@@ -160,7 +178,7 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
       .trim();
   };
 
-  // Basit metni HTML'e çevir
+  // Basit metni HTML'e çevir (düzgün formatlanmış)
   const simpleTextToHtml = (text: string): string => {
     return text
       .split('\n\n')
@@ -172,14 +190,16 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
         } else if (para.match(/\[Görsel: (.+)\]/)) {
           const url = para.match(/\[Görsel: (.+)\]/)?.[1];
           return `<img src="${url}" alt="Image" class="w-full rounded-lg my-4" />`;
-        } else {
+        } else if (para.trim()) {
           return `<p>${para
             .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
             .replace(/\*(.+?)\*/g, '<em>$1</em>')
           }</p>`;
         }
+        return '';
       })
-      .join('\n');
+      .filter(line => line)
+      .join('\n\n');
   };
 
   const toolbarButtons = [
@@ -280,6 +300,18 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
 
         <div className="mx-2 h-6 w-px bg-slate-300" />
 
+        {/* Format HTML */}
+        <button
+          type="button"
+          onClick={formatHtml}
+          title="HTML'i Formatla"
+          className="rounded p-2 text-green-600 hover:bg-white hover:text-green-700"
+        >
+          <Wand2 className="h-4 w-4" />
+        </button>
+
+        <div className="mx-2 h-6 w-px bg-slate-300" />
+
         {/* Preview Toggle */}
         <button
           type="button"
@@ -346,7 +378,8 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
         ) : (
           <>
             <strong>🔧 HTML Mod İpuçları:</strong> Metni seçip butonlara tıklayarak HTML etiketleri ekleyebilirsiniz.
-            Resim yüklemek için resim butonuna veya Pexels'ten aramak için mor arama butonuna tıklayın.
+            Resim yüklemek için resim butonuna, Pexels'ten aramak için mor arama butonuna (🔍), 
+            HTML'i düzenli hale getirmek için yeşil sihirli değnek butonuna (✨) tıklayın.
           </>
         )}
       </div>
