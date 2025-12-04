@@ -216,6 +216,17 @@ export default async function CountryPage({ params }: CountryPageParams) {
 
   console.log("📄 CountryPage - Decoded slug:", decodedSlug);
 
+  // Özel slug kontrolleri (database'de yanlış kayıtlı olanlar)
+  const blogSlugsInCountryTable = [
+    'ev-alana-vatandaslik-veren-ulkeler',
+    // Buraya diğer yanlış kayıtlı slug'ları ekleyebilirsiniz
+  ];
+  
+  if (blogSlugsInCountryTable.includes(decodedSlug)) {
+    console.log("📄 CountryPage - Redirecting to blog:", decodedSlug);
+    redirect(`/blog/${decodedSlug}`);
+  }
+
   // Önce custom page olarak dene (en yüksek öncelik)
   const { data: customPageData } = await supabase
     .from("custom_pages")
@@ -275,7 +286,17 @@ export default async function CountryPage({ params }: CountryPageParams) {
     );
   }
 
-  // Custom page değilse, ülke olarak dene
+  // Custom page değilse, blog olarak dene (önce blog kontrol et)
+  console.log("📄 CountryPage - Trying blog...");
+  const blog = await getBlogBySlug(decodedSlug);
+  console.log("📄 CountryPage - Blog result:", blog ? blog.title : "Not found");
+  
+  if (blog) {
+    // Blog bulundu - blog detay sayfasına 301 redirect
+    redirect(`/blog/${decodedSlug}`);
+  }
+
+  // Blog değilse, ülke olarak dene
   let country = await getCountryBySlug(decodedSlug);
 
   console.log("📄 CountryPage - Country result:", country ? "Found" : "Not found");
@@ -287,18 +308,6 @@ export default async function CountryPage({ params }: CountryPageParams) {
   
   // Get comments if country found
   const comments = country ? await getCountryComments(country.id) : [];
-
-  // Ülke değilse, blog olarak dene
-  if (!country) {
-    console.log("📄 CountryPage - Trying blog...");
-    const blog = await getBlogBySlug(decodedSlug);
-    console.log("📄 CountryPage - Blog result:", blog ? blog.title : "Not found");
-    
-    if (blog) {
-      // Blog bulundu - blog detay sayfasına 301 redirect
-      redirect(`/blog/${decodedSlug}`);
-    }
-  }
 
   // Blog değilse, duyuru olarak dene
   if (!country) {
