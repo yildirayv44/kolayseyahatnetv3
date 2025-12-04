@@ -22,7 +22,6 @@ export function BlogEditForm({ blog }: { blog: any }) {
     title_en: blog.title_en || "",
     description_en: blog.description_en || "",
     contents_en: blog.contents_en || "",
-    image: blog.image || "",
     image_url: blog.image_url || "",
     status: blog.status || 0,
   });

@@ -30,6 +30,7 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
   const [showPreview, setShowPreview] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [showPexelsPicker, setShowPexelsPicker] = useState(false);
+  const [simpleMode, setSimpleMode] = useState(true); // Basit mod varsayılan
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -145,6 +146,42 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
     setShowPexelsPicker(false);
   };
 
+  // Basit modda HTML'i temizle ve düz metne çevir
+  const htmlToSimpleText = (html: string): string => {
+    return html
+      .replace(/<h2>(.*?)<\/h2>/g, '\n## $1\n')
+      .replace(/<h3>(.*?)<\/h3>/g, '\n### $1\n')
+      .replace(/<strong>(.*?)<\/strong>/g, '**$1**')
+      .replace(/<em>(.*?)<\/em>/g, '*$1*')
+      .replace(/<p>(.*?)<\/p>/g, '$1\n\n')
+      .replace(/<br\s*\/?>/g, '\n')
+      .replace(/<img[^>]+src="([^"]+)"[^>]*>/g, '\n[Görsel: $1]\n')
+      .replace(/<[^>]+>/g, '')
+      .trim();
+  };
+
+  // Basit metni HTML'e çevir
+  const simpleTextToHtml = (text: string): string => {
+    return text
+      .split('\n\n')
+      .map(para => {
+        if (para.startsWith('## ')) {
+          return `<h2>${para.substring(3)}</h2>`;
+        } else if (para.startsWith('### ')) {
+          return `<h3>${para.substring(4)}</h3>`;
+        } else if (para.match(/\[Görsel: (.+)\]/)) {
+          const url = para.match(/\[Görsel: (.+)\]/)?.[1];
+          return `<img src="${url}" alt="Image" class="w-full rounded-lg my-4" />`;
+        } else {
+          return `<p>${para
+            .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.+?)\*/g, '<em>$1</em>')
+          }</p>`;
+        }
+      })
+      .join('\n');
+  };
+
   const toolbarButtons = [
     { icon: Heading2, action: () => insertText("<h2>", "</h2>"), title: "Başlık 2" },
     { icon: Heading3, action: () => insertText("<h3>", "</h3>"), title: "Başlık 3" },
@@ -160,9 +197,42 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
 
   return (
     <div className="space-y-3">
-      {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 p-2">
-        {toolbarButtons.map((btn, index) => (
+      {/* Mode Toggle */}
+      <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-3">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-slate-700">Düzenleme Modu:</span>
+          <button
+            type="button"
+            onClick={() => setSimpleMode(true)}
+            className={`rounded px-3 py-1 text-sm font-medium transition-colors ${
+              simpleMode
+                ? 'bg-green-600 text-white'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+            }`}
+          >
+            📝 Basit Mod
+          </button>
+          <button
+            type="button"
+            onClick={() => setSimpleMode(false)}
+            className={`rounded px-3 py-1 text-sm font-medium transition-colors ${
+              !simpleMode
+                ? 'bg-orange-600 text-white'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+            }`}
+          >
+            🔧 HTML Mod
+          </button>
+        </div>
+        <p className="text-xs text-slate-500">
+          {simpleMode ? 'Basit metin düzenleme' : 'Gelişmiş HTML düzenleme'}
+        </p>
+      </div>
+
+      {/* Toolbar - Only show in HTML mode */}
+      {!simpleMode && (
+        <div className="flex flex-wrap items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 p-2">
+          {toolbarButtons.map((btn, index) => (
           <button
             key={index}
             type="button"
@@ -221,19 +291,30 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
         >
           <Eye className="h-4 w-4" />
         </button>
-      </div>
+        </div>
+      )}
 
       {/* Editor / Preview */}
       <div className="grid gap-4 lg:grid-cols-2">
         {/* Editor */}
         <div className={showPreview ? "" : "lg:col-span-2"}>
-          <textarea
-            ref={textareaRef}
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            placeholder={placeholder || "HTML içeriğinizi buraya yazın..."}
-            className="min-h-[400px] w-full rounded-lg border border-slate-200 p-4 font-mono text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-          />
+          {simpleMode ? (
+            <textarea
+              ref={textareaRef}
+              value={htmlToSimpleText(value)}
+              onChange={(e) => onChange(simpleTextToHtml(e.target.value))}
+              placeholder={placeholder || "Metninizi buraya yazın...\n\n## Başlık için\n**Kalın** veya *italik* için\n\nParagraflar arasında boş satır bırakın."}
+              className="min-h-[400px] w-full rounded-lg border border-slate-200 p-4 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            />
+          ) : (
+            <textarea
+              ref={textareaRef}
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
+              placeholder={placeholder || "HTML içeriğinizi buraya yazın..."}
+              className="min-h-[400px] w-full rounded-lg border border-slate-200 p-4 font-mono text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            />
+          )}
         </div>
 
         {/* Preview */}
@@ -249,9 +330,25 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
       </div>
 
       {/* Helper Text */}
-      <div className="text-xs text-slate-500">
-        <strong>İpucu:</strong> Metni seçip butonlara tıklayarak HTML etiketleri ekleyebilirsiniz.
-        Resim yüklemek için resim butonuna veya Pexels'ten aramak için mor arama butonuna tıklayın.
+      <div className="rounded-lg bg-blue-50 p-3 text-xs text-blue-700">
+        {simpleMode ? (
+          <>
+            <strong>📝 Basit Mod İpuçları:</strong>
+            <ul className="ml-4 mt-1 list-disc space-y-1">
+              <li><code>## Başlık</code> - Büyük başlık için</li>
+              <li><code>### Alt Başlık</code> - Küçük başlık için</li>
+              <li><code>**kalın metin**</code> - Kalın yazı için</li>
+              <li><code>*italik metin*</code> - İtalik yazı için</li>
+              <li>Paragraflar arasında boş satır bırakın</li>
+              <li>Görsel eklemek için HTML Mod'a geçin</li>
+            </ul>
+          </>
+        ) : (
+          <>
+            <strong>🔧 HTML Mod İpuçları:</strong> Metni seçip butonlara tıklayarak HTML etiketleri ekleyebilirsiniz.
+            Resim yüklemek için resim butonuna veya Pexels'ten aramak için mor arama butonuna tıklayın.
+          </>
+        )}
       </div>
 
       {/* Pexels Image Picker Modal */}
