@@ -6,8 +6,10 @@ Bu dokümantasyon, Pexels API kullanarak blog ve ülke içeriklerindeki görsell
 
 1. **Otomatik Görsel Arama**: Prompt'tan Pexels'te görsel arama
 2. **Kırık Görsel Düzeltme**: 404 dönen görselleri otomatik değiştirme
-3. **İçeriğe Görsel Ekleme**: Blog/ülke içeriklerine otomatik görsel ekleme
-4. **API Endpoints**: Admin paneli için REST API
+3. **Görsel İndirme ve Yükleme**: Pexels görsellerini Supabase Storage'a yükleme
+4. **Admin Panel**: Görsel tespit ve yönetim arayüzü
+5. **Manuel Yükleme**: Dosya yükleme desteği
+6. **API Endpoints**: Admin paneli için REST API
 
 ## 🔑 API Key
 
@@ -16,6 +18,26 @@ PEXELS_API_KEY=ydkwM7I4jF8FAb4ST0w7oifGhWQQ4oFpCoVuTgxsOjKrNHN4fGr7iqxc
 ```
 
 ## 📚 Kullanım
+
+### 0. Admin Panel (Önerilen)
+
+**URL:** `http://localhost:3000/admin/images`
+
+Admin panelinde:
+1. Tüm görselleri görüntüleyin (OK/Hata durumları)
+2. Hatalı görselleri filtreleyin
+3. "Değiştir" butonuna tıklayın
+4. Pexels'ten arama yapın veya dosya yükleyin
+5. Yeni görseli seçin - otomatik olarak indirilip yüklenecek
+
+**Özellikler:**
+- ✅ Tüm görselleri listele
+- ✅ Durum kontrolü (OK/Hata)
+- ✅ Filtreleme (Tümü/Çalışan/Hatalı)
+- ✅ Arama
+- ✅ Pexels entegrasyonu
+- ✅ Manuel dosya yükleme
+- ✅ Otomatik indirme ve yükleme
 
 ### 1. Görsel Arama API
 
