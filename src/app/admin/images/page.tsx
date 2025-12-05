@@ -518,7 +518,7 @@ export default function ImageDetectionPage() {
             {filteredImages.map((img) => (
               <div
                 key={img.id}
-                className={`overflow-hidden rounded-lg bg-white shadow transition-all hover:shadow-lg ${
+                className={`relative overflow-hidden rounded-lg bg-white shadow transition-all hover:shadow-lg ${
                   img.status === 'error' ? 'border-2 border-red-300' : 'border border-gray-200'
                 } ${selectedImages.has(img.id) ? 'ring-4 ring-blue-500' : ''}`}
               >
