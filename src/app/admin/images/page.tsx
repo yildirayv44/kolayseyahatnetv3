@@ -117,13 +117,15 @@ export default function ImageDetectionPage() {
       setAutoFixProgress({ current: i + 1, total: errorImages.length, currentTitle: img.source.title });
 
       try {
-        // Search Pexels with smart query
+        // Search Pexels with smart query - get multiple results for variety
         const searchQuery = img.alt || img.source.title;
-        const response = await fetch(`/api/images/generate?prompt=${encodeURIComponent(searchQuery)}&perPage=1`);
+        const response = await fetch(`/api/images/generate?prompt=${encodeURIComponent(searchQuery)}&perPage=15`);
         const data = await response.json();
 
         if (data.success && data.photos.length > 0) {
-          const photo = data.photos[0];
+          // Pick a random photo from results to ensure variety
+          const randomIndex = Math.floor(Math.random() * Math.min(data.photos.length, 10));
+          const photo = data.photos[randomIndex];
           
           // Upload to Supabase
           const uploadResponse = await fetch('/api/admin/images/upload-from-url', {
@@ -200,13 +202,15 @@ export default function ImageDetectionPage() {
       setAutoFixProgress({ current: i + 1, total: selectedImgs.length, currentTitle: img.source.title });
 
       try {
-        // Search Pexels with smart query
+        // Search Pexels with smart query - get multiple results for variety
         const searchQuery = img.alt || img.source.title;
-        const response = await fetch(`/api/images/generate?prompt=${encodeURIComponent(searchQuery)}&perPage=1`);
+        const response = await fetch(`/api/images/generate?prompt=${encodeURIComponent(searchQuery)}&perPage=15`);
         const data = await response.json();
 
         if (data.success && data.photos.length > 0) {
-          const photo = data.photos[0];
+          // Pick a random photo from results to ensure variety
+          const randomIndex = Math.floor(Math.random() * Math.min(data.photos.length, 10));
+          const photo = data.photos[randomIndex];
           
           // Upload to Supabase
           const uploadResponse = await fetch('/api/admin/images/upload-from-url', {
