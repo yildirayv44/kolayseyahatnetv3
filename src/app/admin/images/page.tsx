@@ -34,6 +34,11 @@ export default function ImageDetectionPage() {
   const [showPexelsPicker, setShowPexelsPicker] = useState(false);
   const [replacingImage, setReplacingImage] = useState(false);
   const [uploadingFile, setUploadingFile] = useState(false);
+  
+  // Bulk operations
+  const [selectedImages, setSelectedImages] = useState<Set<string>>(new Set());
+  const [autoFixing, setAutoFixing] = useState(false);
+  const [autoFixProgress, setAutoFixProgress] = useState({ current: 0, total: 0, currentTitle: '' });
 
   // Fetch all images
   const fetchImages = async () => {
@@ -68,6 +73,157 @@ export default function ImageDetectionPage() {
     
     return matchesFilter && matchesSearch;
   });
+
+  // Bulk selection handlers
+  const toggleImageSelection = (imageId: string) => {
+    const newSelected = new Set(selectedImages);
+    if (newSelected.has(imageId)) {
+      newSelected.delete(imageId);
+    } else {
+      newSelected.add(imageId);
+    }
+    setSelectedImages(newSelected);
+  };
+
+  const selectAll = () => {
+    const allIds = new Set(filteredImages.map(img => img.id));
+    setSelectedImages(allIds);
+  };
+
+  const clearSelection = () => {
+    setSelectedImages(new Set());
+  };
+
+  // Auto-fix all errors
+  const autoFixAllErrors = async () => {
+    const errorImages = images.filter(img => img.status === 'error');
+    if (errorImages.length === 0) {
+      alert('Düzeltilecek hatalı görsel yok!');
+      return;
+    }
+
+    if (!confirm(`${errorImages.length} hatalı görseli otomatik düzeltmek istiyor musunuz?`)) {
+      return;
+    }
+
+    setAutoFixing(true);
+    setAutoFixProgress({ current: 0, total: errorImages.length, currentTitle: '' });
+
+    let successCount = 0;
+    let failCount = 0;
+
+    for (let i = 0; i < errorImages.length; i++) {
+      const img = errorImages[i];
+      setAutoFixProgress({ current: i + 1, total: errorImages.length, currentTitle: img.source.title });
+
+      try {
+        // Search Pexels with smart query
+        const searchQuery = img.alt || img.source.title;
+        const response = await fetch(`/api/images/generate?prompt=${encodeURIComponent(searchQuery)}&perPage=1`);
+        const data = await response.json();
+
+        if (data.success && data.photos.length > 0) {
+          const photo = data.photos[0];
+          
+          // Upload to Supabase
+          const uploadResponse = await fetch('/api/admin/images/upload-from-url', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              url: photo.url,
+              bucket: img.source.type === 'blog' ? 'blog-images' : 'country-images',
+            }),
+          });
+
+          const uploadData = await uploadResponse.json();
+          
+          if (uploadData.success) {
+            // Replace in database
+            const replaceResponse = await fetch('/api/admin/images/replace', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                sourceType: img.source.type,
+                sourceId: img.source.id,
+                field: img.source.field,
+                oldUrl: img.url,
+                newImageUrl: uploadData.url,
+              }),
+            });
+
+            const replaceData = await replaceResponse.json();
+            if (replaceData.success) {
+              successCount++;
+            } else {
+              failCount++;
+            }
+          } else {
+            failCount++;
+          }
+        } else {
+          failCount++;
+        }
+      } catch (error) {
+        console.error('Auto-fix error:', error);
+        failCount++;
+      }
+
+      // Small delay to avoid rate limiting
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+
+    setAutoFixing(false);
+    alert(`Otomatik tamir tamamlandı!\n✅ Başarılı: ${successCount}\n❌ Başarısız: ${failCount}`);
+    fetchImages(); // Refresh list
+  };
+
+  // Bulk replace with same image
+  const bulkReplaceWithPexels = async (pexelsUrl: string) => {
+    const selectedImgs = images.filter(img => selectedImages.has(img.id));
+    if (selectedImgs.length === 0) return;
+
+    setReplacingImage(true);
+    let successCount = 0;
+
+    for (const img of selectedImgs) {
+      try {
+        // Upload to Supabase
+        const uploadResponse = await fetch('/api/admin/images/upload-from-url', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            url: pexelsUrl,
+            bucket: img.source.type === 'blog' ? 'blog-images' : 'country-images',
+          }),
+        });
+
+        const uploadData = await uploadResponse.json();
+        
+        if (uploadData.success) {
+          // Replace in database
+          await fetch('/api/admin/images/replace', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              sourceType: img.source.type,
+              sourceId: img.source.id,
+              field: img.source.field,
+              oldUrl: img.url,
+              newImageUrl: uploadData.url,
+            }),
+          });
+          successCount++;
+        }
+      } catch (error) {
+        console.error('Bulk replace error:', error);
+      }
+    }
+
+    setReplacingImage(false);
+    alert(`${successCount} görsel başarıyla değiştirildi!`);
+    clearSelection();
+    fetchImages();
+  };
 
   // Handle Pexels selection
   const handlePexelsSelect = async (pexelsUrl: string) => {
@@ -176,7 +332,7 @@ export default function ImageDetectionPage() {
         </div>
 
         {/* Stats */}
-        <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div className="rounded-lg bg-white p-6 shadow">
             <div className="flex items-center justify-between">
               <div>
@@ -206,7 +362,68 @@ export default function ImageDetectionPage() {
               <X className="h-8 w-8 text-red-500" />
             </div>
           </div>
+
+          <div className="rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 p-6 shadow">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-purple-100">Seçili</p>
+                <p className="mt-2 text-3xl font-bold text-white">{selectedImages.size}</p>
+              </div>
+              <Check className="h-8 w-8 text-purple-200" />
+            </div>
+          </div>
         </div>
+
+        {/* Bulk Actions Bar */}
+        {selectedImages.size > 0 && (
+          <div className="mb-4 rounded-lg bg-blue-50 border-2 border-blue-200 p-4">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <span className="font-semibold text-blue-900">
+                  {selectedImages.size} görsel seçildi
+                </span>
+                <button
+                  onClick={clearSelection}
+                  className="text-sm text-blue-600 hover:text-blue-800 underline"
+                >
+                  Seçimi Temizle
+                </button>
+              </div>
+              <button
+                onClick={() => {
+                  setShowPexelsPicker(true);
+                }}
+                disabled={replacingImage}
+                className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white hover:bg-purple-700 disabled:opacity-50"
+              >
+                {replacingImage ? 'Değiştiriliyor...' : 'Seçilenleri Değiştir'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Auto-Fix Progress */}
+        {autoFixing && (
+          <div className="mb-4 rounded-lg bg-green-50 border-2 border-green-200 p-4">
+            <div className="flex items-center gap-3 mb-2">
+              <Loader2 className="h-5 w-5 animate-spin text-green-600" />
+              <span className="font-semibold text-green-900">
+                Otomatik Tamir Devam Ediyor...
+              </span>
+            </div>
+            <div className="mb-2">
+              <div className="h-2 w-full rounded-full bg-green-200">
+                <div
+                  className="h-2 rounded-full bg-green-600 transition-all"
+                  style={{ width: `${(autoFixProgress.current / autoFixProgress.total) * 100}%` }}
+                />
+              </div>
+            </div>
+            <p className="text-sm text-green-700">
+              {autoFixProgress.current} / {autoFixProgress.total} - {autoFixProgress.currentTitle}
+            </p>
+          </div>
+        )}
 
         {/* Filters */}
         <div className="mb-6 rounded-lg bg-white p-4 shadow">
@@ -256,14 +473,37 @@ export default function ImageDetectionPage() {
                 />
               </div>
               
-              <button
-                onClick={fetchImages}
-                disabled={loading}
-                className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
-              >
-                <RefreshCw className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
-                Yenile
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={selectAll}
+                  disabled={filteredImages.length === 0}
+                  className="rounded-lg bg-gray-600 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 disabled:opacity-50"
+                >
+                  Tümünü Seç
+                </button>
+                
+                <button
+                  onClick={autoFixAllErrors}
+                  disabled={autoFixing || stats.error === 0}
+                  className="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+                >
+                  {autoFixing ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <Check className="h-5 w-5" />
+                  )}
+                  Otomatik Tamir ({stats.error})
+                </button>
+
+                <button
+                  onClick={fetchImages}
+                  disabled={loading}
+                  className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
+                >
+                  <RefreshCw className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
+                  Yenile
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -280,8 +520,18 @@ export default function ImageDetectionPage() {
                 key={img.id}
                 className={`overflow-hidden rounded-lg bg-white shadow transition-all hover:shadow-lg ${
                   img.status === 'error' ? 'border-2 border-red-300' : 'border border-gray-200'
-                }`}
+                } ${selectedImages.has(img.id) ? 'ring-4 ring-blue-500' : ''}`}
               >
+                {/* Checkbox */}
+                <div className="absolute left-2 top-2 z-10">
+                  <input
+                    type="checkbox"
+                    checked={selectedImages.has(img.id)}
+                    onChange={() => toggleImageSelection(img.id)}
+                    className="h-5 w-5 cursor-pointer rounded border-2 border-white bg-white shadow-lg"
+                  />
+                </div>
+
                 <div className="relative aspect-video bg-gray-100">
                   {img.status === 'ok' ? (
                     <img
@@ -425,7 +675,7 @@ export default function ImageDetectionPage() {
         {/* Pexels Picker Modal */}
         {showPexelsPicker && (
           <PexelsImagePicker
-            onSelect={handlePexelsSelect}
+            onSelect={selectedImages.size > 0 ? bulkReplaceWithPexels : handlePexelsSelect}
             onClose={() => setShowPexelsPicker(false)}
           />
         )}
