@@ -1,6 +1,7 @@
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { AuthGuard } from "@/components/admin/AuthGuard";
+import { AIAssistant } from "@/components/admin/AIAssistant";
 import { Metadata } from "next";
 import "../globals.css";
 
@@ -28,6 +29,9 @@ export default function AdminLayout({
               <main className="flex-1 overflow-y-auto p-6">{children}</main>
             </div>
           </div>
+          
+          {/* AI Assistant - Floating */}
+          <AIAssistant />
         </AuthGuard>
       </body>
     </html>
