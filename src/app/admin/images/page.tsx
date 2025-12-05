@@ -177,50 +177,86 @@ export default function ImageDetectionPage() {
     fetchImages(); // Refresh list
   };
 
-  // Bulk replace with same image
-  const bulkReplaceWithPexels = async (pexelsUrl: string) => {
+  // Auto-fix selected images (each with different image)
+  const autoFixSelected = async () => {
     const selectedImgs = images.filter(img => selectedImages.has(img.id));
-    if (selectedImgs.length === 0) return;
+    if (selectedImgs.length === 0) {
+      alert('Lütfen en az bir görsel seçin!');
+      return;
+    }
 
-    setReplacingImage(true);
+    if (!confirm(`${selectedImgs.length} görseli otomatik düzeltmek istiyor musunuz?\nHer görsel için farklı bir Pexels görseli aranacak.`)) {
+      return;
+    }
+
+    setAutoFixing(true);
+    setAutoFixProgress({ current: 0, total: selectedImgs.length, currentTitle: '' });
+
     let successCount = 0;
+    let failCount = 0;
 
-    for (const img of selectedImgs) {
+    for (let i = 0; i < selectedImgs.length; i++) {
+      const img = selectedImgs[i];
+      setAutoFixProgress({ current: i + 1, total: selectedImgs.length, currentTitle: img.source.title });
+
       try {
-        // Upload to Supabase
-        const uploadResponse = await fetch('/api/admin/images/upload-from-url', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            url: pexelsUrl,
-            bucket: img.source.type === 'blog' ? 'blog-images' : 'country-images',
-          }),
-        });
+        // Search Pexels with smart query
+        const searchQuery = img.alt || img.source.title;
+        const response = await fetch(`/api/images/generate?prompt=${encodeURIComponent(searchQuery)}&perPage=1`);
+        const data = await response.json();
 
-        const uploadData = await uploadResponse.json();
-        
-        if (uploadData.success) {
-          // Replace in database
-          await fetch('/api/admin/images/replace', {
+        if (data.success && data.photos.length > 0) {
+          const photo = data.photos[0];
+          
+          // Upload to Supabase
+          const uploadResponse = await fetch('/api/admin/images/upload-from-url', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              sourceType: img.source.type,
-              sourceId: img.source.id,
-              field: img.source.field,
-              oldUrl: img.url,
-              newImageUrl: uploadData.url,
+              url: photo.url,
+              bucket: img.source.type === 'blog' ? 'blog-images' : 'country-images',
             }),
           });
-          successCount++;
+
+          const uploadData = await uploadResponse.json();
+          
+          if (uploadData.success) {
+            // Replace in database
+            const replaceResponse = await fetch('/api/admin/images/replace', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                sourceType: img.source.type,
+                sourceId: img.source.id,
+                field: img.source.field,
+                oldUrl: img.url,
+                newImageUrl: uploadData.url,
+              }),
+            });
+
+            const replaceData = await replaceResponse.json();
+            if (replaceData.success) {
+              successCount++;
+            } else {
+              failCount++;
+            }
+          } else {
+            failCount++;
+          }
+        } else {
+          failCount++;
         }
       } catch (error) {
-        console.error('Bulk replace error:', error);
+        console.error('Auto-fix selected error:', error);
+        failCount++;
       }
+
+      // Small delay to avoid rate limiting
+      await new Promise(resolve => setTimeout(resolve, 500));
     }
 
-    setReplacingImage(false);
-    alert(`${successCount} görsel başarıyla değiştirildi!`);
+    setAutoFixing(false);
+    alert(`Seçili görseller düzeltildi!\n✅ Başarılı: ${successCount}\n❌ Başarısız: ${failCount}`);
     clearSelection();
     fetchImages();
   };
@@ -390,13 +426,21 @@ export default function ImageDetectionPage() {
                 </button>
               </div>
               <button
-                onClick={() => {
-                  setShowPexelsPicker(true);
-                }}
-                disabled={replacingImage}
-                className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white hover:bg-purple-700 disabled:opacity-50"
+                onClick={autoFixSelected}
+                disabled={autoFixing}
+                className="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-50"
               >
-                {replacingImage ? 'Değiştiriliyor...' : 'Seçilenleri Değiştir'}
+                {autoFixing ? (
+                  <>
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    Düzeltiliyor...
+                  </>
+                ) : (
+                  <>
+                    <Check className="h-5 w-5" />
+                    Seçilenleri Otomatik Düzelt
+                  </>
+                )}
               </button>
             </div>
           </div>
@@ -672,10 +716,10 @@ export default function ImageDetectionPage() {
           </div>
         )}
 
-        {/* Pexels Picker Modal */}
-        {showPexelsPicker && (
+        {/* Pexels Picker Modal - Only for single image replacement */}
+        {showPexelsPicker && selectedImage && (
           <PexelsImagePicker
-            onSelect={selectedImages.size > 0 ? bulkReplaceWithPexels : handlePexelsSelect}
+            onSelect={handlePexelsSelect}
             onClose={() => setShowPexelsPicker(false)}
           />
         )}
