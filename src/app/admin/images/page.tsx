@@ -63,6 +63,62 @@ export default function ImageDetectionPage() {
     fetchImages();
   }, []);
 
+  // Smart query generator - translate Turkish to English and extract keywords
+  const generateSmartQuery = (text: string): string => {
+    // Common Turkish to English translations for visa/travel content
+    const translations: Record<string, string> = {
+      'vize': 'visa',
+      'vizesi': 'visa',
+      'nasıl alınır': 'how to get',
+      'başvuru': 'application',
+      'başvurusu': 'application',
+      'gerekli belgeler': 'required documents',
+      'evrak': 'documents',
+      'randevu': 'appointment',
+      'ücret': 'fee',
+      'süreç': 'process',
+      'süreci': 'process',
+      'rehber': 'guide',
+      'rehberi': 'guide',
+      'turist': 'tourist',
+      'seyahat': 'travel',
+      'çalışma': 'work',
+      'öğrenci': 'student',
+      'schengen': 'schengen',
+      'çok girişli': 'multiple entry',
+      'tek girişli': 'single entry',
+      'ülke': 'country',
+      'ülkeler': 'countries',
+      'pasaport': 'passport',
+      'vatandaşlık': 'citizenship',
+      'oturum': 'residence',
+      'izin': 'permit',
+    };
+
+    let query = text.toLowerCase();
+    
+    // Replace Turkish words with English
+    Object.entries(translations).forEach(([tr, en]) => {
+      query = query.replace(new RegExp(tr, 'gi'), en);
+    });
+
+    // Remove common Turkish words that don't translate well
+    const stopWords = ['nasıl', 'için', 'ile', 've', 'bir', 'bu', 'şu', 'o', 'en', 'çok', 'mi', 'mı', 'mu', 'mü'];
+    stopWords.forEach(word => {
+      query = query.replace(new RegExp(`\\b${word}\\b`, 'gi'), '');
+    });
+
+    // Clean up extra spaces
+    query = query.replace(/\s+/g, ' ').trim();
+
+    // If query is still mostly Turkish or empty, use generic travel/visa terms
+    if (query.length < 5 || !/[a-z]{3,}/.test(query)) {
+      query = 'travel visa passport document';
+    }
+
+    return query;
+  };
+
   // Filter images
   const filteredImages = images.filter(img => {
     const matchesFilter = filter === 'all' || img.status === filter;
@@ -117,8 +173,12 @@ export default function ImageDetectionPage() {
       setAutoFixProgress({ current: i + 1, total: errorImages.length, currentTitle: img.source.title });
 
       try {
-        // Search Pexels with smart query - get multiple results for variety
-        const searchQuery = img.alt || img.source.title;
+        // Smart query generation - translate Turkish to English for better results
+        const rawQuery = img.alt || img.source.title;
+        const searchQuery = generateSmartQuery(rawQuery);
+        
+        console.log(`🔍 Auto-fix all [${i + 1}/${errorImages.length}]: "${rawQuery}" → "${searchQuery}"`);
+        
         const response = await fetch(`/api/images/generate?prompt=${encodeURIComponent(searchQuery)}&perPage=15`);
         const data = await response.json();
 
@@ -202,8 +262,12 @@ export default function ImageDetectionPage() {
       setAutoFixProgress({ current: i + 1, total: selectedImgs.length, currentTitle: img.source.title });
 
       try {
-        // Search Pexels with smart query - get multiple results for variety
-        const searchQuery = img.alt || img.source.title;
+        // Smart query generation - translate Turkish to English for better results
+        const rawQuery = img.alt || img.source.title;
+        const searchQuery = generateSmartQuery(rawQuery);
+        
+        console.log(`🔍 Auto-fix selected [${i + 1}/${selectedImgs.length}]: "${rawQuery}" → "${searchQuery}"`);
+        
         const response = await fetch(`/api/images/generate?prompt=${encodeURIComponent(searchQuery)}&perPage=15`);
         const data = await response.json();
 
