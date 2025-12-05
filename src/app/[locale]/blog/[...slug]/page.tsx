@@ -16,6 +16,9 @@ interface BlogPageProps {
   params: Promise<{ slug: string[]; locale: string }>;
 }
 
+// Force revalidation - no cache
+export const revalidate = 0;
+
 export async function generateMetadata({ params }: BlogPageProps): Promise<Metadata> {
   const { slug, locale } = await params;
   const fullSlug = `blog/${slug.join("/")}`;

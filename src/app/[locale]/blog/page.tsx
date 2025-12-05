@@ -12,6 +12,9 @@ export const metadata: Metadata = {
     "Vize başvuruları, gerekli belgeler, süreçler ve ipuçları hakkında uzman görüşleri ve rehberler.",
 };
 
+// Force revalidation - no cache
+export const revalidate = 0;
+
 export default async function BlogPage() {
   const blogs = await getBlogs();
 
