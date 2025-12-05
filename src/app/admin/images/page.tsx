@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Search, RefreshCw, Upload, Check, X, AlertCircle, Loader2 } from 'lucide-react';
+import { PexelsImagePicker } from '@/components/admin/PexelsImagePicker';
 
 interface DetectedImage {
   id: string;
@@ -30,9 +31,7 @@ export default function ImageDetectionPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedImage, setSelectedImage] = useState<DetectedImage | null>(null);
   const [showReplaceModal, setShowReplaceModal] = useState(false);
-  const [pexelsQuery, setPexelsQuery] = useState('');
-  const [pexelsResults, setPexelsResults] = useState<any[]>([]);
-  const [loadingPexels, setLoadingPexels] = useState(false);
+  const [showPexelsPicker, setShowPexelsPicker] = useState(false);
   const [replacingImage, setReplacingImage] = useState(false);
   const [uploadingFile, setUploadingFile] = useState(false);
 
@@ -70,27 +69,33 @@ export default function ImageDetectionPage() {
     return matchesFilter && matchesSearch;
   });
 
-  // Search Pexels
-  const searchPexels = async () => {
-    if (!pexelsQuery.trim()) return;
+  // Handle Pexels selection
+  const handlePexelsSelect = async (pexelsUrl: string) => {
+    if (!selectedImage) return;
     
-    setLoadingPexels(true);
+    setReplacingImage(true);
     try {
-      const response = await fetch('/api/images/generate', {
+      // Upload from Pexels URL to Supabase
+      const uploadResponse = await fetch('/api/admin/images/upload-from-url', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: pexelsQuery, perPage: 12 }),
+        body: JSON.stringify({
+          url: pexelsUrl,
+          bucket: selectedImage.source.type === 'blog' ? 'blog-images' : 'country-images',
+        }),
       });
       
-      const data = await response.json();
-      if (data.success) {
-        setPexelsResults(data.photos);
+      const uploadData = await uploadResponse.json();
+      if (uploadData.success) {
+        await replaceImage(uploadData.url);
+      } else {
+        alert('Pexels görseli yüklenemedi: ' + uploadData.error);
       }
     } catch (error) {
-      console.error('Error searching Pexels:', error);
-      alert('Pexels araması başarısız');
+      console.error('Error uploading from Pexels:', error);
+      alert('Pexels görseli yükleme başarısız');
     } finally {
-      setLoadingPexels(false);
+      setReplacingImage(false);
     }
   };
 
@@ -325,7 +330,6 @@ export default function ImageDetectionPage() {
                   <button
                     onClick={() => {
                       setSelectedImage(img);
-                      setPexelsQuery(img.alt || img.source.title);
                       setShowReplaceModal(true);
                     }}
                     className={`w-full rounded-lg px-4 py-2 text-sm font-medium text-white ${
@@ -352,7 +356,6 @@ export default function ImageDetectionPage() {
                   onClick={() => {
                     setShowReplaceModal(false);
                     setSelectedImage(null);
-                    setPexelsResults([]);
                   }}
                   className="text-gray-500 hover:text-gray-700"
                 >
@@ -405,74 +408,26 @@ export default function ImageDetectionPage() {
                 <p className="mb-2 text-center text-sm text-gray-500">veya</p>
               </div>
 
-              {/* Pexels Search */}
-              <div className="mb-4">
-                <label className="mb-2 block text-sm font-medium text-gray-700">
+              {/* Pexels Search Button */}
+              <button
+                onClick={() => setShowPexelsPicker(true)}
+                className="w-full rounded-lg bg-purple-600 px-4 py-3 font-semibold text-white hover:bg-purple-700"
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <Search className="h-5 w-5" />
                   Pexels'ten Ara
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={pexelsQuery}
-                    onChange={(e) => setPexelsQuery(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && searchPexels()}
-                    placeholder="Örn: istanbul turkey travel"
-                    className="flex-1 rounded-lg border border-gray-300 px-4 py-2"
-                  />
-                  <button
-                    onClick={searchPexels}
-                    disabled={loadingPexels}
-                    className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
-                  >
-                    {loadingPexels ? (
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                    ) : (
-                      <Search className="h-5 w-5" />
-                    )}
-                    Ara
-                  </button>
                 </div>
-              </div>
-
-              {/* Pexels Results */}
-              {pexelsResults.length > 0 && (
-                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-                  {pexelsResults.map((photo) => (
-                    <div
-                      key={photo.id}
-                      className="group relative cursor-pointer overflow-hidden rounded-lg bg-gray-100"
-                      onClick={() => replaceImage(photo.url)}
-                    >
-                      <img
-                        src={`/api/images/proxy?url=${encodeURIComponent(photo.thumbnail)}`}
-                        alt={photo.alt}
-                        className="aspect-video w-full object-cover transition-transform group-hover:scale-110"
-                        loading="lazy"
-                        onError={(e) => {
-                          console.error('Image load error:', photo.thumbnail);
-                          // Fallback to direct URL
-                          e.currentTarget.src = photo.thumbnail;
-                        }}
-                      />
-                      <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 transition-all group-hover:bg-opacity-50">
-                        <button
-                          disabled={replacingImage}
-                          className="translate-y-4 opacity-0 transition-all group-hover:translate-y-0 group-hover:opacity-100"
-                        >
-                          <span className="rounded-full bg-white px-4 py-2 text-sm font-medium text-gray-900">
-                            {replacingImage ? 'Değiştiriliyor...' : 'Seç'}
-                          </span>
-                        </button>
-                      </div>
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-2">
-                        <p className="text-xs text-white">{photo.photographer}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+              </button>
             </div>
           </div>
+        )}
+
+        {/* Pexels Picker Modal */}
+        {showPexelsPicker && (
+          <PexelsImagePicker
+            onSelect={handlePexelsSelect}
+            onClose={() => setShowPexelsPicker(false)}
+          />
         )}
       </div>
     </div>
