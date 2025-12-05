@@ -63,60 +63,30 @@ export default function ImageDetectionPage() {
     fetchImages();
   }, []);
 
-  // Smart query generator - translate Turkish to English and extract keywords
-  const generateSmartQuery = (text: string): string => {
-    // Common Turkish to English translations for visa/travel content
-    const translations: Record<string, string> = {
-      'vize': 'visa',
-      'vizesi': 'visa',
-      'nasıl alınır': 'how to get',
-      'başvuru': 'application',
-      'başvurusu': 'application',
-      'gerekli belgeler': 'required documents',
-      'evrak': 'documents',
-      'randevu': 'appointment',
-      'ücret': 'fee',
-      'süreç': 'process',
-      'süreci': 'process',
-      'rehber': 'guide',
-      'rehberi': 'guide',
-      'turist': 'tourist',
-      'seyahat': 'travel',
-      'çalışma': 'work',
-      'öğrenci': 'student',
-      'schengen': 'schengen',
-      'çok girişli': 'multiple entry',
-      'tek girişli': 'single entry',
-      'ülke': 'country',
-      'ülkeler': 'countries',
-      'pasaport': 'passport',
-      'vatandaşlık': 'citizenship',
-      'oturum': 'residence',
-      'izin': 'permit',
-    };
+  // Smart query generator using OpenAI
+  const generateSmartQuery = async (text: string): Promise<string> => {
+    try {
+      const response = await fetch('/api/admin/images/generate-query', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: text }),
+      });
 
-    let query = text.toLowerCase();
-    
-    // Replace Turkish words with English
-    Object.entries(translations).forEach(([tr, en]) => {
-      query = query.replace(new RegExp(tr, 'gi'), en);
-    });
-
-    // Remove common Turkish words that don't translate well
-    const stopWords = ['nasıl', 'için', 'ile', 've', 'bir', 'bu', 'şu', 'o', 'en', 'çok', 'mi', 'mı', 'mu', 'mü'];
-    stopWords.forEach(word => {
-      query = query.replace(new RegExp(`\\b${word}\\b`, 'gi'), '');
-    });
-
-    // Clean up extra spaces
-    query = query.replace(/\s+/g, ' ').trim();
-
-    // If query is still mostly Turkish or empty, use generic travel/visa terms
-    if (query.length < 5 || !/[a-z]{3,}/.test(query)) {
-      query = 'travel visa passport document';
+      const data = await response.json();
+      
+      if (data.success && data.query) {
+        if (data.fallback) {
+          console.log(`⚠️ OpenAI fallback for: "${text}"`);
+        }
+        return data.query;
+      }
+      
+      // Fallback
+      return 'travel visa passport document';
+    } catch (error) {
+      console.error('Smart query generation error:', error);
+      return 'travel visa passport document';
     }
-
-    return query;
   };
 
   // Filter images
@@ -173,9 +143,9 @@ export default function ImageDetectionPage() {
       setAutoFixProgress({ current: i + 1, total: errorImages.length, currentTitle: img.source.title });
 
       try {
-        // Smart query generation - translate Turkish to English for better results
+        // Smart query generation using OpenAI - translate Turkish to English
         const rawQuery = img.alt || img.source.title;
-        const searchQuery = generateSmartQuery(rawQuery);
+        const searchQuery = await generateSmartQuery(rawQuery);
         
         console.log(`🔍 Auto-fix all [${i + 1}/${errorImages.length}]: "${rawQuery}" → "${searchQuery}"`);
         
@@ -262,9 +232,9 @@ export default function ImageDetectionPage() {
       setAutoFixProgress({ current: i + 1, total: selectedImgs.length, currentTitle: img.source.title });
 
       try {
-        // Smart query generation - translate Turkish to English for better results
+        // Smart query generation using OpenAI - translate Turkish to English
         const rawQuery = img.alt || img.source.title;
-        const searchQuery = generateSmartQuery(rawQuery);
+        const searchQuery = await generateSmartQuery(rawQuery);
         
         console.log(`🔍 Auto-fix selected [${i + 1}/${selectedImgs.length}]: "${rawQuery}" → "${searchQuery}"`);
         
