@@ -16,10 +16,13 @@ import {
 interface UnifiedAIAssistantProps {
   type: "blog" | "country" | "page";
   onGenerate: (data: {
-    title: string;
-    description: string;
-    contents: string;
+    title?: string;
+    description?: string;
+    contents?: string;
     image_url?: string;
+    slug?: string;
+    meta_title?: string;
+    meta_description?: string;
   }) => void;
   initialTopic?: string;
   countryName?: string;
@@ -41,6 +44,10 @@ export function UnifiedAIAssistant({
   const [imageCount, setImageCount] = useState(3);
   const [progress, setProgress] = useState<string[]>([]);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [tone, setTone] = useState<"informative" | "friendly" | "formal">("informative");
+  const [language, setLanguage] = useState<"tr" | "en">("tr");
+  const [wordCount, setWordCount] = useState(1500);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const addProgress = (message: string) => {
     setProgress(prev => [...prev, message]);
@@ -142,9 +149,10 @@ export function UnifiedAIAssistant({
       const requestBody: any = {
         title: finalTopic,
         keywords: [],
-        tone: 'informative',
-        language: 'tr',
+        tone: tone,
+        language: language,
         type: type,
+        wordCount: wordCount,
       };
 
       // Add additional context if provided
@@ -187,10 +195,13 @@ export function UnifiedAIAssistant({
       addProgress("🎉 Tamamlandı!");
 
       onGenerate({
-        title: data.title || finalTopic,
+        title: data.meta_title || data.title || finalTopic,
         description: data.meta_description || "",
         contents: finalContent,
         image_url: coverImage,
+        slug: data.slug || "",
+        meta_title: data.meta_title || "",
+        meta_description: data.meta_description || "",
       });
 
       alert(
@@ -488,6 +499,111 @@ export function UnifiedAIAssistant({
                 ? "AI, mevcut içeriği bu talimatlarınıza göre geliştirecek"
                 : "Bu bilgiler AI tarafından içerik oluştururken dikkate alınacak"}
             </p>
+          </div>
+
+          {/* Advanced Settings */}
+          <div className="space-y-3">
+            <button
+              type="button"
+              onClick={() => setShowAdvanced(!showAdvanced)}
+              className="flex items-center gap-2 text-sm font-semibold text-purple-700 hover:text-purple-900 transition-colors"
+            >
+              {showAdvanced ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              Gelişmiş Ayarlar
+            </button>
+
+            {showAdvanced && (
+              <div className="space-y-3 rounded-lg bg-white p-4 border border-purple-200">
+                {/* Tone Selection */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-slate-700">Yazım Tonu</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setTone("informative")}
+                      className={`rounded-lg px-3 py-2 text-xs font-medium transition-all ${
+                        tone === "informative"
+                          ? "bg-purple-600 text-white"
+                          : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                      }`}
+                    >
+                      📚 Bilgilendirici
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setTone("friendly")}
+                      className={`rounded-lg px-3 py-2 text-xs font-medium transition-all ${
+                        tone === "friendly"
+                          ? "bg-purple-600 text-white"
+                          : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                      }`}
+                    >
+                      😊 Samimi
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setTone("formal")}
+                      className={`rounded-lg px-3 py-2 text-xs font-medium transition-all ${
+                        tone === "formal"
+                          ? "bg-purple-600 text-white"
+                          : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                      }`}
+                    >
+                      🎩 Resmi
+                    </button>
+                  </div>
+                </div>
+
+                {/* Word Count */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-slate-700">
+                    Hedef Kelime Sayısı: {wordCount}
+                  </label>
+                  <input
+                    type="range"
+                    min="500"
+                    max="3000"
+                    step="100"
+                    value={wordCount}
+                    onChange={(e) => setWordCount(parseInt(e.target.value))}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-xs text-slate-500">
+                    <span>500 kelime</span>
+                    <span>3000 kelime</span>
+                  </div>
+                </div>
+
+                {/* Language Selection */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-slate-700">Dil</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setLanguage("tr")}
+                      className={`rounded-lg px-3 py-2 text-xs font-medium transition-all ${
+                        language === "tr"
+                          ? "bg-purple-600 text-white"
+                          : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                      }`}
+                    >
+                      🇹🇷 Türkçe
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setLanguage("en")}
+                      className={`rounded-lg px-3 py-2 text-xs font-medium transition-all ${
+                        language === "en"
+                          ? "bg-purple-600 text-white"
+                          : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                      }`}
+                    >
+                      🇬🇧 English
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Image Options (not for improve mode) */}

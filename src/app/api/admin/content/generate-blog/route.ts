@@ -11,7 +11,14 @@ const openai = new OpenAI({
  */
 export async function POST(request: NextRequest) {
   try {
-    const { title, keywords = [], tone = 'informative', language = 'tr', additionalContext = '' } = await request.json();
+    const { 
+      title, 
+      keywords = [], 
+      tone = 'informative', 
+      language = 'tr', 
+      additionalContext = '',
+      wordCount = 1500 
+    } = await request.json();
 
     if (!title) {
       return NextResponse.json(
@@ -34,7 +41,7 @@ Kurallar:
 7. Sonuç bölümü ekle
 8. SEO-friendly anahtar kelimeleri doğal şekilde kullan
 9. Ton: ${tone === 'informative' ? 'Bilgilendirici ve profesyonel' : tone === 'friendly' ? 'Samimi ve yardımsever' : 'Resmi ve detaylı'}
-10. Minimum 1000 kelime
+10. Hedef kelime sayısı: ${wordCount} kelime (minimum ${Math.floor(wordCount * 0.8)}, maksimum ${Math.floor(wordCount * 1.2)})
 11. Gerçek, güncel bilgiler ver
 12. Adım adım açıklamalar yap
 
@@ -66,7 +73,7 @@ Rules:
 7. Add conclusion section
 8. Use SEO-friendly keywords naturally
 9. Tone: ${tone === 'informative' ? 'Informative and professional' : tone === 'friendly' ? 'Friendly and helpful' : 'Formal and detailed'}
-10. Minimum 1000 words
+10. Target word count: ${wordCount} words (minimum ${Math.floor(wordCount * 0.8)}, maximum ${Math.floor(wordCount * 1.2)})
 11. Provide real, up-to-date information
 12. Step-by-step explanations
 
@@ -154,10 +161,10 @@ Structure:
     }
 
     // Calculate reading time (average 200 words per minute)
-    const wordCount = content.split(/\s+/).length;
-    const readingTime = Math.ceil(wordCount / 200);
+    const actualWordCount = content.split(/\s+/).length;
+    const readingTime = Math.ceil(actualWordCount / 200);
 
-    console.log(`✅ Generated ${wordCount} words, ${readingTime} min read`);
+    console.log(`✅ Generated ${actualWordCount} words, ${readingTime} min read`);
 
     return NextResponse.json({
       success: true,
@@ -166,7 +173,7 @@ Structure:
       meta_description: metadata.meta_description,
       slug: metadata.slug,
       tags: metadata.tags,
-      word_count: wordCount,
+      word_count: actualWordCount,
       reading_time: readingTime,
     });
   } catch (error: any) {
