@@ -24,6 +24,16 @@ export async function middleware(request: NextRequest) {
   const redirects: Record<string, string> = {
     "/danisman": "/danismanlar",
     "/basvuru": "/vize-basvuru-formu",
+    // Danışman redirects (404 fixes)
+    "/danisman/yildiray": "/danismanlar",
+    "/danisman/kubra": "/danismanlar",
+    "/danisman/buse-calik": "/danismanlar",
+    "/danisman/gurhan": "/danismanlar",
+    "/danisman/kolay-seyahat": "/danismanlar",
+    // Country sub-page redirects (404 fixes)
+    "/kuveyt/kuveyt-gezilecek-yerler": "/blog/kuveyt-gezilecek-yerler",
+    "/amerika/danismanlik-paketleri": "/amerika",
+    "/amerika/tum-sorular": "/amerika",
     // Blog redirects (old URLs to new blog URLs)
     "/kuveyt-gezilecek-yerler": "/blog/kuveyt-gezilecek-yerler",
     "/kapida-vize-isteyen-ulkeler": "/blog/kapida-vize-isteyen-ulkeler",

@@ -11,7 +11,7 @@ async function getCustomPages() {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = "https://kolayseyahat.net";
+  const baseUrl = "https://www.kolayseyahat.net";
   const locales = ["tr", "en"];
 
   const [countries, blogs, customPages] = await Promise.all([
@@ -146,7 +146,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   });
 
   const blogPages = blogs.map((blog: any) => ({
-    url: `${baseUrl}/blog/${blog.type || "genel"}/${blog.id}`,
+    url: blog.slug ? `${baseUrl}/blog/${blog.slug}` : `${baseUrl}/blog/${blog.id}`,
     lastModified: new Date(blog.updated_at || blog.created_at),
     changeFrequency: "monthly" as const,
     priority: 0.6,
