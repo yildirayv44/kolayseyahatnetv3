@@ -8,6 +8,7 @@ import Link from "next/link";
 import { RichTextEditor } from "./RichTextEditor";
 import { ImageUrlFixer } from "./ImageUrlFixer";
 import { AIContentGenerator } from "./AIContentGenerator";
+import { AdvancedAIGenerator } from "./AdvancedAIGenerator";
 import { ImageUpload } from "./ImageUpload";
 
 export function BlogEditForm({ blog }: { blog: any }) {
@@ -267,6 +268,23 @@ export function BlogEditForm({ blog }: { blog: any }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Advanced AI Generator */}
+      {activeLocale === 'tr' && (
+        <AdvancedAIGenerator
+          type="blog"
+          initialTopic={formData.title}
+          onGenerate={(data) => {
+            setFormData({
+              ...formData,
+              title: data.title || formData.title,
+              description: data.description || formData.description,
+              contents: data.contents,
+              image_url: data.image_url || formData.image_url,
+            });
+          }}
+        />
+      )}
+
       {/* AI Tools Bar */}
       {activeLocale === 'tr' && (
         <div className="card bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-200">

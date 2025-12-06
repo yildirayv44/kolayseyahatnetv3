@@ -7,6 +7,7 @@ import { Save, ArrowLeft, Sparkles, Search, CheckCircle, Languages, Loader2 } fr
 import Link from "next/link";
 import { RichTextEditor } from "./RichTextEditor";
 import { AIContentGenerator } from "./AIContentGenerator";
+import { AdvancedAIGenerator } from "./AdvancedAIGenerator";
 import { ImageUpload } from "./ImageUpload";
 
 export function BlogCreateForm() {
@@ -214,6 +215,20 @@ export function BlogCreateForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Advanced AI Generator */}
+      <AdvancedAIGenerator
+        type="blog"
+        onGenerate={(data) => {
+          setFormData({
+            ...formData,
+            title: data.title,
+            description: data.description,
+            contents: data.contents,
+            image_url: data.image_url || formData.image_url,
+          });
+        }}
+      />
+
       {/* AI Tools Bar */}
       <div className="card bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-200">
         <div className="flex items-center justify-between mb-4">
