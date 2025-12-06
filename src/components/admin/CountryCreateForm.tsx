@@ -23,6 +23,10 @@ export function CountryCreateForm() {
     contents: "",
     req_document: "",
     price_contents: "",
+    process_time: "7-14 Gün",
+    visa_required: true,
+    visa_type: "",
+    price_range: "",
     image_url: "",
     price: "",
     original_price: "",
@@ -247,6 +251,69 @@ export function CountryCreateForm() {
             onChange={(value) => setFormData({ ...formData, contents: value })}
             placeholder="Ülke hakkında detaylı bilgi yazın..."
           />
+        </div>
+
+        {/* Hızlı Bilgiler */}
+        <div className="space-y-4 rounded-lg border-2 border-blue-200 bg-blue-50/50 p-6">
+          <h3 className="text-lg font-bold text-slate-900">📊 Hızlı Bilgiler</h3>
+          <p className="text-sm text-slate-600">
+            Ülke detay sayfasında gösterilecek temel bilgiler
+          </p>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold text-slate-900">
+                İşlem Süresi
+              </label>
+              <input
+                type="text"
+                value={formData.process_time}
+                onChange={(e) => setFormData({ ...formData, process_time: e.target.value })}
+                className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                placeholder="Örn: 7-14 Gün"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold text-slate-900">
+                Vize Gerekli mi?
+              </label>
+              <select
+                value={formData.visa_required ? "true" : "false"}
+                onChange={(e) => setFormData({ ...formData, visa_required: e.target.value === "true" })}
+                className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              >
+                <option value="true">Evet</option>
+                <option value="false">Hayır (Vizesiz)</option>
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold text-slate-900">
+                Vize Türü
+              </label>
+              <input
+                type="text"
+                value={formData.visa_type}
+                onChange={(e) => setFormData({ ...formData, visa_type: e.target.value })}
+                className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                placeholder="Örn: E-vize, Kapıda Vize, Klasik Vize"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold text-slate-900">
+                Ücret Aralığı
+              </label>
+              <input
+                type="text"
+                value={formData.price_range}
+                onChange={(e) => setFormData({ ...formData, price_range: e.target.value })}
+                className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                placeholder="Örn: 400 USD - 1.200 USD"
+              />
+            </div>
+          </div>
         </div>
 
         <div className="space-y-2">
