@@ -140,7 +140,8 @@ function calculateSEOScore(item: any, type: string): SEOScore {
   // Generate URL
   let url = '';
   if (type === 'blog') {
-    url = `/blog/${item.id}`;
+    // Use slug if available, otherwise use ID
+    url = item.slug ? `/blog/${item.slug}` : `/blog/${item.id}`;
   } else if (type === 'country') {
     const slug = item.slug || item.name?.toLowerCase().replace(/\s+/g, '-');
     url = `/${slug}`;
@@ -180,10 +181,14 @@ export async function GET(request: NextRequest) {
     if (!type || type === 'all' || type === 'blog') {
       const { data: blogs, error: blogsError } = await supabase
         .from('blogs')
-        .select('id, title, meta_title, description, contents, status')
-        .eq('status', 1); // Only published
+        .select('id, title, slug, meta_title, description, contents, status');
+        // Removed status filter to show all blogs
 
-      if (!blogsError && blogs) {
+      if (blogsError) {
+        console.error('Blogs fetch error:', blogsError);
+      }
+
+      if (blogs && blogs.length > 0) {
         blogs.forEach(blog => {
           results.push(calculateSEOScore(blog, 'blog'));
         });
@@ -194,10 +199,14 @@ export async function GET(request: NextRequest) {
     if (!type || type === 'all' || type === 'country') {
       const { data: countries, error: countriesError } = await supabase
         .from('countries')
-        .select('id, name, slug, title, meta_title, description, contents, status')
-        .eq('status', 1); // Only published
+        .select('id, name, slug, title, meta_title, description, contents, status');
+        // Removed status filter to show all countries
 
-      if (!countriesError && countries) {
+      if (countriesError) {
+        console.error('Countries fetch error:', countriesError);
+      }
+
+      if (countries && countries.length > 0) {
         countries.forEach(country => {
           results.push(calculateSEOScore(country, 'country'));
         });
@@ -208,10 +217,14 @@ export async function GET(request: NextRequest) {
     if (!type || type === 'all' || type === 'page') {
       const { data: pages, error: pagesError } = await supabase
         .from('custom_pages')
-        .select('id, slug, title, meta_description, content, is_published')
-        .eq('is_published', true);
+        .select('id, slug, title, meta_description, content, is_published');
+        // Removed is_published filter to show all pages
 
-      if (!pagesError && pages) {
+      if (pagesError) {
+        console.error('Pages fetch error:', pagesError);
+      }
+
+      if (pages && pages.length > 0) {
         pages.forEach(page => {
           results.push(calculateSEOScore(page, 'page'));
         });
