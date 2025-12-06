@@ -20,6 +20,7 @@ interface SEOScore {
   has_meta_description: boolean;
   has_content: boolean;
   status: 'excellent' | 'good' | 'needs_improvement' | 'poor';
+  publish_status: 'published' | 'draft';
 }
 
 interface Stats {
@@ -273,10 +274,13 @@ export default function SEOAnaliziPage() {
                     TİP
                   </th>
                   <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600">
+                    YAYIM
+                  </th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600">
                     SKOR
                   </th>
                   <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600">
-                    DURUM
+                    SEO DURUM
                   </th>
                   <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600">
                     META
@@ -299,6 +303,15 @@ export default function SEOAnaliziPage() {
                     <td className="px-4 py-4 text-center">
                       <span className={`inline-block rounded-full px-2 py-1 text-xs font-semibold ${getTypeColor(item.type)}`}>
                         {getTypeText(item.type)}
+                      </span>
+                    </td>
+                    <td className="px-4 py-4 text-center">
+                      <span className={`inline-block rounded-full px-2 py-1 text-xs font-semibold ${
+                        item.publish_status === 'published'
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-orange-100 text-orange-700'
+                      }`}>
+                        {item.publish_status === 'published' ? '✓ Yayında' : '○ Taslak'}
                       </span>
                     </td>
                     <td className="px-4 py-4 text-center">

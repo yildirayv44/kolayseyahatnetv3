@@ -17,6 +17,7 @@ interface SEOScore {
   has_meta_description: boolean;
   has_content: boolean;
   status: 'excellent' | 'good' | 'needs_improvement' | 'poor';
+  publish_status: 'published' | 'draft';
 }
 
 function analyzeContent(content: string): {
@@ -149,6 +150,14 @@ function calculateSEOScore(item: any, type: string): SEOScore {
     url = `/${item.slug}`;
   }
 
+  // Determine publish status
+  let publish_status: 'published' | 'draft' = 'draft';
+  if (type === 'blog' || type === 'country') {
+    publish_status = item.status === 1 ? 'published' : 'draft';
+  } else if (type === 'page') {
+    publish_status = item.is_published ? 'published' : 'draft';
+  }
+
   return {
     id: item.id,
     type: type as any,
@@ -165,6 +174,7 @@ function calculateSEOScore(item: any, type: string): SEOScore {
     has_meta_description,
     has_content,
     status,
+    publish_status,
   };
 }
 
