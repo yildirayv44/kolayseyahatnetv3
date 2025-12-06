@@ -10,8 +10,15 @@ import {
   Wand2,
   RefreshCw,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Lightbulb,
+  Link as LinkIcon,
+  HelpCircle,
+  Eye,
+  AlertCircle
 } from "lucide-react";
+import { getTemplateNames } from "@/lib/ai-templates";
+import { generateFAQ, findInternalLinks, generateTonePreviews, suggestVisualContent } from "@/lib/ai-helpers";
 
 interface UnifiedAIAssistantProps {
   type: "blog" | "country" | "page";
@@ -48,6 +55,16 @@ export function UnifiedAIAssistant({
   const [language, setLanguage] = useState<"tr" | "en">("tr");
   const [wordCount, setWordCount] = useState(1500);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  
+  // New feature states
+  const [selectedTemplate, setSelectedTemplate] = useState<string>("");
+  const [showTemplates, setShowTemplates] = useState(false);
+  const [showTonePreview, setShowTonePreview] = useState(false);
+  const [tonePreview, setTonePreview] = useState<any>(null);
+  const [loadingPreview, setLoadingPreview] = useState(false);
+  const [enableFAQ, setEnableFAQ] = useState(true);
+  const [enableInternalLinks, setEnableInternalLinks] = useState(true);
+  const [enableVisualSuggestions, setEnableVisualSuggestions] = useState(true);
 
   const addProgress = (message: string) => {
     setProgress(prev => [...prev, message]);
@@ -131,6 +148,26 @@ export function UnifiedAIAssistant({
     return modifiedContent;
   };
 
+  const handleTonePreview = async () => {
+    const previewTopic = countryName || topic;
+    if (!previewTopic.trim()) {
+      alert("Lütfen önce bir konu girin!");
+      return;
+    }
+
+    setLoadingPreview(true);
+    try {
+      const previews = await generateTonePreviews(previewTopic);
+      setTonePreview(previews);
+      setShowTonePreview(true);
+    } catch (error) {
+      console.error("Tone preview error:", error);
+      alert("Ton önizlemesi oluşturulamadı");
+    } finally {
+      setLoadingPreview(false);
+    }
+  };
+
   const handleFullGeneration = async () => {
     if (!topic.trim() && !countryName) {
       alert("Lütfen bir konu girin!");
@@ -179,6 +216,63 @@ export function UnifiedAIAssistant({
 
       if (includeImages) {
         finalContent = await insertImagesIntoContent(finalContent, finalTopic);
+      }
+
+      // Add FAQ if enabled
+      if (enableFAQ) {
+        addProgress("❓ SSS oluşturuluyor...");
+        try {
+          const faqs = await generateFAQ(finalContent, 5);
+          if (faqs.length > 0) {
+            let faqSection = '\n\n## Sıkça Sorulan Sorular\n\n';
+            faqs.forEach((faq, index) => {
+              faqSection += `### ${index + 1}. ${faq.question}\n\n${faq.answer}\n\n`;
+            });
+            finalContent += faqSection;
+            addProgress(`✅ ${faqs.length} SSS eklendi`);
+          }
+        } catch (error) {
+          console.error("FAQ generation failed:", error);
+        }
+      }
+
+      // Add internal links if enabled
+      if (enableInternalLinks) {
+        addProgress("🔗 İç linkler aranıyor...");
+        try {
+          const links = await findInternalLinks(finalContent);
+          if (links.length > 0) {
+            // Insert links into content
+            for (const link of links.slice(0, 5)) {
+              const regex = new RegExp(`\\b${link.text}\\b`, 'i');
+              if (regex.test(finalContent) && !finalContent.includes(`[${link.text}]`)) {
+                finalContent = finalContent.replace(regex, `[${link.text}](${link.url})`);
+              }
+            }
+            addProgress(`✅ ${links.length} iç link eklendi`);
+          }
+        } catch (error) {
+          console.error("Internal links failed:", error);
+        }
+      }
+
+      // Add visual suggestions if enabled
+      if (enableVisualSuggestions) {
+        addProgress("🎨 Görsel önerileri oluşturuluyor...");
+        try {
+          const visualSuggestions = await suggestVisualContent(finalTopic, type);
+          if (visualSuggestions.length > 0) {
+            let suggestionsComment = '\n\n<!-- Görsel Önerileri:\n';
+            visualSuggestions.forEach((s, i) => {
+              suggestionsComment += `${i + 1}. ${s.type.toUpperCase()}: ${s.topic}\n   ${s.description}\n   Öncelik: ${s.priority}\n\n`;
+            });
+            suggestionsComment += '-->\n';
+            finalContent += suggestionsComment;
+            addProgress(`✅ ${visualSuggestions.length} görsel önerisi eklendi`);
+          }
+        } catch (error) {
+          console.error("Visual suggestions failed:", error);
+        }
       }
 
       let coverImage = "";
@@ -445,12 +539,62 @@ export function UnifiedAIAssistant({
             </p>
           </div>
 
+          {/* Template Selector */}
+          {mode === "full" && (
+            <div className="space-y-2">
+              <button
+                type="button"
+                onClick={() => setShowTemplates(!showTemplates)}
+                className="flex items-center gap-2 text-sm font-semibold text-purple-700 hover:text-purple-900 transition-colors"
+              >
+                <Lightbulb className="h-4 w-4" />
+                {showTemplates ? "Şablonları Gizle" : "Hazır Şablonlar"}
+              </button>
+
+              {showTemplates && (
+                <div className="grid grid-cols-2 gap-2">
+                  {getTemplateNames().map((template) => (
+                    <button
+                      key={template.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedTemplate(template.id);
+                        setTopic(template.name);
+                      }}
+                      className={`rounded-lg p-3 text-left text-xs transition-all ${
+                        selectedTemplate === template.id
+                          ? "bg-purple-600 text-white"
+                          : "bg-white text-slate-700 hover:bg-purple-50 border border-purple-200"
+                      }`}
+                    >
+                      <div className="font-semibold">{template.name}</div>
+                      <div className="text-xs opacity-80 mt-1">{template.description}</div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Topic Input (for full and content modes) */}
           {(mode === "full" || mode === "content") && !countryName && (
             <div className="space-y-2">
-              <label className="block text-sm font-semibold text-slate-700">
-                {type === "blog" ? "Blog Konusu" : type === "country" ? "Ülke Adı" : "Sayfa Konusu"} *
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="block text-sm font-semibold text-slate-700">
+                  {type === "blog" ? "Blog Konusu" : type === "country" ? "Ülke Adı" : "Sayfa Konusu"} *
+                </label>
+                {topic && (
+                  <button
+                    type="button"
+                    onClick={handleTonePreview}
+                    disabled={loadingPreview}
+                    className="flex items-center gap-1 text-xs text-purple-600 hover:text-purple-800 transition-colors"
+                  >
+                    <Eye className="h-3 w-3" />
+                    {loadingPreview ? "Yükleniyor..." : "Ton Önizleme"}
+                  </button>
+                )}
+              </div>
               <input
                 type="text"
                 value={topic}
@@ -651,6 +795,128 @@ export function UnifiedAIAssistant({
             </div>
           )}
 
+          {/* AI Features Toggles */}
+          {mode !== "improve" && (
+            <div className="space-y-3 rounded-lg bg-white p-4 border border-purple-200">
+              <div className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                <Sparkles className="h-4 w-4 text-purple-600" />
+                AI Özellikleri
+              </div>
+              
+              <div className="space-y-2">
+                {/* FAQ Toggle */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <HelpCircle className="h-4 w-4 text-slate-500" />
+                    <span className="text-xs text-slate-700">Otomatik SSS Ekle</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setEnableFAQ(!enableFAQ)}
+                    className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                      enableFAQ ? 'bg-purple-600' : 'bg-slate-300'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                        enableFAQ ? 'translate-x-5' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                {/* Internal Links Toggle */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <LinkIcon className="h-4 w-4 text-slate-500" />
+                    <span className="text-xs text-slate-700">Otomatik İç Link Ekle</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setEnableInternalLinks(!enableInternalLinks)}
+                    className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                      enableInternalLinks ? 'bg-purple-600' : 'bg-slate-300'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                        enableInternalLinks ? 'translate-x-5' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                {/* Visual Suggestions Toggle */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <ImageIcon className="h-4 w-4 text-slate-500" />
+                    <span className="text-xs text-slate-700">Görsel Önerileri Ekle</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setEnableVisualSuggestions(!enableVisualSuggestions)}
+                    className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                      enableVisualSuggestions ? 'bg-purple-600' : 'bg-slate-300'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                        enableVisualSuggestions ? 'translate-x-5' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+              </div>
+
+              <p className="text-xs text-slate-500 mt-2">
+                Bu özellikler içeriğinizi otomatik olarak zenginleştirir
+              </p>
+            </div>
+          )}
+
+          {/* Tone Preview Modal */}
+          {showTonePreview && tonePreview && (
+            <div className="space-y-3 rounded-lg bg-white p-4 border-2 border-purple-300">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm font-semibold text-purple-700">
+                  <Eye className="h-4 w-4" />
+                  Ton Önizlemeleri
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowTonePreview(false)}
+                  className="text-xs text-slate-500 hover:text-slate-700"
+                >
+                  Kapat
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                {/* Informative Preview */}
+                <div className="rounded-lg bg-blue-50 p-3 border border-blue-200">
+                  <div className="text-xs font-semibold text-blue-700 mb-1">📚 Bilgilendirici</div>
+                  <p className="text-xs text-blue-900">{tonePreview.informative}</p>
+                </div>
+
+                {/* Friendly Preview */}
+                <div className="rounded-lg bg-green-50 p-3 border border-green-200">
+                  <div className="text-xs font-semibold text-green-700 mb-1">😊 Samimi</div>
+                  <p className="text-xs text-green-900">{tonePreview.friendly}</p>
+                </div>
+
+                {/* Formal Preview */}
+                <div className="rounded-lg bg-slate-50 p-3 border border-slate-200">
+                  <div className="text-xs font-semibold text-slate-700 mb-1">🎩 Resmi</div>
+                  <p className="text-xs text-slate-900">{tonePreview.formal}</p>
+                </div>
+              </div>
+
+              <p className="text-xs text-slate-500 italic">
+                💡 İpucu: Yukarıdaki tonlardan birini seçerek içeriğinizin stilini belirleyebilirsiniz
+              </p>
+            </div>
+          )}
+
           {/* Progress */}
           {progress.length > 0 && (
             <div className="space-y-2 rounded-lg bg-white p-4 border border-purple-200">
@@ -702,11 +968,14 @@ export function UnifiedAIAssistant({
             <ul className="mt-2 space-y-1 text-xs text-blue-700">
               {mode === "full" && (
                 <>
-                  <li>• 📝 Profesyonel başlık</li>
-                  <li>• 📄 SEO-optimized açıklama</li>
-                  <li>• 📚 1200+ kelime detaylı içerik</li>
+                  <li>• 📝 Profesyonel başlık ve slug</li>
+                  <li>• 📄 SEO-optimized meta bilgiler</li>
+                  <li>• 📚 {wordCount} kelime hedefli içerik</li>
                   <li>• 🖼️ Kapak görseli {includeImages && '(Pexels)'}</li>
                   {includeImages && <li>• 📸 İçeriğe {imageCount} adet görsel eklenir</li>}
+                  {enableFAQ && <li>• ❓ Otomatik SSS bölümü</li>}
+                  {enableInternalLinks && <li>• 🔗 Akıllı iç linkler</li>}
+                  {enableVisualSuggestions && <li>• 🎨 Görsel önerileri</li>}
                   {additionalContext && <li>• 💡 Ek bilgileriniz dikkate alınır</li>}
                 </>
               )}
