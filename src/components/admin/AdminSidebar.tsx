@@ -17,6 +17,7 @@ import {
   Mail,
   UserPlus,
   Image,
+  TrendingUp,
 } from "lucide-react";
 import { signOut } from "@/lib/auth";
 import { useRouter } from "next/navigation";
@@ -27,6 +28,7 @@ const menuItems = [
   { href: "/admin/vize-paketleri", label: "Vize Paketleri", icon: Package },
   { href: "/admin/bloglar", label: "Bloglar", icon: FileText },
   { href: "/admin/images", label: "Görsel Tespiti", icon: Image },
+  { href: "/admin/seo-analizi", label: "SEO Analizi", icon: TrendingUp },
   { href: "/admin/sorular", label: "Sorular", icon: HelpCircle },
   { href: "/admin/danismanlar", label: "Danışmanlar", icon: Users },
   { href: "/admin/sayfalar", label: "Sayfa Yönetimi", icon: FileCode },
