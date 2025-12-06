@@ -11,7 +11,7 @@ const openai = new OpenAI({
  */
 export async function POST(request: NextRequest) {
   try {
-    const { title, keywords = [], tone = 'informative', language = 'tr' } = await request.json();
+    const { title, keywords = [], tone = 'informative', language = 'tr', additionalContext = '' } = await request.json();
 
     if (!title) {
       return NextResponse.json(
@@ -86,11 +86,17 @@ Structure:
 ## Conclusion
 [Summary and important notes]`;
 
-    const userPrompt = keywords.length > 0
-      ? `Başlık: ${title}\nAnahtar Kelimeler: ${keywords.join(', ')}`
-      : `Başlık: ${title}`;
+    let userPrompt = `Başlık: ${title}`;
+    
+    if (keywords.length > 0) {
+      userPrompt += `\nAnahtar Kelimeler: ${keywords.join(', ')}`;
+    }
+    
+    if (additionalContext.trim()) {
+      userPrompt += `\n\nEk Bilgiler ve Talimatlar:\n${additionalContext}`;
+    }
 
-    console.log(`🤖 Generating blog content for: "${title}"`);
+    console.log(`🤖 Generating blog content for: "${title}"${additionalContext ? ' (with additional context)' : ''}`);
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o',

@@ -6,8 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { Save, ArrowLeft, Sparkles, Search, CheckCircle, Languages, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { RichTextEditor } from "./RichTextEditor";
-import { AIContentGenerator } from "./AIContentGenerator";
-import { AdvancedAIGenerator } from "./AdvancedAIGenerator";
+import { UnifiedAIAssistant } from "./UnifiedAIAssistant";
 import { ImageUpload } from "./ImageUpload";
 
 export function BlogCreateForm() {
@@ -215,15 +214,16 @@ export function BlogCreateForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Advanced AI Generator */}
-      <AdvancedAIGenerator
+      {/* Unified AI Assistant */}
+      <UnifiedAIAssistant
         type="blog"
+        currentContent={formData.contents}
         onGenerate={(data) => {
           setFormData({
             ...formData,
-            title: data.title,
-            description: data.description,
-            contents: data.contents,
+            title: data.title || formData.title,
+            description: data.description || formData.description,
+            contents: data.contents || formData.contents,
             image_url: data.image_url || formData.image_url,
           });
         }}
@@ -358,12 +358,6 @@ export function BlogCreateForm() {
           <label className="block text-sm font-semibold text-slate-900">
             İçerik
           </label>
-          
-          <AIContentGenerator
-            type="blog"
-            currentContent={formData.contents}
-            onGenerate={(content) => setFormData({ ...formData, contents: content })}
-          />
           
           <RichTextEditor
             value={formData.contents}

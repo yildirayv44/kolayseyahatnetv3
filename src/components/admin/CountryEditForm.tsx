@@ -7,8 +7,7 @@ import { Save, ArrowLeft, Languages, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { RichTextEditor } from "./RichTextEditor";
 import { ImageUrlFixer } from "./ImageUrlFixer";
-import { AIContentGenerator } from "./AIContentGenerator";
-import { AdvancedAIGenerator } from "./AdvancedAIGenerator";
+import { UnifiedAIAssistant } from "./UnifiedAIAssistant";
 import { ImageUpload } from "./ImageUpload";
 import { generateSlug } from "@/lib/helpers";
 
@@ -114,21 +113,24 @@ export function CountryEditForm({ country }: { country: any }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Advanced AI Generator */}
-      <AdvancedAIGenerator
-        type="country"
-        countryName={formData.name}
-        onGenerate={(data) => {
-          setFormData({
-            ...formData,
-            title: data.title || formData.title,
-            meta_title: data.title || formData.meta_title,
-            description: data.description || formData.description,
-            contents: data.contents,
-            image_url: data.image_url || formData.image_url,
-          });
-        }}
-      />
+      {/* Unified AI Assistant */}
+      {activeLocale === 'tr' && (
+        <UnifiedAIAssistant
+          type="country"
+          countryName={formData.name}
+          currentContent={formData.contents}
+          onGenerate={(data) => {
+            setFormData({
+              ...formData,
+              title: data.title || formData.title,
+              meta_title: data.title || formData.meta_title,
+              description: data.description || formData.description,
+              contents: data.contents || formData.contents,
+              image_url: data.image_url || formData.image_url,
+            });
+          }}
+        />
+      )}
 
       <div className="card">
         <div className="flex items-center justify-between border-b border-slate-200 pb-4">
@@ -280,13 +282,6 @@ export function CountryEditForm({ country }: { country: any }) {
           
           {activeLocale === 'tr' && (
             <>
-              <AIContentGenerator
-                type="country"
-                currentContent={formData.contents}
-                countryName={formData.name}
-                onGenerate={(content) => setFormData({ ...formData, contents: content })}
-              />
-              
               <ImageUrlFixer
                 content={formData.contents}
                 onFix={(fixedContent) => setFormData({ ...formData, contents: fixedContent })}

@@ -7,8 +7,7 @@ import { Save, ArrowLeft, Languages, Loader2, Sparkles, Search, CheckCircle } fr
 import Link from "next/link";
 import { RichTextEditor } from "./RichTextEditor";
 import { ImageUrlFixer } from "./ImageUrlFixer";
-import { AIContentGenerator } from "./AIContentGenerator";
-import { AdvancedAIGenerator } from "./AdvancedAIGenerator";
+import { UnifiedAIAssistant } from "./UnifiedAIAssistant";
 import { ImageUpload } from "./ImageUpload";
 
 export function BlogEditForm({ blog }: { blog: any }) {
@@ -268,17 +267,18 @@ export function BlogEditForm({ blog }: { blog: any }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Advanced AI Generator */}
+      {/* Unified AI Assistant */}
       {activeLocale === 'tr' && (
-        <AdvancedAIGenerator
+        <UnifiedAIAssistant
           type="blog"
           initialTopic={formData.title}
+          currentContent={formData.contents}
           onGenerate={(data) => {
             setFormData({
               ...formData,
               title: data.title || formData.title,
               description: data.description || formData.description,
-              contents: data.contents,
+              contents: data.contents || formData.contents,
               image_url: data.image_url || formData.image_url,
             });
           }}
@@ -474,12 +474,6 @@ export function BlogEditForm({ blog }: { blog: any }) {
           
           {activeLocale === 'tr' && (
             <>
-              <AIContentGenerator
-                type="blog"
-                currentContent={formData.contents}
-                onGenerate={(content) => setFormData({ ...formData, contents: content })}
-              />
-              
               <ImageUrlFixer
                 content={formData.contents}
                 onFix={(fixedContent) => setFormData({ ...formData, contents: fixedContent })}

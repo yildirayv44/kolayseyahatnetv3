@@ -6,8 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { Save, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { RichTextEditor } from "./RichTextEditor";
-import { AIContentGenerator } from "./AIContentGenerator";
-import { AdvancedAIGenerator } from "./AdvancedAIGenerator";
+import { UnifiedAIAssistant } from "./UnifiedAIAssistant";
 import { ImageUpload } from "./ImageUpload";
 import { generateSlug } from "@/lib/helpers";
 
@@ -79,18 +78,19 @@ export function CountryCreateForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Advanced AI Generator */}
-      <AdvancedAIGenerator
+      {/* Unified AI Assistant */}
+      <UnifiedAIAssistant
         type="country"
+        currentContent={formData.contents}
         onGenerate={(data) => {
           setFormData({
             ...formData,
-            name: data.title,
-            slug: generateSlug(data.title),
-            title: data.title,
-            meta_title: data.title,
-            description: data.description,
-            contents: data.contents,
+            name: data.title || formData.name,
+            slug: data.title ? generateSlug(data.title) : formData.slug,
+            title: data.title || formData.title,
+            meta_title: data.title || formData.meta_title,
+            description: data.description || formData.description,
+            contents: data.contents || formData.contents,
             image_url: data.image_url || formData.image_url,
           });
         }}
@@ -238,13 +238,6 @@ export function CountryCreateForm() {
           <label className="block text-sm font-semibold text-slate-900">
             Ana İçerik
           </label>
-          
-          <AIContentGenerator
-            type="country"
-            currentContent={formData.contents}
-            countryName={formData.name}
-            onGenerate={(content) => setFormData({ ...formData, contents: content })}
-          />
           
           <RichTextEditor
             value={formData.contents}
