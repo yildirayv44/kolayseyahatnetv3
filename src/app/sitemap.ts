@@ -101,43 +101,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
-  const countrySlugMap: Record<number, string> = {
-    4: "amerika",
-    6: "ingiltere",
-    7: "yunanistan",
-    8: "benin",
-    10: "bahreyn",
-    12: "rusya",
-    14: "dubai",
-    15: "fransa",
-    16: "vietnam",
-    17: "kenya",
-    18: "uganda",
-    19: "zambiya",
-    20: "guney-kore",
-    21: "bhutan",
-    22: "togo",
-    23: "umman",
-    24: "tanzanya",
-    25: "tayland-vizesi",
-    26: "kanada-vizesi",
-    3: "kuveyt",
-  };
-
   // Country pages - both TR and EN
   const countryPages = countries.flatMap((country: any) => {
-    const slug = countrySlugMap[country.id] || `country-${country.id}`;
+    // Use slug from database if available, otherwise skip
+    if (!country.slug) {
+      console.warn(`Country ${country.id} (${country.name}) has no slug, skipping sitemap`);
+      return [];
+    }
+    
     return [
       // Turkish version (no prefix)
       {
-        url: `${baseUrl}/${slug}`,
+        url: `${baseUrl}/${country.slug}`,
         lastModified: new Date(country.updated_at || country.created_at),
         changeFrequency: "weekly" as const,
         priority: 0.8,
       },
       // English version (with /en prefix)
       {
-        url: `${baseUrl}/en/${slug}`,
+        url: `${baseUrl}/en/${country.slug}`,
         lastModified: new Date(country.updated_at || country.created_at),
         changeFrequency: "weekly" as const,
         priority: 0.8,

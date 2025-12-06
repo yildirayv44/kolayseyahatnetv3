@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       disallow: [],
     },
-    sitemap: "https://kolayseyahat.net/sitemap.xml",
+    sitemap: "https://www.kolayseyahat.net/sitemap.xml",
   };
 }
