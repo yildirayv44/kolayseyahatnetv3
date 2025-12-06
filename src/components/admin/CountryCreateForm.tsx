@@ -7,6 +7,7 @@ import { Save, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { RichTextEditor } from "./RichTextEditor";
 import { AIContentGenerator } from "./AIContentGenerator";
+import { AdvancedAIGenerator } from "./AdvancedAIGenerator";
 import { ImageUpload } from "./ImageUpload";
 import { generateSlug } from "@/lib/helpers";
 
@@ -74,6 +75,23 @@ export function CountryCreateForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Advanced AI Generator */}
+      <AdvancedAIGenerator
+        type="country"
+        onGenerate={(data) => {
+          setFormData({
+            ...formData,
+            name: data.title,
+            slug: generateSlug(data.title),
+            title: data.title,
+            meta_title: data.title,
+            description: data.description,
+            contents: data.contents,
+            image_url: data.image_url || formData.image_url,
+          });
+        }}
+      />
+
       <div className="card">
         <div className="space-y-2">
           <label className="block text-sm font-semibold text-slate-900">

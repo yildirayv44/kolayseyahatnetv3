@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Save } from "lucide-react";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
+import { AdvancedAIGenerator } from "@/components/admin/AdvancedAIGenerator";
 
 export default function YeniSayfaPage() {
   const router = useRouter();
@@ -85,6 +86,22 @@ export default function YeniSayfaPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Advanced AI Generator */}
+        {activeLocale === "tr" && (
+          <AdvancedAIGenerator
+            type="page"
+            onGenerate={(data) => {
+              setFormData({
+                ...formData,
+                title: data.title,
+                slug: formData.slug || generateSlug(data.title),
+                meta_description: data.description,
+                content: data.contents,
+              });
+            }}
+          />
+        )}
+
         {/* Language Toggle */}
         <div className="card">
           <div className="mb-4 flex items-center gap-2">

@@ -8,6 +8,7 @@ import Link from "next/link";
 import { RichTextEditor } from "./RichTextEditor";
 import { ImageUrlFixer } from "./ImageUrlFixer";
 import { AIContentGenerator } from "./AIContentGenerator";
+import { AdvancedAIGenerator } from "./AdvancedAIGenerator";
 import { ImageUpload } from "./ImageUpload";
 import { generateSlug } from "@/lib/helpers";
 
@@ -113,7 +114,22 @@ export function CountryEditForm({ country }: { country: any }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Language Tabs */}
+      {/* Advanced AI Generator */}
+      <AdvancedAIGenerator
+        type="country"
+        countryName={formData.name}
+        onGenerate={(data) => {
+          setFormData({
+            ...formData,
+            title: data.title || formData.title,
+            meta_title: data.title || formData.meta_title,
+            description: data.description || formData.description,
+            contents: data.contents,
+            image_url: data.image_url || formData.image_url,
+          });
+        }}
+      />
+
       <div className="card">
         <div className="flex items-center justify-between border-b border-slate-200 pb-4">
           <div className="flex gap-2">
