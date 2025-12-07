@@ -117,20 +117,21 @@ export function UnifiedAIAssistant({
 
     addProgress(`📸 ${imageCount} görsel aranıyor...`);
 
-    const sections = content.split(/(?=##\s)/);
+    const h2Regex = /<h2[^>]*>.*?<\/h2>/gi;
+    const h2Matches = content.match(h2Regex);
     
-    if (sections.length < 2) return content;
+    if (!h2Matches || h2Matches.length < 2) return content;
 
-    const imagesToInsert = Math.min(imageCount, sections.length - 1);
-    const sectionInterval = Math.floor(sections.length / (imagesToInsert + 1));
+    const imagesToInsert = Math.min(imageCount, h2Matches.length);
+    const sectionInterval = Math.max(1, Math.floor(h2Matches.length / imagesToInsert));
 
-    let modifiedContent = sections[0];
+    let modifiedContent = content;
+    let insertedCount = 0;
 
-    for (let i = 1; i < sections.length; i++) {
-      modifiedContent += sections[i];
-
-      if (i % sectionInterval === 0 && imagesToInsert > 0) {
-        const sectionTitle = sections[i].match(/##\s+(.+)/)?.[1] || mainTopic;
+    for (let i = 0; i < h2Matches.length && insertedCount < imagesToInsert; i++) {
+      if (i % sectionInterval === 0 && insertedCount < imagesToInsert) {
+        const h2Tag = h2Matches[i];
+        const sectionTitle = h2Tag.replace(/<\/?h2[^>]*>/g, '').trim();
         
         addProgress(`🔍 "${sectionTitle}" için görsel aranıyor...`);
         
@@ -138,9 +139,16 @@ export function UnifiedAIAssistant({
         const imageUrl = await searchPexelsImage(smartQuery);
 
         if (imageUrl) {
-          const imageMarkdown = `\n\n![${sectionTitle}](${imageUrl})\n\n`;
-          modifiedContent += imageMarkdown;
+          const imageHtml = `\n\n<img src="${imageUrl}" alt="${sectionTitle}" style="width: 100%; height: auto; border-radius: 8px; margin: 20px 0;" />\n\n`;
+          
+          const h2Index = modifiedContent.indexOf(h2Tag);
+          if (h2Index !== -1) {
+            const insertPosition = h2Index + h2Tag.length;
+            modifiedContent = modifiedContent.slice(0, insertPosition) + imageHtml + modifiedContent.slice(insertPosition);
+          }
+          
           addProgress(`✅ Görsel eklendi`);
+          insertedCount++;
         }
       }
     }
@@ -224,9 +232,9 @@ export function UnifiedAIAssistant({
         try {
           const faqs = await generateFAQ(finalContent, 5);
           if (faqs.length > 0) {
-            let faqSection = '\n\n## Sıkça Sorulan Sorular\n\n';
+            let faqSection = '\n\n<h2>Sıkça Sorulan Sorular</h2>\n\n';
             faqs.forEach((faq, index) => {
-              faqSection += `### ${index + 1}. ${faq.question}\n\n${faq.answer}\n\n`;
+              faqSection += `<h3>${index + 1}. ${faq.question}</h3>\n<p>${faq.answer}</p>\n\n`;
             });
             finalContent += faqSection;
             addProgress(`✅ ${faqs.length} SSS eklendi`);
@@ -242,11 +250,11 @@ export function UnifiedAIAssistant({
         try {
           const links = await findInternalLinks(finalContent);
           if (links.length > 0) {
-            // Insert links into content
+            // Insert HTML links into content
             for (const link of links.slice(0, 5)) {
               const regex = new RegExp(`\\b${link.text}\\b`, 'i');
-              if (regex.test(finalContent) && !finalContent.includes(`[${link.text}]`)) {
-                finalContent = finalContent.replace(regex, `[${link.text}](${link.url})`);
+              if (regex.test(finalContent) && !finalContent.includes(`href="${link.url}"`)) {
+                finalContent = finalContent.replace(regex, `<a href="${link.url}">${link.text}</a>`);
               }
             }
             addProgress(`✅ ${links.length} iç link eklendi`);
@@ -256,24 +264,7 @@ export function UnifiedAIAssistant({
         }
       }
 
-      // Add visual suggestions if enabled
-      if (enableVisualSuggestions) {
-        addProgress("🎨 Görsel önerileri oluşturuluyor...");
-        try {
-          const visualSuggestions = await suggestVisualContent(finalTopic, type);
-          if (visualSuggestions.length > 0) {
-            let suggestionsComment = '\n\n<!-- Görsel Önerileri:\n';
-            visualSuggestions.forEach((s, i) => {
-              suggestionsComment += `${i + 1}. ${s.type.toUpperCase()}: ${s.topic}\n   ${s.description}\n   Öncelik: ${s.priority}\n\n`;
-            });
-            suggestionsComment += '-->\n';
-            finalContent += suggestionsComment;
-            addProgress(`✅ ${visualSuggestions.length} görsel önerisi eklendi`);
-          }
-        } catch (error) {
-          console.error("Visual suggestions failed:", error);
-        }
-      }
+      // Visual suggestions removed - images are now inserted directly into content
 
       let coverImage = "";
       if (includeImages) {
@@ -846,26 +837,7 @@ export function UnifiedAIAssistant({
                   </button>
                 </div>
 
-                {/* Visual Suggestions Toggle */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <ImageIcon className="h-4 w-4 text-slate-500" />
-                    <span className="text-xs text-slate-700">Görsel Önerileri Ekle</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setEnableVisualSuggestions(!enableVisualSuggestions)}
-                    className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-                      enableVisualSuggestions ? 'bg-purple-600' : 'bg-slate-300'
-                    }`}
-                  >
-                    <span
-                      className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
-                        enableVisualSuggestions ? 'translate-x-5' : 'translate-x-1'
-                      }`}
-                    />
-                  </button>
-                </div>
+                {/* Visual Suggestions Toggle - REMOVED: Images are now directly inserted */}
               </div>
 
               <p className="text-xs text-slate-500 mt-2">
@@ -972,10 +944,9 @@ export function UnifiedAIAssistant({
                   <li>• 📄 SEO-optimized meta bilgiler</li>
                   <li>• 📚 {wordCount} kelime hedefli içerik</li>
                   <li>• 🖼️ Kapak görseli {includeImages && '(Pexels)'}</li>
-                  {includeImages && <li>• 📸 İçeriğe {imageCount} adet görsel eklenir</li>}
+                  {includeImages && <li>• 📸 İçeriğe {imageCount} adet görsel direkt eklenir</li>}
                   {enableFAQ && <li>• ❓ Otomatik SSS bölümü</li>}
                   {enableInternalLinks && <li>• 🔗 Akıllı iç linkler</li>}
-                  {enableVisualSuggestions && <li>• 🎨 Görsel önerileri</li>}
                   {additionalContext && <li>• 💡 Ek bilgileriniz dikkate alınır</li>}
                 </>
               )}

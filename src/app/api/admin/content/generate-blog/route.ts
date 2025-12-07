@@ -31,13 +31,15 @@ export async function POST(request: NextRequest) {
       ? `Sen profesyonel bir seyahat ve vize danışmanı blog yazarısın. 
 Görevin: Verilen başlık için kapsamlı, SEO-optimized, bilgilendirici blog içeriği oluşturmak.
 
+ÖNEMLİ: Direkt HTML formatında yaz! Markdown (##, ###) kullanma!
+
 Kurallar:
-1. Markdown formatında yaz (H2, H3 başlıklar kullan)
-2. Giriş paragrafı ile başla (150-200 kelime)
-3. Ana bölümler oluştur (H2 başlıklar)
-4. Alt başlıklar ekle (H3 başlıklar)
-5. Liste ve bullet points kullan
-6. Önemli bilgileri vurgula
+1. HTML formatında yaz (<h2>, <h3>, <p>, <ul>, <li> kullan)
+2. Giriş paragrafı ile başla (150-200 kelime) - <p> tagları içinde
+3. Ana bölümler oluştur (<h2> başlıklar)
+4. Alt başlıklar ekle (<h3> başlıklar)
+5. Liste ve bullet points kullan (<ul>, <li>)
+6. Önemli bilgileri vurgula (<strong>, <em>)
 7. Sonuç bölümü ekle
 8. SEO-friendly anahtar kelimeleri doğal şekilde kullan
 9. Ton: ${tone === 'informative' ? 'Bilgilendirici ve profesyonel' : tone === 'friendly' ? 'Samimi ve yardımsever' : 'Resmi ve detaylı'}
@@ -45,31 +47,36 @@ Kurallar:
 11. Gerçek, güncel bilgiler ver
 12. Adım adım açıklamalar yap
 
-Yapı:
-## Giriş
-[150-200 kelime giriş]
+Yapı (HTML):
+<p>[150-200 kelime giriş paragrafı]</p>
 
-## [Ana Konu 1]
-[Detaylı açıklama]
+<h2>[Ana Konu 1]</h2>
+<p>[Detaylı açıklama]</p>
 
-### [Alt Konu 1.1]
-[Açıklama]
+<h3>[Alt Konu 1.1]</h3>
+<p>[Açıklama]</p>
+<ul>
+  <li>Madde 1</li>
+  <li>Madde 2</li>
+</ul>
 
-## [Ana Konu 2]
-[Detaylı açıklama]
+<h2>[Ana Konu 2]</h2>
+<p>[Detaylı açıklama]</p>
 
-## Sonuç
-[Özet ve önemli notlar]`
+<h2>Sonuç</h2>
+<p>[Özet ve önemli notlar]</p>`
       : `You are a professional travel and visa consultant blog writer.
 Task: Create comprehensive, SEO-optimized, informative blog content for the given title.
 
+IMPORTANT: Write directly in HTML format! Do NOT use Markdown (##, ###)!
+
 Rules:
-1. Write in Markdown format (use H2, H3 headings)
-2. Start with introduction (150-200 words)
-3. Create main sections (H2 headings)
-4. Add subsections (H3 headings)
-5. Use lists and bullet points
-6. Highlight important information
+1. Write in HTML format (use <h2>, <h3>, <p>, <ul>, <li>)
+2. Start with introduction (150-200 words) - in <p> tags
+3. Create main sections (<h2> headings)
+4. Add subsections (<h3> headings)
+5. Use lists and bullet points (<ul>, <li>)
+6. Highlight important information (<strong>, <em>)
 7. Add conclusion section
 8. Use SEO-friendly keywords naturally
 9. Tone: ${tone === 'informative' ? 'Informative and professional' : tone === 'friendly' ? 'Friendly and helpful' : 'Formal and detailed'}
@@ -77,21 +84,24 @@ Rules:
 11. Provide real, up-to-date information
 12. Step-by-step explanations
 
-Structure:
-## Introduction
-[150-200 word introduction]
+Structure (HTML):
+<p>[150-200 word introduction]</p>
 
-## [Main Topic 1]
-[Detailed explanation]
+<h2>[Main Topic 1]</h2>
+<p>[Detailed explanation]</p>
 
-### [Subtopic 1.1]
-[Explanation]
+<h3>[Subtopic 1.1]</h3>
+<p>[Explanation]</p>
+<ul>
+  <li>Item 1</li>
+  <li>Item 2</li>
+</ul>
 
-## [Main Topic 2]
-[Detailed explanation]
+<h2>[Main Topic 2]</h2>
+<p>[Detailed explanation]</p>
 
-## Conclusion
-[Summary and important notes]`;
+<h2>Conclusion</h2>
+<p>[Summary and important notes]</p>`;
 
     let userPrompt = `Başlık: ${title}`;
     
