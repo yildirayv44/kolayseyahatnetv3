@@ -18,6 +18,7 @@ export function DALLEImageInserter({ onInsert, onSetCover, mode = 'both' }: DALL
   const [customHeight, setCustomHeight] = useState('1024');
   const [loading, setLoading] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+  const [provider, setProvider] = useState<'dalle' | 'imagen'>('dalle');
 
   const styles = [
     { id: 'professional', name: 'Profesyonel', emoji: '💼', desc: 'Temiz, modern' },
@@ -62,13 +63,17 @@ export function DALLEImageInserter({ onInsert, onSetCover, mode = 'both' }: DALL
     try {
       const finalSize = size === 'custom' ? `${customWidth}x${customHeight}` : size;
       
-      const response = await fetch('/api/admin/ai/generate-image', {
+      const apiEndpoint = provider === 'imagen'
+        ? '/api/admin/ai/generate-image-gemini'
+        : '/api/admin/ai/generate-image';
+      
+      const response = await fetch(apiEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           topic, 
           style, 
-          size: size === 'custom' ? '1792x1024' : size, // DALL-E only supports specific sizes
+          size: size === 'custom' ? '1792x1024' : size,
           customWidth: size === 'custom' ? parseInt(customWidth) : undefined,
           customHeight: size === 'custom' ? parseInt(customHeight) : undefined,
         }),
@@ -142,6 +147,41 @@ export function DALLEImageInserter({ onInsert, onSetCover, mode = 'both' }: DALL
             <div className="p-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Settings */}
               <div className="space-y-4">
+                {/* AI Provider Selection */}
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    AI Sağlayıcı
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setProvider('dalle')}
+                      className={`p-3 rounded-lg border-2 transition-all text-center ${
+                        provider === 'dalle'
+                          ? 'border-green-600 bg-green-50'
+                          : 'border-slate-200 hover:border-green-300'
+                      }`}
+                    >
+                      <div className="text-xl mb-1">🤖</div>
+                      <div className="text-xs font-semibold text-slate-900">DALL-E 3</div>
+                      <div className="text-[10px] text-slate-500">OpenAI</div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setProvider('imagen')}
+                      className={`p-3 rounded-lg border-2 transition-all text-center ${
+                        provider === 'imagen'
+                          ? 'border-blue-600 bg-blue-50'
+                          : 'border-slate-200 hover:border-blue-300'
+                      }`}
+                    >
+                      <div className="text-xl mb-1">✨</div>
+                      <div className="text-xs font-semibold text-slate-900">Imagen 3</div>
+                      <div className="text-[10px] text-slate-500">Google</div>
+                    </button>
+                  </div>
+                </div>
+
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-2">
                     Görsel Konusu *
@@ -258,7 +298,7 @@ export function DALLEImageInserter({ onInsert, onSetCover, mode = 'both' }: DALL
                   ) : (
                     <span className="flex items-center justify-center gap-2">
                       <ImageIcon className="h-5 w-5" />
-                      Görsel Oluştur
+                      {provider === 'imagen' ? '✨ Imagen ile Oluştur' : '🤖 DALL-E ile Oluştur'}
                     </span>
                   )}
                 </button>
