@@ -21,9 +21,9 @@ export default function ImageGeneratorPage() {
   ];
 
   const sizes = [
-    { id: '1024x1024', name: 'Kare', ratio: '1:1', desc: 'Instagram, profil' },
-    { id: '1792x1024', name: 'Yatay', ratio: '16:9', desc: 'Blog başlığı, YouTube' },
-    { id: '1024x1792', name: 'Dikey', ratio: '9:16', desc: 'Story, Pinterest' },
+    { id: '1024x1024', name: 'Kare', ratio: '1:1', desc: 'Instagram, profil', icon: '⬜' },
+    { id: '1792x1024', name: 'Yatay Banner', ratio: '16:9', desc: 'Blog kapak, YouTube', icon: '▬' },
+    { id: '1024x1792', name: 'Dikey', ratio: '9:16', desc: 'Story, Pinterest', icon: '▮' },
   ];
 
   const handleGenerate = async () => {
@@ -164,8 +164,9 @@ export default function ImageGeneratorPage() {
                             : 'border-slate-200 hover:border-blue-300'
                         }`}
                       >
-                        <div className="flex items-center justify-between">
-                          <div>
+                        <div className="flex items-center gap-3">
+                          <div className="text-3xl">{s.icon}</div>
+                          <div className="flex-1">
                             <div className="font-semibold text-slate-900">{s.name}</div>
                             <div className="text-xs text-slate-500">{s.desc}</div>
                           </div>
@@ -174,6 +175,9 @@ export default function ImageGeneratorPage() {
                       </button>
                     ))}
                   </div>
+                  <p className="text-xs text-amber-600 mt-2 bg-amber-50 p-2 rounded border border-amber-200">
+                    ⚠️ Görsellerde metin kullanılmaz. Sadece görsel içerik üretilir.
+                  </p>
                 </div>
 
                 {/* Generate Button */}

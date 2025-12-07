@@ -111,7 +111,12 @@ export function AIToolsQuickAccess({
   return (
     <div className="relative">
       <button
-        onClick={() => setShowMenu(!showMenu)}
+        type="button"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setShowMenu(!showMenu);
+        }}
         className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all shadow-lg font-semibold"
       >
         <Zap className="h-4 w-4" />

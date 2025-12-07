@@ -11,7 +11,7 @@ const openai = new OpenAI({
  */
 export async function POST(request: NextRequest) {
   try {
-    const { topic, style = 'professional', size = '1024x1024' } = await request.json();
+    const { topic, style = 'professional', size = '1024x1024', customWidth, customHeight } = await request.json();
 
     if (!topic) {
       return NextResponse.json(
@@ -29,9 +29,12 @@ export async function POST(request: NextRequest) {
       realistic: 'photorealistic, detailed, high quality, professional photography',
     };
 
+    // IMPORTANT: Explicitly instruct NO TEXT in the image
     const prompt = `Create a ${stylePrompts[style] || stylePrompts.professional} image about: ${topic}. 
 The image should be suitable for a travel and visa information website. 
-No text in the image. Clean and professional look.`;
+IMPORTANT: DO NOT include any text, letters, words, or writing in the image. 
+The image should be purely visual without any text overlay or captions.
+Clean, professional, and text-free design.`;
 
     console.log(`🎨 Generating image with DALL-E 3: ${topic}`);
     console.log(`📐 Size: ${size}, Style: ${style}`);
