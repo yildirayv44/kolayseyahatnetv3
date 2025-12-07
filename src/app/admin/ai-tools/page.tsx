@@ -20,6 +20,16 @@ export default function AIToolsPage() {
 
   const tools = [
     {
+      id: 'batch',
+      name: 'Toplu İşlemler',
+      description: 'Birden fazla blog için AI analizi yapın',
+      icon: Zap,
+      color: 'slate',
+      category: 'analytics',
+      features: ['Toplu optimizasyon', 'Toplu tahmin', 'Toplu analiz'],
+      href: '/admin/ai-tools/batch',
+    },
+    {
       id: 'optimizer',
       name: 'İçerik Optimizer',
       description: 'İçeriğinizi analiz edin, SEO ve okunabilirlik skorları alın',
@@ -96,10 +106,10 @@ export default function AIToolsPage() {
     : tools.filter(tool => tool.category === activeTab);
 
   const stats = [
-    { label: 'Toplam Araç', value: '7', icon: Zap, color: 'purple' },
+    { label: 'Toplam Araç', value: '8', icon: Zap, color: 'purple' },
     { label: 'İçerik Araçları', value: '2', icon: FileText, color: 'blue' },
     { label: 'Medya Araçları', value: '2', icon: ImageIcon, color: 'green' },
-    { label: 'Analiz Araçları', value: '3', icon: TrendingUp, color: 'orange' },
+    { label: 'Analiz Araçları', value: '4', icon: TrendingUp, color: 'orange' },
   ];
 
   return (
