@@ -55,6 +55,7 @@ export function UnifiedAIAssistant({
   const [language, setLanguage] = useState<"tr" | "en">("tr");
   const [wordCount, setWordCount] = useState(1500);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [aiProvider, setAiProvider] = useState<'openai' | 'gemini'>('openai');
   
   // New feature states
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
@@ -206,7 +207,13 @@ export function UnifiedAIAssistant({
         addProgress("📝 Ek bilgiler dikkate alınıyor...");
       }
 
-      const response = await fetch('/api/admin/content/generate-blog', {
+      const apiEndpoint = aiProvider === 'gemini' 
+        ? '/api/admin/content/generate-blog-gemini'
+        : '/api/admin/content/generate-blog';
+
+      addProgress(`🤖 ${aiProvider === 'gemini' ? 'Google Gemini' : 'OpenAI GPT-4'} ile oluşturuluyor...`);
+
+      const response = await fetch(apiEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestBody),
@@ -218,7 +225,7 @@ export function UnifiedAIAssistant({
         throw new Error(data.error || 'İçerik oluşturulamadı');
       }
 
-      addProgress("✅ İçerik oluşturuldu");
+      addProgress(`✅ İçerik oluşturuldu (${data.provider || aiProvider})`);
 
       let finalContent = data.content;
 
@@ -649,6 +656,35 @@ export function UnifiedAIAssistant({
 
             {showAdvanced && (
               <div className="space-y-3 rounded-lg bg-white p-4 border border-purple-200">
+                {/* AI Provider Selection */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-slate-700">AI Sağlayıcı</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setAiProvider("openai")}
+                      className={`rounded-lg px-3 py-2 text-xs font-medium transition-all ${
+                        aiProvider === "openai"
+                          ? "bg-green-600 text-white"
+                          : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                      }`}
+                    >
+                      🤖 OpenAI GPT-4
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAiProvider("gemini")}
+                      className={`rounded-lg px-3 py-2 text-xs font-medium transition-all ${
+                        aiProvider === "gemini"
+                          ? "bg-blue-600 text-white"
+                          : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                      }`}
+                    >
+                      ✨ Google Gemini
+                    </button>
+                  </div>
+                </div>
+
                 {/* Tone Selection */}
                 <div className="space-y-2">
                   <label className="block text-sm font-semibold text-slate-700">Yazım Tonu</label>
