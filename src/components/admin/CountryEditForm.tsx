@@ -9,6 +9,7 @@ import { RichTextEditor } from "./RichTextEditor";
 import { ImageUrlFixer } from "./ImageUrlFixer";
 import { UnifiedAIAssistant } from "./UnifiedAIAssistant";
 import { ImageUpload } from "./ImageUpload";
+import { AIToolsQuickAccess } from "./AIToolsQuickAccess";
 import { generateSlug } from "@/lib/helpers";
 
 export function CountryEditForm({ country }: { country: any }) {
@@ -113,6 +114,34 @@ export function CountryEditForm({ country }: { country: any }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Header with AI Tools Quick Access */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Link
+            href="/admin/ulkeler"
+            className="flex items-center gap-2 text-slate-600 hover:text-slate-900"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Geri
+          </Link>
+          <h1 className="text-2xl font-bold text-slate-900">Ülke Düzenle</h1>
+        </div>
+        <AIToolsQuickAccess
+          currentContent={activeLocale === 'tr' ? formData.contents : formData.contents_en}
+          currentTitle={formData.name}
+          onOptimize={(optimizedContent) => {
+            if (activeLocale === 'tr') {
+              setFormData({ ...formData, contents: optimizedContent });
+            } else {
+              setFormData({ ...formData, contents_en: optimizedContent });
+            }
+          }}
+          onImageGenerated={(imageUrl) => {
+            setFormData({ ...formData, image_url: imageUrl });
+          }}
+        />
+      </div>
+
       {/* Unified AI Assistant */}
       {activeLocale === 'tr' && (
         <UnifiedAIAssistant
