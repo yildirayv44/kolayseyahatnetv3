@@ -8,6 +8,7 @@ import Link from "next/link";
 import { RichTextEditor } from "./RichTextEditor";
 import { UnifiedAIAssistant } from "./UnifiedAIAssistant";
 import { ImageUpload } from "./ImageUpload";
+import { AIToolsQuickAccess } from "./AIToolsQuickAccess";
 
 export function BlogCreateForm() {
   const router = useRouter();
@@ -214,6 +215,30 @@ export function BlogCreateForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Header with AI Tools Quick Access */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Link
+            href="/admin/bloglar"
+            className="flex items-center gap-2 text-slate-600 hover:text-slate-900"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Geri
+          </Link>
+          <h1 className="text-2xl font-bold text-slate-900">Yeni Blog Yazısı</h1>
+        </div>
+        <AIToolsQuickAccess
+          currentContent={formData.contents}
+          currentTitle={formData.title}
+          onOptimize={(optimizedContent) => {
+            setFormData({ ...formData, contents: optimizedContent });
+          }}
+          onImageGenerated={(imageUrl) => {
+            setFormData({ ...formData, image_url: imageUrl });
+          }}
+        />
+      </div>
+
       {/* Unified AI Assistant */}
       <UnifiedAIAssistant
         type="blog"
