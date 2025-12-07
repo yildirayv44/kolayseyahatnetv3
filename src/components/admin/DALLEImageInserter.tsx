@@ -176,8 +176,8 @@ export function DALLEImageInserter({ onInsert, onSetCover, mode = 'both' }: DALL
                       }`}
                     >
                       <div className="text-xl mb-1">✨</div>
-                      <div className="text-xs font-semibold text-slate-900">Imagen 3</div>
-                      <div className="text-[10px] text-slate-500">Google</div>
+                      <div className="text-xs font-semibold text-slate-900">Imagen 4</div>
+                      <div className="text-[10px] text-slate-500">Google (Fast)</div>
                     </button>
                   </div>
                 </div>

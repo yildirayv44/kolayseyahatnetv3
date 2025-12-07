@@ -41,22 +41,29 @@ IMPORTANT: DO NOT include any text, letters, words, or writing in the image.
 The image should be purely visual without any text overlay or captions.
 Clean, professional, and text-free design.`;
 
-    console.log(`🎨 Generating image with Imagen 3: ${topic}`);
+    console.log(`🎨 Generating image with Imagen 4: ${topic}`);
 
-    // Imagen API endpoint - Using generateContent instead of predict
+    // Imagen 4 API endpoint - Using predict method (Fast model for speed)
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:generateImages?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-fast-generate-001:predict`,
       {
         method: 'POST',
         headers: {
+          'x-goog-api-key': apiKey,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          prompt: prompt,
-          numberOfImages: 1,
-          aspectRatio: size === '1024x1024' ? '1:1' : size === '1792x1024' ? '16:9' : '9:16',
-          negativePrompt: 'text, letters, words, writing, watermark, signature',
-          safetyFilterLevel: 'BLOCK_ONLY_HIGH',
+          instances: [
+            {
+              prompt: prompt,
+            },
+          ],
+          parameters: {
+            sampleCount: 1,
+            aspectRatio: size === '1024x1024' ? '1:1' : size === '1792x1024' ? '16:9' : '9:16',
+            negativePrompt: 'text, letters, words, writing, watermark, signature',
+            safetyFilterLevel: 'BLOCK_ONLY_HIGH',
+          },
         }),
       }
     );
@@ -69,13 +76,13 @@ Clean, professional, and text-free design.`;
 
     const data = await response.json();
 
-    if (!data.generatedImages || data.generatedImages.length === 0) {
+    if (!data.predictions || data.predictions.length === 0) {
       throw new Error('No image generated');
     }
 
-    // Imagen returns base64 encoded images in generatedImages array
-    const imageData = data.generatedImages[0];
-    const base64Image = imageData.image?.imageBytes || imageData.bytesBase64Encoded;
+    // Imagen 4 returns base64 encoded images in predictions array
+    const imageData = data.predictions[0];
+    const base64Image = imageData.bytesBase64Encoded || imageData.image?.imageBytes;
 
     if (!base64Image) {
       throw new Error('No image data in response');
@@ -96,7 +103,7 @@ Clean, professional, and text-free design.`;
       success: true,
       imageUrl: permanentImageUrl,
       provider: 'imagen',
-      model: 'imagen-3.0-generate-002',
+      model: 'imagen-4.0-fast',
       mimeType: imageData.mimeType || 'image/png',
     });
 

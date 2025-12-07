@@ -33,11 +33,11 @@ export default function AIToolsPage() {
     {
       id: 'image-generator',
       name: 'AI Görsel Oluşturucu',
-      description: 'DALL-E 3 ve Google Imagen 3 ile özel görseller oluşturun',
+      description: 'DALL-E 3 ve Google Imagen 4 ile özel görseller oluşturun',
       icon: ImageIcon,
       color: 'blue',
       category: 'media',
-      features: ['DALL-E 3', 'Imagen 3', '10 stil seçeneği'],
+      features: ['DALL-E 3', 'Imagen 4 Fast', '10 stil seçeneği'],
       href: '/admin/ai-tools/image-generator',
       badge: 'Yeni',
     },
