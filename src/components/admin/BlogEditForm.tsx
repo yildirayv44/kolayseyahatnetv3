@@ -514,6 +514,7 @@ export function BlogEditForm({ blog }: { blog: any }) {
             value={activeLocale === 'tr' ? formData.contents : formData.contents_en}
             onChange={(value) => setFormData({ ...formData, [activeLocale === 'tr' ? 'contents' : 'contents_en']: value })}
             placeholder={activeLocale === 'en' ? 'Write your blog post here...' : 'Blog yazınızı buraya yazın...'}
+            onCoverImageChange={(url) => setFormData({ ...formData, image_url: url })}
           />
         </div>
 

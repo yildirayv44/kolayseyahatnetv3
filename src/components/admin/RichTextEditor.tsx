@@ -20,14 +20,16 @@ import {
   Wand2,
 } from "lucide-react";
 import { PexelsImagePicker } from "./PexelsImagePicker";
+import { DALLEImageInserter } from "./DALLEImageInserter";
 
 interface RichTextEditorProps {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
+  onCoverImageChange?: (url: string) => void;
 }
 
-export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorProps) {
+export function RichTextEditor({ value, onChange, placeholder, onCoverImageChange }: RichTextEditorProps) {
   const [showPreview, setShowPreview] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [showPexelsPicker, setShowPexelsPicker] = useState(false);
@@ -297,6 +299,19 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
         >
           <Search className="h-4 w-4" />
         </button>
+
+        {/* DALL-E Image Generator */}
+        <DALLEImageInserter
+          onInsert={(imageUrl, imageHtml) => {
+            const textarea = textareaRef.current;
+            if (!textarea) return;
+            const start = textarea.selectionStart;
+            const newText = value.substring(0, start) + '\n' + imageHtml + '\n' + value.substring(start);
+            onChange(newText);
+          }}
+          onSetCover={onCoverImageChange}
+          mode={onCoverImageChange ? 'both' : 'content'}
+        />
 
         <div className="mx-2 h-6 w-px bg-slate-300" />
 

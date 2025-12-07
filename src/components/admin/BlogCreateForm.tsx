@@ -388,6 +388,7 @@ export function BlogCreateForm() {
             value={formData.contents}
             onChange={(value) => setFormData({ ...formData, contents: value })}
             placeholder="Blog yazınızı buraya yazın..."
+            onCoverImageChange={(url) => setFormData({ ...formData, image_url: url })}
           />
         </div>
 
