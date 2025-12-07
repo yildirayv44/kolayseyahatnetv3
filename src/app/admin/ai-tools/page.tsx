@@ -20,41 +20,43 @@ export default function AIToolsPage() {
 
   const tools = [
     {
-      id: 'batch',
-      name: 'Toplu İşlemler',
-      description: 'Birden fazla blog için AI analizi yapın',
-      icon: Zap,
-      color: 'slate',
-      category: 'analytics',
-      features: ['Toplu optimizasyon', 'Toplu tahmin', 'Toplu analiz'],
-      href: '/admin/ai-tools/batch',
+      id: 'content-generator',
+      name: 'AI İçerik Üretici',
+      description: 'OpenAI GPT-4 ve Google Gemini ile tam otomatik içerik oluşturun',
+      icon: Sparkles,
+      color: 'purple',
+      category: 'content',
+      features: ['GPT-4 & Gemini', 'Otomatik görsel', 'SEO optimize'],
+      href: '/admin/bloglar/yeni',
+      badge: 'Popüler',
+    },
+    {
+      id: 'image-generator',
+      name: 'AI Görsel Oluşturucu',
+      description: 'DALL-E 3 ve Google Imagen 3 ile özel görseller oluşturun',
+      icon: ImageIcon,
+      color: 'blue',
+      category: 'media',
+      features: ['DALL-E 3', 'Imagen 3', '10 stil seçeneği'],
+      href: '/admin/ai-tools/image-generator',
+      badge: 'Yeni',
     },
     {
       id: 'optimizer',
       name: 'İçerik Optimizer',
       description: 'İçeriğinizi analiz edin, SEO ve okunabilirlik skorları alın',
       icon: Sparkles,
-      color: 'purple',
+      color: 'green',
       category: 'content',
       features: ['Readability skoru', 'SEO analizi', 'Otomatik düzeltme'],
       href: '/admin/ai-tools/optimizer',
-    },
-    {
-      id: 'image-generator',
-      name: 'DALL-E Görsel Oluşturucu',
-      description: 'AI ile özel görseller oluşturun, stok fotoğraflara veda edin',
-      icon: ImageIcon,
-      color: 'blue',
-      category: 'media',
-      features: ['5 stil seçeneği', 'Özel boyutlar', 'Telif hakkı yok'],
-      href: '/admin/ai-tools/image-generator',
     },
     {
       id: 'performance',
       name: 'Performans Tahmini',
       description: 'İçeriğinizin performansını önceden tahmin edin',
       icon: TrendingUp,
-      color: 'green',
+      color: 'emerald',
       category: 'analytics',
       features: ['Trafik tahmini', 'CTR analizi', 'Viral potansiyel'],
       href: '/admin/ai-tools/performance',
@@ -78,6 +80,16 @@ export default function AIToolsPage() {
       category: 'media',
       features: ['Timestamp\'ler', 'B-roll önerileri', 'Müzik önerileri'],
       href: '/admin/ai-tools/video-script',
+    },
+    {
+      id: 'batch',
+      name: 'Toplu İşlemler',
+      description: 'Birden fazla blog için AI analizi yapın',
+      icon: Zap,
+      color: 'amber',
+      category: 'analytics',
+      features: ['Toplu optimizasyon', 'Toplu tahmin', 'Toplu analiz'],
+      href: '/admin/ai-tools/batch',
     },
     {
       id: 'scheduler',
@@ -106,8 +118,8 @@ export default function AIToolsPage() {
     : tools.filter(tool => tool.category === activeTab);
 
   const stats = [
-    { label: 'Toplam Araç', value: '8', icon: Zap, color: 'purple' },
-    { label: 'İçerik Araçları', value: '2', icon: FileText, color: 'blue' },
+    { label: 'Toplam Araç', value: '9', icon: Zap, color: 'purple' },
+    { label: 'İçerik Araçları', value: '3', icon: FileText, color: 'blue' },
     { label: 'Medya Araçları', value: '2', icon: ImageIcon, color: 'green' },
     { label: 'Analiz Araçları', value: '4', icon: TrendingUp, color: 'orange' },
   ];
@@ -188,7 +200,18 @@ export default function AIToolsPage() {
                   <div className={`p-3 bg-${tool.color}-100 rounded-xl group-hover:scale-110 transition-transform`}>
                     <Icon className={`h-6 w-6 text-${tool.color}-600`} />
                   </div>
-                  <ArrowRight className="h-5 w-5 text-slate-400 group-hover:text-purple-600 group-hover:translate-x-1 transition-all" />
+                  <div className="flex flex-col items-end gap-2">
+                    {tool.badge && (
+                      <span className={`px-2 py-1 rounded-full text-[10px] font-bold ${
+                        tool.badge === 'Yeni' 
+                          ? 'bg-blue-100 text-blue-700' 
+                          : 'bg-purple-100 text-purple-700'
+                      }`}>
+                        {tool.badge}
+                      </span>
+                    )}
+                    <ArrowRight className="h-5 w-5 text-slate-400 group-hover:text-purple-600 group-hover:translate-x-1 transition-all" />
+                  </div>
                 </div>
 
                 <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-purple-600 transition-colors">

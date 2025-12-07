@@ -121,7 +121,7 @@ export function ImageUpload({
 
       {preview ? (
         <div className="relative">
-          <div className={`relative w-full overflow-hidden rounded-lg bg-slate-100 ${aspectRatioClass}`}>
+          <div className="relative w-full h-32 overflow-hidden rounded-lg bg-slate-100">
             <Image
               src={preview}
               alt="Preview"
@@ -132,7 +132,7 @@ export function ImageUpload({
             />
             {uploading && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-                <Loader2 className="h-8 w-8 animate-spin text-white" />
+                <Loader2 className="h-6 w-6 animate-spin text-white" />
               </div>
             )}
           </div>
@@ -140,16 +140,16 @@ export function ImageUpload({
             <button
               type="button"
               onClick={handleRemove}
-              className="absolute right-2 top-2 rounded-full bg-red-500 p-2 text-white shadow-lg transition-colors hover:bg-red-600"
+              className="absolute right-2 top-2 rounded-full bg-red-500 p-1.5 text-white shadow-lg transition-colors hover:bg-red-600"
             >
-              <X className="h-4 w-4" />
+              <X className="h-3 w-3" />
             </button>
           )}
         </div>
       ) : (
         <div
           onClick={() => fileInputRef.current?.click()}
-          className={`relative flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 transition-colors hover:border-primary hover:bg-primary/5 ${aspectRatioClass}`}
+          className="relative flex cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 transition-colors hover:border-primary hover:bg-primary/5 h-32"
         >
           <input
             ref={fileInputRef}
@@ -159,24 +159,20 @@ export function ImageUpload({
             className="hidden"
             disabled={uploading}
           />
-          <div className="flex flex-col items-center gap-2 p-6 text-center">
+          <div className="flex items-center gap-3 px-4 text-center">
             {uploading ? (
               <>
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <Loader2 className="h-5 w-5 animate-spin text-primary" />
                 <p className="text-sm text-slate-600">Yükleniyor...</p>
               </>
             ) : (
               <>
-                <div className="rounded-full bg-primary/10 p-3">
-                  <ImageIcon className="h-6 w-6 text-primary" />
+                <div className="rounded-full bg-primary/10 p-2">
+                  <ImageIcon className="h-5 w-5 text-primary" />
                 </div>
-                <div>
+                <div className="text-left">
                   <p className="text-sm font-medium text-slate-900">Fotoğraf Yükle</p>
-                  <p className="text-xs text-slate-500">JPG, PNG, WebP veya GIF (Max 5MB)</p>
-                </div>
-                <div className="flex items-center gap-2 text-xs text-slate-400">
-                  <Upload className="h-4 w-4" />
-                  <span>Tıklayın veya sürükleyin</span>
+                  <p className="text-xs text-slate-500">JPG, PNG, WebP (Max 5MB)</p>
                 </div>
               </>
             )}
