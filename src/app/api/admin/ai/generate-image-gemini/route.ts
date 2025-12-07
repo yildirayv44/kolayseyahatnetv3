@@ -43,27 +43,20 @@ Clean, professional, and text-free design.`;
 
     console.log(`🎨 Generating image with Imagen 3: ${topic}`);
 
-    // Imagen API endpoint (Updated to correct model name)
+    // Imagen API endpoint - Using generateContent instead of predict
     const response = await fetch(
-      'https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict',
+      `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:generateImages?key=${apiKey}`,
       {
         method: 'POST',
         headers: {
-          'x-goog-api-key': apiKey,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          instances: [
-            {
-              prompt: prompt,
-            },
-          ],
-          parameters: {
-            sampleCount: 1,
-            aspectRatio: size === '1024x1024' ? '1:1' : size === '1792x1024' ? '16:9' : '9:16',
-            personGeneration: 'allow_adult', // Allow people in images
-            safetySetting: 'block_some', // Moderate safety
-          },
+          prompt: prompt,
+          numberOfImages: 1,
+          aspectRatio: size === '1024x1024' ? '1:1' : size === '1792x1024' ? '16:9' : '9:16',
+          negativePrompt: 'text, letters, words, writing, watermark, signature',
+          safetyFilterLevel: 'BLOCK_ONLY_HIGH',
         }),
       }
     );
@@ -76,13 +69,13 @@ Clean, professional, and text-free design.`;
 
     const data = await response.json();
 
-    if (!data.predictions || data.predictions.length === 0) {
+    if (!data.generatedImages || data.generatedImages.length === 0) {
       throw new Error('No image generated');
     }
 
-    // Imagen returns base64 encoded images
-    const imageData = data.predictions[0];
-    const base64Image = imageData.bytesBase64Encoded || imageData.image;
+    // Imagen returns base64 encoded images in generatedImages array
+    const imageData = data.generatedImages[0];
+    const base64Image = imageData.image?.imageBytes || imageData.bytesBase64Encoded;
 
     if (!base64Image) {
       throw new Error('No image data in response');
@@ -103,7 +96,7 @@ Clean, professional, and text-free design.`;
       success: true,
       imageUrl: permanentImageUrl,
       provider: 'imagen',
-      model: 'imagen-3.0',
+      model: 'imagen-3.0-generate-002',
       mimeType: imageData.mimeType || 'image/png',
     });
 
