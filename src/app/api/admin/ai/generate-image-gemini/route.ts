@@ -43,9 +43,9 @@ Clean, professional, and text-free design.`;
 
     console.log(`🎨 Generating image with Imagen 3: ${topic}`);
 
-    // Imagen API endpoint
+    // Imagen API endpoint (Updated to correct model name)
     const response = await fetch(
-      'https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict',
+      'https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict',
       {
         method: 'POST',
         headers: {
