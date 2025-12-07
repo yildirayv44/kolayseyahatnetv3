@@ -18,12 +18,14 @@ import {
   UserPlus,
   Image,
   TrendingUp,
+  Sparkles,
 } from "lucide-react";
 import { signOut } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 
 const menuItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/admin/ai-tools", label: "AI Araçlar", icon: Sparkles, highlight: true },
   { href: "/admin/ulkeler", label: "Ülkeler", icon: Globe2 },
   { href: "/admin/vize-paketleri", label: "Vize Paketleri", icon: Package },
   { href: "/admin/bloglar", label: "Bloglar", icon: FileText },
@@ -60,23 +62,33 @@ export function AdminSidebar() {
       </div>
 
       {/* Menu */}
-      <nav className="flex-1 space-y-1 p-4">
+      <nav className="flex-1 space-y-1 p-4 overflow-y-auto">
         {menuItems.map((item) => {
           const Icon = item.icon;
-          const isActive = pathname === item.href;
+          const isActive = pathname === item.href || pathname?.startsWith(item.href + '/');
+          const isHighlight = item.highlight;
 
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors ${
+              className={`flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-all ${
                 isActive
-                  ? "bg-primary text-white"
+                  ? isHighlight
+                    ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg"
+                    : "bg-primary text-white"
+                  : isHighlight
+                  ? "text-purple-700 hover:bg-gradient-to-r hover:from-purple-50 hover:to-blue-50 border border-purple-200"
                   : "text-slate-700 hover:bg-slate-100"
               }`}
             >
-              <Icon className="h-5 w-5" />
+              <Icon className={`h-5 w-5 ${isHighlight && !isActive ? 'animate-pulse' : ''}`} />
               {item.label}
+              {isHighlight && !isActive && (
+                <span className="ml-auto text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-bold">
+                  NEW
+                </span>
+              )}
             </Link>
           );
         })}

@@ -2,6 +2,7 @@ import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { AuthGuard } from "@/components/admin/AuthGuard";
 import { AIAssistant } from "@/components/admin/AIAssistant";
+import { KeyboardShortcuts } from "@/components/admin/KeyboardShortcuts";
 import { Metadata } from "next";
 import "../globals.css";
 
@@ -32,6 +33,9 @@ export default function AdminLayout({
           
           {/* AI Assistant - Floating */}
           <AIAssistant />
+          
+          {/* Keyboard Shortcuts */}
+          <KeyboardShortcuts />
         </AuthGuard>
       </body>
     </html>
