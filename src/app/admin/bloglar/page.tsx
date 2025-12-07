@@ -1,9 +1,37 @@
-import Link from "next/link";
-import { getBlogs } from "@/lib/queries";
-import { Plus, Edit, Trash2, Eye } from "lucide-react";
+"use client";
 
-export default async function BlogsPage() {
-  const blogs = await getBlogs({});
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { Plus, Edit, Trash2, Eye, Sparkles, Loader2 } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { ContentOptimizerModal } from "@/components/admin/ContentOptimizerModal";
+
+export default function BlogsPage() {
+  const [blogs, setBlogs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedBlog, setSelectedBlog] = useState<any>(null);
+  const [showOptimizer, setShowOptimizer] = useState(false);
+
+  useEffect(() => {
+    loadBlogs();
+  }, []);
+
+  const loadBlogs = async () => {
+    const { data } = await supabase
+      .from("blogs")
+      .select("*")
+      .order("created_at", { ascending: false });
+    setBlogs(data || []);
+    setLoading(false);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -67,6 +95,16 @@ export default async function BlogsPage() {
                 >
                   <Eye className="mx-auto h-4 w-4" />
                 </Link>
+                <button
+                  onClick={() => {
+                    setSelectedBlog(blog);
+                    setShowOptimizer(true);
+                  }}
+                  className="flex-1 rounded-lg bg-purple-50 px-3 py-2 text-center text-sm font-medium text-purple-600 hover:bg-purple-100"
+                  title="AI Optimizer"
+                >
+                  <Sparkles className="mx-auto h-4 w-4" />
+                </button>
                 <Link
                   href={`/admin/bloglar/${blog.id}/duzenle`}
                   className="flex-1 rounded-lg bg-blue-50 px-3 py-2 text-center text-sm font-medium text-blue-600 hover:bg-blue-100"
@@ -114,6 +152,20 @@ export default async function BlogsPage() {
           </p>
         </div>
       </div>
+
+      {/* Content Optimizer Modal */}
+      {showOptimizer && selectedBlog && (
+        <ContentOptimizerModal
+          blog={selectedBlog}
+          onClose={() => {
+            setShowOptimizer(false);
+            setSelectedBlog(null);
+          }}
+          onOptimized={() => {
+            loadBlogs();
+          }}
+        />
+      )}
     </div>
   );
 }
