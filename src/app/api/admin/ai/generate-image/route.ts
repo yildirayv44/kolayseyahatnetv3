@@ -27,6 +27,11 @@ export async function POST(request: NextRequest) {
       colorful: 'vibrant colors, eye-catching, dynamic, energetic',
       illustration: 'flat illustration, vector style, modern design',
       realistic: 'photorealistic, detailed, high quality, professional photography',
+      artistic: 'artistic, creative, imaginative, expressive, unique perspective',
+      vintage: 'vintage, retro, nostalgic, classic, timeless aesthetic',
+      modern: 'modern, contemporary, innovative, cutting-edge, sleek design',
+      abstract: 'abstract, conceptual, artistic interpretation, non-representational',
+      cinematic: 'cinematic, dramatic lighting, film-like, atmospheric, epic composition',
     };
 
     // IMPORTANT: Explicitly instruct NO TEXT in the image

@@ -12,23 +12,31 @@ interface DALLEImageInserterProps {
 export function DALLEImageInserter({ onInsert, onSetCover, mode = 'both' }: DALLEImageInserterProps) {
   const [showModal, setShowModal] = useState(false);
   const [topic, setTopic] = useState("");
-  const [style, setStyle] = useState<'professional' | 'minimalist' | 'colorful' | 'illustration' | 'realistic'>('professional');
-  const [size, setSize] = useState<'1024x1024' | '1792x1024' | '1024x1792'>('1792x1024');
+  const [style, setStyle] = useState('professional');
+  const [size, setSize] = useState<'1024x1024' | '1792x1024' | '1024x1792' | 'custom'>('1792x1024');
+  const [customWidth, setCustomWidth] = useState('1792');
+  const [customHeight, setCustomHeight] = useState('1024');
   const [loading, setLoading] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
 
   const styles = [
-    { id: 'professional', name: 'Profesyonel', emoji: '💼' },
-    { id: 'minimalist', name: 'Minimalist', emoji: '⚪' },
-    { id: 'colorful', name: 'Renkli', emoji: '🎨' },
-    { id: 'illustration', name: 'İllüstrasyon', emoji: '🎭' },
-    { id: 'realistic', name: 'Gerçekçi', emoji: '📸' },
+    { id: 'professional', name: 'Profesyonel', emoji: '💼', desc: 'Temiz, modern' },
+    { id: 'minimalist', name: 'Minimalist', emoji: '⚪', desc: 'Basit, zarif' },
+    { id: 'colorful', name: 'Renkli', emoji: '🎨', desc: 'Canlı, dinamik' },
+    { id: 'illustration', name: 'İllüstrasyon', emoji: '🎭', desc: 'Flat, vektör' },
+    { id: 'realistic', name: 'Gerçekçi', emoji: '📸', desc: 'Fotogerçekçi' },
+    { id: 'artistic', name: 'Sanatsal', emoji: '🖼️', desc: 'Yaratıcı, artistik' },
+    { id: 'vintage', name: 'Vintage', emoji: '📷', desc: 'Retro, nostaljik' },
+    { id: 'modern', name: 'Modern', emoji: '✨', desc: 'Çağdaş, yenilikçi' },
+    { id: 'abstract', name: 'Soyut', emoji: '🌀', desc: 'Kavramsal, soyut' },
+    { id: 'cinematic', name: 'Sinematik', emoji: '🎬', desc: 'Film gibi, dramatik' },
   ];
 
   const sizes = [
-    { id: '1024x1024', name: 'Kare', icon: '⬜' },
-    { id: '1792x1024', name: 'Yatay Banner', icon: '▬' },
-    { id: '1024x1792', name: 'Dikey', icon: '▮' },
+    { id: '1024x1024', name: 'Kare (1:1)', icon: '⬜', desc: '1024×1024' },
+    { id: '1792x1024', name: 'Yatay Banner (16:9)', icon: '▬', desc: '1792×1024' },
+    { id: '1024x1792', name: 'Dikey (9:16)', icon: '▮', desc: '1024×1792' },
+    { id: 'custom', name: 'Özel Boyut', icon: '⚙️', desc: 'Kendin belirle' },
   ];
 
   const handleGenerate = async () => {
@@ -37,14 +45,33 @@ export function DALLEImageInserter({ onInsert, onSetCover, mode = 'both' }: DALL
       return;
     }
 
+    // Validate custom dimensions
+    if (size === 'custom') {
+      const width = parseInt(customWidth);
+      const height = parseInt(customHeight);
+      
+      if (!width || !height || width < 256 || height < 256 || width > 2048 || height > 2048) {
+        alert('Boyutlar 256-2048 arasında olmalıdır!');
+        return;
+      }
+    }
+
     setLoading(true);
     setGeneratedImage(null);
 
     try {
+      const finalSize = size === 'custom' ? `${customWidth}x${customHeight}` : size;
+      
       const response = await fetch('/api/admin/ai/generate-image', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic, style, size }),
+        body: JSON.stringify({ 
+          topic, 
+          style, 
+          size: size === 'custom' ? '1792x1024' : size, // DALL-E only supports specific sizes
+          customWidth: size === 'custom' ? parseInt(customWidth) : undefined,
+          customHeight: size === 'custom' ? parseInt(customHeight) : undefined,
+        }),
       });
 
       const data = await response.json();
@@ -130,22 +157,24 @@ export function DALLEImageInserter({ onInsert, onSetCover, mode = 'both' }: DALL
 
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-3">
-                    Stil
+                    Stil (10 seçenek)
                   </label>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-3 gap-2 max-h-64 overflow-y-auto">
                     {styles.map((s) => (
                       <button
                         key={s.id}
                         type="button"
-                        onClick={() => setStyle(s.id as any)}
-                        className={`p-3 rounded-lg border-2 transition-all text-center ${
+                        onClick={() => setStyle(s.id)}
+                        className={`p-2 rounded-lg border-2 transition-all text-center ${
                           style === s.id
                             ? 'border-blue-600 bg-blue-50'
                             : 'border-slate-200 hover:border-blue-300'
                         }`}
+                        title={s.desc}
                       >
-                        <div className="text-2xl mb-1">{s.emoji}</div>
+                        <div className="text-xl mb-1">{s.emoji}</div>
                         <div className="text-xs font-semibold text-slate-900">{s.name}</div>
+                        <div className="text-[10px] text-slate-500">{s.desc}</div>
                       </button>
                     ))}
                   </div>
@@ -167,13 +196,52 @@ export function DALLEImageInserter({ onInsert, onSetCover, mode = 'both' }: DALL
                             : 'border-slate-200 hover:border-blue-300'
                         }`}
                       >
-                        <div className="flex items-center gap-3">
-                          <div className="text-2xl">{s.icon}</div>
-                          <div className="font-semibold text-slate-900">{s.name}</div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="text-2xl">{s.icon}</div>
+                            <div>
+                              <div className="font-semibold text-slate-900">{s.name}</div>
+                              <div className="text-xs text-slate-500">{s.desc}</div>
+                            </div>
+                          </div>
                         </div>
                       </button>
                     ))}
                   </div>
+                  
+                  {/* Custom Dimensions */}
+                  {size === 'custom' && (
+                    <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <p className="text-xs font-semibold text-blue-900 mb-2">Özel Boyut (256-2048 arası)</p>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="text-xs text-blue-700">Genişlik (px)</label>
+                          <input
+                            type="number"
+                            value={customWidth}
+                            onChange={(e) => setCustomWidth(e.target.value)}
+                            min="256"
+                            max="2048"
+                            className="w-full px-2 py-1 border border-blue-300 rounded text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs text-blue-700">Yükseklik (px)</label>
+                          <input
+                            type="number"
+                            value={customHeight}
+                            onChange={(e) => setCustomHeight(e.target.value)}
+                            min="256"
+                            max="2048"
+                            className="w-full px-2 py-1 border border-blue-300 rounded text-sm"
+                          />
+                        </div>
+                      </div>
+                      <p className="text-xs text-blue-600 mt-2">
+                        ⚠️ Not: DALL-E standart boyutları kullanır, görsel sonradan yeniden boyutlandırılabilir.
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 <button

@@ -18,6 +18,11 @@ export default function ImageGeneratorPage() {
     { id: 'colorful', name: 'Renkli', emoji: '🎨', desc: 'Canlı, dinamik' },
     { id: 'illustration', name: 'İllüstrasyon', emoji: '🎭', desc: 'Flat, vektör' },
     { id: 'realistic', name: 'Gerçekçi', emoji: '📸', desc: 'Fotogerçekçi' },
+    { id: 'artistic', name: 'Sanatsal', emoji: '🖼️', desc: 'Yaratıcı, artistik' },
+    { id: 'vintage', name: 'Vintage', emoji: '📷', desc: 'Retro, nostaljik' },
+    { id: 'modern', name: 'Modern', emoji: '✨', desc: 'Çağdaş, yenilikçi' },
+    { id: 'abstract', name: 'Soyut', emoji: '🌀', desc: 'Kavramsal' },
+    { id: 'cinematic', name: 'Sinematik', emoji: '🎬', desc: 'Film gibi' },
   ];
 
   const sizes = [
@@ -127,21 +132,22 @@ export default function ImageGeneratorPage() {
                 {/* Style */}
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-3">
-                    Stil
+                    Stil (10 seçenek)
                   </label>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-3 max-h-96 overflow-y-auto pr-2">
                     {styles.map((s) => (
                       <button
                         key={s.id}
+                        type="button"
                         onClick={() => setStyle(s.id as any)}
-                        className={`p-4 rounded-lg border-2 transition-all text-left ${
+                        className={`p-3 rounded-lg border-2 transition-all text-left ${
                           style === s.id
                             ? 'border-blue-600 bg-blue-50'
                             : 'border-slate-200 hover:border-blue-300'
                         }`}
                       >
-                        <div className="text-2xl mb-1">{s.emoji}</div>
-                        <div className="font-semibold text-slate-900">{s.name}</div>
+                        <div className="text-xl mb-1">{s.emoji}</div>
+                        <div className="font-semibold text-slate-900 text-sm">{s.name}</div>
                         <div className="text-xs text-slate-500">{s.desc}</div>
                       </button>
                     ))}
