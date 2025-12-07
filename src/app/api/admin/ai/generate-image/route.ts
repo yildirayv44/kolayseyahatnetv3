@@ -1,0 +1,79 @@
+import { NextRequest, NextResponse } from 'next/server';
+import OpenAI from 'openai';
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+/**
+ * Generate custom images with DALL-E 3
+ * POST /api/admin/ai/generate-image
+ */
+export async function POST(request: NextRequest) {
+  try {
+    const { topic, style = 'professional', size = '1024x1024' } = await request.json();
+
+    if (!topic) {
+      return NextResponse.json(
+        { success: false, error: 'Topic is required' },
+        { status: 400 }
+      );
+    }
+
+    // Create optimized prompt based on style
+    const stylePrompts: { [key: string]: string } = {
+      professional: 'professional, clean, modern, business-like, high quality',
+      minimalist: 'minimalist, simple, clean lines, modern, elegant',
+      colorful: 'vibrant colors, eye-catching, dynamic, energetic',
+      illustration: 'flat illustration, vector style, modern design',
+      realistic: 'photorealistic, detailed, high quality, professional photography',
+    };
+
+    const prompt = `Create a ${stylePrompts[style] || stylePrompts.professional} image about: ${topic}. 
+The image should be suitable for a travel and visa information website. 
+No text in the image. Clean and professional look.`;
+
+    console.log(`🎨 Generating image with DALL-E 3: ${topic}`);
+    console.log(`📐 Size: ${size}, Style: ${style}`);
+
+    const response = await openai.images.generate({
+      model: 'dall-e-3',
+      prompt,
+      n: 1,
+      size: size as '1024x1024' | '1792x1024' | '1024x1792',
+      quality: 'standard',
+      style: 'vivid',
+    });
+
+    const imageUrl = response.data?.[0]?.url;
+    const revisedPrompt = response.data?.[0]?.revised_prompt;
+
+    if (!imageUrl) {
+      throw new Error('Failed to generate image');
+    }
+
+    console.log('✅ Image generated successfully');
+
+    return NextResponse.json({
+      success: true,
+      imageUrl,
+      revisedPrompt,
+      originalPrompt: prompt,
+    });
+  } catch (error: any) {
+    console.error('DALL-E image generation error:', error);
+    
+    // Check if it's a content policy violation
+    if (error.message?.includes('content_policy_violation')) {
+      return NextResponse.json(
+        { success: false, error: 'İçerik politikası ihlali. Lütfen farklı bir konu deneyin.' },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json(
+      { success: false, error: error.message },
+      { status: 500 }
+    );
+  }
+}
