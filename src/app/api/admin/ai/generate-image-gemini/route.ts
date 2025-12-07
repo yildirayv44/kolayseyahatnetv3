@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { uploadImageToStorage } from '@/lib/uploadImageToStorage';
 
 export async function POST(request: NextRequest) {
   try {
@@ -87,14 +88,20 @@ Clean, professional, and text-free design.`;
       throw new Error('No image data in response');
     }
 
-    // Convert base64 to data URL
-    const imageUrl = `data:image/png;base64,${base64Image}`;
+    console.log(`✅ Imagen image generated, uploading to storage...`);
 
-    console.log(`✅ Imagen image generated successfully`);
+    // Upload to Supabase Storage
+    const permanentImageUrl = await uploadImageToStorage(
+      base64Image,
+      'ai-images/imagen',
+      `imagen-${Date.now()}.png`
+    );
+
+    console.log(`✅ Image uploaded to permanent storage`);
 
     return NextResponse.json({
       success: true,
-      imageUrl: imageUrl,
+      imageUrl: permanentImageUrl,
       provider: 'imagen',
       model: 'imagen-3.0',
       mimeType: imageData.mimeType || 'image/png',

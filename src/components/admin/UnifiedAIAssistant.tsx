@@ -104,7 +104,29 @@ export function UnifiedAIAssistant({
       const data = await response.json();
       if (data.photos && data.photos.length > 0) {
         const randomIndex = Math.floor(Math.random() * Math.min(data.photos.length, 10));
-        return data.photos[randomIndex].src.large;
+        const pexelsImageUrl = data.photos[randomIndex].src.large;
+        
+        // Upload Pexels image to our storage
+        try {
+          const uploadResponse = await fetch('/api/admin/upload-external-image', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              imageUrl: pexelsImageUrl,
+              folder: 'pexels-images'
+            }),
+          });
+          
+          const uploadData = await uploadResponse.json();
+          if (uploadData.success) {
+            return uploadData.permanentUrl;
+          }
+        } catch (uploadError) {
+          console.error('Failed to upload Pexels image:', uploadError);
+        }
+        
+        // Fallback to original URL if upload fails
+        return pexelsImageUrl;
       }
       return null;
     } catch (error) {

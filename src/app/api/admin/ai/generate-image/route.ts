@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
+import { uploadImageToStorage } from '@/lib/uploadImageToStorage';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -53,18 +54,27 @@ Clean, professional, and text-free design.`;
       style: 'vivid',
     });
 
-    const imageUrl = response.data?.[0]?.url;
+    const tempImageUrl = response.data?.[0]?.url;
     const revisedPrompt = response.data?.[0]?.revised_prompt;
 
-    if (!imageUrl) {
+    if (!tempImageUrl) {
       throw new Error('Failed to generate image');
     }
 
-    console.log('✅ Image generated successfully');
+    console.log('✅ DALL-E image generated, uploading to storage...');
+
+    // Upload to Supabase Storage
+    const permanentImageUrl = await uploadImageToStorage(
+      tempImageUrl,
+      'ai-images/dalle',
+      `dalle-${Date.now()}.png`
+    );
+
+    console.log('✅ Image uploaded to permanent storage');
 
     return NextResponse.json({
       success: true,
-      imageUrl,
+      imageUrl: permanentImageUrl,
       revisedPrompt,
       originalPrompt: prompt,
     });
