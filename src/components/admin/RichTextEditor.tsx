@@ -18,9 +18,19 @@ import {
   Loader2,
   Search,
   Wand2,
+  Strikethrough,
+  Highlighter,
+  Underline,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  Save,
+  FileText,
+  Trash2,
 } from "lucide-react";
 import { PexelsImagePicker } from "./PexelsImagePicker";
 import { DALLEImageInserter } from "./DALLEImageInserter";
+import { TableEditor } from "./TableEditor";
 
 interface RichTextEditorProps {
   value: string;
@@ -33,9 +43,49 @@ export function RichTextEditor({ value, onChange, placeholder, onCoverImageChang
   const [showPreview, setShowPreview] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [showPexelsPicker, setShowPexelsPicker] = useState(false);
-  const [simpleMode, setSimpleMode] = useState(true); // Basit mod varsayılan
+  const [simpleMode, setSimpleMode] = useState(true);
+  const [showTableEditor, setShowTableEditor] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Auto-save functionality
+  const handleAutoSave = () => {
+    if (value) {
+      localStorage.setItem('draft_content', value);
+      localStorage.setItem('draft_timestamp', new Date().toISOString());
+      setLastSaved(new Date());
+    }
+  };
+
+  // Auto-save on change (debounced)
+  const handleChange = (newValue: string) => {
+    onChange(newValue);
+    
+    if (autoSaveTimerRef.current) {
+      clearTimeout(autoSaveTimerRef.current);
+    }
+    
+    autoSaveTimerRef.current = setTimeout(() => {
+      handleAutoSave();
+    }, 2000); // Save after 2 seconds of inactivity
+  };
+
+  const loadDraft = () => {
+    const draft = localStorage.getItem('draft_content');
+    if (draft && confirm('Kaydedilmiş taslak bulundu. Yüklemek ister misiniz?')) {
+      onChange(draft);
+    }
+  };
+
+  const clearDraft = () => {
+    if (confirm('Taslağı silmek istediğinizden emin misiniz?')) {
+      localStorage.removeItem('draft_content');
+      localStorage.removeItem('draft_timestamp');
+      setLastSaved(null);
+    }
+  };
 
   const insertText = (before: string, after: string = "") => {
     const textarea = textareaRef.current;
@@ -46,14 +96,52 @@ export function RichTextEditor({ value, onChange, placeholder, onCoverImageChang
     const selectedText = value.substring(start, end);
     const newText = value.substring(0, start) + before + selectedText + after + value.substring(end);
 
-    onChange(newText);
+    handleChange(newText);
 
-    // Set cursor position after insertion
     setTimeout(() => {
       textarea.focus();
       const newCursorPos = start + before.length + selectedText.length;
       textarea.setSelectionRange(newCursorPos, newCursorPos);
     }, 0);
+  };
+
+  // Markdown shortcuts handler
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Ctrl/Cmd + B = Bold
+    if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
+      e.preventDefault();
+      insertText('<strong>', '</strong>');
+    }
+    // Ctrl/Cmd + I = Italic
+    else if ((e.ctrlKey || e.metaKey) && e.key === 'i') {
+      e.preventDefault();
+      insertText('<em>', '</em>');
+    }
+    // Ctrl/Cmd + K = Link
+    else if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      e.preventDefault();
+      insertLink();
+    }
+    // Ctrl/Cmd + Shift + X = Strikethrough
+    else if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'X') {
+      e.preventDefault();
+      insertText('<del>', '</del>');
+    }
+    // Ctrl/Cmd + U = Underline
+    else if ((e.ctrlKey || e.metaKey) && e.key === 'u') {
+      e.preventDefault();
+      insertText('<u>', '</u>');
+    }
+    // Ctrl/Cmd + Shift + H = Highlight
+    else if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'H') {
+      e.preventDefault();
+      insertText('<mark>', '</mark>');
+    }
+    // Ctrl/Cmd + S = Save
+    else if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+      e.preventDefault();
+      handleAutoSave();
+    }
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -205,22 +293,28 @@ export function RichTextEditor({ value, onChange, placeholder, onCoverImageChang
   };
 
   const toolbarButtons = [
-    { icon: Heading2, action: () => insertText("<h2>", "</h2>"), title: "Başlık 2" },
-    { icon: Heading3, action: () => insertText("<h3>", "</h3>"), title: "Başlık 3" },
-    { icon: Bold, action: () => insertText("<strong>", "</strong>"), title: "Kalın" },
-    { icon: Italic, action: () => insertText("<em>", "</em>"), title: "İtalik" },
+    { icon: Heading2, action: () => insertText("<h2>", "</h2>"), title: "Başlık 2 (Ctrl+2)" },
+    { icon: Heading3, action: () => insertText("<h3>", "</h3>"), title: "Başlık 3 (Ctrl+3)" },
+    { icon: Bold, action: () => insertText("<strong>", "</strong>"), title: "Kalın (Ctrl+B)" },
+    { icon: Italic, action: () => insertText("<em>", "</em>"), title: "İtalik (Ctrl+I)" },
+    { icon: Underline, action: () => insertText("<u>", "</u>"), title: "Altı Çizili (Ctrl+U)" },
+    { icon: Strikethrough, action: () => insertText("<del>", "</del>"), title: "Üstü Çizili (Ctrl+Shift+X)" },
+    { icon: Highlighter, action: () => insertText("<mark>", "</mark>"), title: "Vurgula (Ctrl+Shift+H)" },
     { icon: List, action: () => insertText("<ul>\n  <li>", "</li>\n</ul>"), title: "Liste" },
     { icon: ListOrdered, action: () => insertText("<ol>\n  <li>", "</li>\n</ol>"), title: "Numaralı Liste" },
     { icon: Quote, action: () => insertText("<blockquote>", "</blockquote>"), title: "Alıntı" },
-    { icon: LinkIcon, action: insertLink, title: "Link" },
-    { icon: Table, action: insertTable, title: "Tablo" },
+    { icon: LinkIcon, action: insertLink, title: "Link (Ctrl+K)" },
+    { icon: Table, action: () => setShowTableEditor(true), title: "Tablo Ekle" },
     { icon: Code, action: () => insertText("<code>", "</code>"), title: "Kod" },
+    { icon: AlignLeft, action: () => insertText('<div style="text-align: left;">', '</div>'), title: "Sola Hizala" },
+    { icon: AlignCenter, action: () => insertText('<div style="text-align: center;">', '</div>'), title: "Ortala" },
+    { icon: AlignRight, action: () => insertText('<div style="text-align: right;">', '</div>'), title: "Sağa Hizala" },
   ];
 
   return (
     <div className="space-y-3">
-      {/* Mode Toggle */}
-      <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-3">
+      {/* Mode Toggle & Draft Controls */}
+      <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-3 flex-wrap gap-3">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-slate-700">Düzenleme Modu:</span>
           <button
@@ -246,9 +340,43 @@ export function RichTextEditor({ value, onChange, placeholder, onCoverImageChang
             🔧 HTML Mod
           </button>
         </div>
-        <p className="text-xs text-slate-500">
-          {simpleMode ? 'Basit metin düzenleme' : 'Gelişmiş HTML düzenleme'}
-        </p>
+        
+        <div className="flex items-center gap-2">
+          {lastSaved && (
+            <span className="text-xs text-green-600 flex items-center gap-1">
+              <Save className="h-3 w-3" />
+              {lastSaved.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={loadDraft}
+            className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-blue-600 hover:bg-blue-50 rounded transition-colors"
+            title="Taslak Yükle"
+          >
+            <FileText className="h-3 w-3" />
+            Taslak
+          </button>
+          <button
+            type="button"
+            onClick={handleAutoSave}
+            className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-green-600 hover:bg-green-50 rounded transition-colors"
+            title="Kaydet (Ctrl+S)"
+          >
+            <Save className="h-3 w-3" />
+            Kaydet
+          </button>
+          {localStorage.getItem('draft_content') && (
+            <button
+              type="button"
+              onClick={clearDraft}
+              className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-50 rounded transition-colors"
+              title="Taslağı Sil"
+            >
+              <Trash2 className="h-3 w-3" />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Toolbar - Only show in HTML mode */}
@@ -357,7 +485,8 @@ export function RichTextEditor({ value, onChange, placeholder, onCoverImageChang
             <textarea
               ref={textareaRef}
               value={value}
-              onChange={(e) => onChange(e.target.value)}
+              onChange={(e) => handleChange(e.target.value)}
+              onKeyDown={handleKeyDown}
               placeholder={placeholder || "HTML içeriğinizi buraya yazın..."}
               className="min-h-[400px] w-full rounded-lg border border-slate-200 p-4 font-mono text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
@@ -404,6 +533,20 @@ export function RichTextEditor({ value, onChange, placeholder, onCoverImageChang
         <PexelsImagePicker
           onSelect={handlePexelsSelect}
           onClose={() => setShowPexelsPicker(false)}
+        />
+      )}
+
+      {/* Table Editor Modal */}
+      {showTableEditor && (
+        <TableEditor
+          onInsert={(tableHtml) => {
+            const textarea = textareaRef.current;
+            if (!textarea) return;
+            const start = textarea.selectionStart;
+            const newText = value.substring(0, start) + '\n' + tableHtml + '\n' + value.substring(start);
+            handleChange(newText);
+          }}
+          onClose={() => setShowTableEditor(false)}
         />
       )}
     </div>
