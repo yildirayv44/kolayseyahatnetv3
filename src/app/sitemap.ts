@@ -106,7 +106,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
+  // Helper function for valid dates
+  const getValidDate = (dateStr: string | null | undefined) => {
+    if (!dateStr) return new Date();
+    const date = new Date(dateStr);
+    // Check if date is valid and not before 2020
+    if (isNaN(date.getTime()) || date.getFullYear() < 2020) {
+      return new Date();
+    }
+    return date;
+  };
+
   // Country pages - both TR and EN
+  const seenSlugs = new Set<string>();
   const countryPages = countries.flatMap((country: any) => {
     // Use slug from database if available, otherwise skip
     if (!country.slug) {
@@ -114,18 +126,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       return [];
     }
     
+    // Skip duplicate slugs
+    if (seenSlugs.has(country.slug)) {
+      console.warn(`Duplicate slug detected: ${country.slug} for country ${country.name}, skipping`);
+      return [];
+    }
+    seenSlugs.add(country.slug);
+    
+    const lastModified = getValidDate(country.updated_at || country.created_at);
+    
     return [
       // Turkish version (no prefix)
       {
         url: `${baseUrl}/${country.slug}`,
-        lastModified: new Date(country.updated_at || country.created_at),
+        lastModified,
         changeFrequency: "weekly" as const,
         priority: 0.8,
       },
       // English version (with /en prefix)
       {
         url: `${baseUrl}/en/${country.slug}`,
-        lastModified: new Date(country.updated_at || country.created_at),
+        lastModified,
         changeFrequency: "weekly" as const,
         priority: 0.8,
       },
@@ -142,7 +163,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })
     .map((blog: any) => ({
       url: `${baseUrl}/blog/${blog.taxonomy_slug}`,
-      lastModified: new Date(blog.updated_at || blog.created_at),
+      lastModified: getValidDate(blog.updated_at || blog.created_at),
       changeFrequency: "monthly" as const,
       priority: 0.6,
     }));
@@ -150,7 +171,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Dynamic custom pages from database
   const dynamicPages = customPages.map((page: any) => ({
     url: `${baseUrl}/${page.slug}`,
-    lastModified: new Date(page.updated_at),
+    lastModified: getValidDate(page.updated_at),
     changeFrequency: (page.page_type === "legal" ? "yearly" : "monthly") as "yearly" | "monthly",
     priority: page.page_type === "legal" ? 0.4 : page.page_type === "corporate" ? 0.6 : 0.5,
   }));
