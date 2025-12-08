@@ -24,6 +24,7 @@ export async function POST(request: NextRequest) {
       ALTER TABLE countries ADD COLUMN IF NOT EXISTS processing_time VARCHAR(255);
       
       -- JSON array fields
+      ALTER TABLE countries ADD COLUMN IF NOT EXISTS application_steps JSONB DEFAULT '[]'::jsonb;
       ALTER TABLE countries ADD COLUMN IF NOT EXISTS required_documents JSONB DEFAULT '[]'::jsonb;
       ALTER TABLE countries ADD COLUMN IF NOT EXISTS important_notes JSONB DEFAULT '[]'::jsonb;
       ALTER TABLE countries ADD COLUMN IF NOT EXISTS travel_tips JSONB DEFAULT '[]'::jsonb;
@@ -77,6 +78,7 @@ export async function POST(request: NextRequest) {
         "max_stay_duration",
         "visa_fee",
         "processing_time",
+        "application_steps",
         "required_documents",
         "important_notes",
         "travel_tips",

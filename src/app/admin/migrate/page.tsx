@@ -64,6 +64,7 @@ export default function MigratePage() {
             <div className="rounded-lg border border-slate-200 p-3">
               <h3 className="mb-2 font-semibold text-slate-900">Listeler (JSONB)</h3>
               <ul className="space-y-1 text-sm text-slate-600">
+                <li>• application_steps</li>
                 <li>• required_documents</li>
                 <li>• important_notes</li>
                 <li>• travel_tips</li>
