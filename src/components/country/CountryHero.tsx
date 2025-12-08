@@ -1,7 +1,8 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowRight, PhoneCall, Clock, CheckCircle2, Users, Shield, Package, MessageCircleQuestion, FileQuestion } from "lucide-react";
+import { ArrowRight, PhoneCall, Clock, CheckCircle2, Users, Shield, Package, MessageCircleQuestion, FileQuestion, Globe, DollarSign } from "lucide-react";
 import { t } from "@/i18n/translations";
 import type { Locale } from "@/i18n/translations";
 
@@ -15,11 +16,36 @@ interface CountryHeroProps {
     visa_required?: boolean;
     visa_type?: string;
     price_range?: string;
+    country_code?: string;
   };
   locale?: Locale;
+  products?: Array<{
+    id: number;
+    name: string;
+    price: string;
+    currency_id: number;
+  }>;
 }
 
-export function CountryHero({ country, locale = "tr" }: CountryHeroProps) {
+export function CountryHero({ country, locale = "tr", products = [] }: CountryHeroProps) {
+  const [visaData, setVisaData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (country.country_code) {
+      fetch('/api/admin/visa-requirements/fetch-passportindex')
+        .then(res => res.json())
+        .then(data => {
+          const visa = data.data?.find((v: any) => v.countryCode === country.country_code);
+          setVisaData(visa);
+          setLoading(false);
+        })
+        .catch(() => setLoading(false));
+    } else {
+      setLoading(false);
+    }
+  }, [country.country_code]);
+
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
@@ -28,6 +54,16 @@ export function CountryHero({ country, locale = "tr" }: CountryHeroProps) {
       const offsetPosition = elementPosition + window.pageYOffset - offset;
       window.scrollTo({ top: offsetPosition, behavior: "smooth" });
     }
+  };
+
+  const getVisaStatusConfig = (status: string) => {
+    const configs: Record<string, { label: string; color: string; bgColor: string; icon: string }> = {
+      'visa-free': { label: 'Vizesiz Giriş', color: 'text-green-700', bgColor: 'bg-green-50 border-green-200', icon: '✅' },
+      'visa-on-arrival': { label: 'Varışta Vize', color: 'text-blue-700', bgColor: 'bg-blue-50 border-blue-200', icon: '🛬' },
+      'eta': { label: 'eTA Gerekli', color: 'text-cyan-700', bgColor: 'bg-cyan-50 border-cyan-200', icon: '📧' },
+      'visa-required': { label: 'Vize Gerekli', color: 'text-orange-700', bgColor: 'bg-orange-50 border-orange-200', icon: '🏛️' },
+    };
+    return configs[status] || configs['visa-required'];
   };
 
   return (
@@ -110,28 +146,74 @@ export function CountryHero({ country, locale = "tr" }: CountryHeroProps) {
             </div>
           </div>
 
-          {/* Additional Info */}
-          {(country.visa_type || country.price_range) && (
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-              {country.visa_required !== undefined && (
-                <div className="rounded-lg bg-white/80 backdrop-blur-sm border border-primary/20 px-4 py-3">
+          {/* Visa Requirements from PassportIndex */}
+          {visaData && (
+            <div className="rounded-xl border-2 bg-white p-4">
+              <div className="mb-3 flex items-center gap-2">
+                <Globe className="h-5 w-5 text-primary" />
+                <h3 className="font-bold text-slate-900">Vize Gereklilikleri</h3>
+              </div>
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+                <div className={`rounded-lg border-2 px-4 py-3 ${getVisaStatusConfig(visaData.visaStatus).bgColor}`}>
                   <div className="text-xs text-slate-600 mb-1">Vize Durumu</div>
-                  <div className="text-sm font-bold text-slate-900">
-                    {country.visa_required ? "Vize Gerekli" : "Vizesiz Giriş"}
+                  <div className={`text-sm font-bold ${getVisaStatusConfig(visaData.visaStatus).color}`}>
+                    {getVisaStatusConfig(visaData.visaStatus).icon} {getVisaStatusConfig(visaData.visaStatus).label}
                   </div>
                 </div>
-              )}
-              {country.visa_type && (
-                <div className="rounded-lg bg-white/80 backdrop-blur-sm border border-primary/20 px-4 py-3">
-                  <div className="text-xs text-slate-600 mb-1">Vize Türü</div>
-                  <div className="text-sm font-bold text-slate-900">{country.visa_type}</div>
-                </div>
-              )}
-              {country.price_range && (
-                <div className="rounded-lg bg-white/80 backdrop-blur-sm border border-primary/20 px-4 py-3">
-                  <div className="text-xs text-slate-600 mb-1">Ücret Aralığı</div>
-                  <div className="text-sm font-bold text-slate-900">{country.price_range}</div>
-                </div>
+                {visaData.allowedStay && (
+                  <div className="rounded-lg bg-white/80 backdrop-blur-sm border border-slate-200 px-4 py-3">
+                    <div className="text-xs text-slate-600 mb-1">Kalış Süresi</div>
+                    <div className="text-sm font-bold text-slate-900">{visaData.allowedStay}</div>
+                  </div>
+                )}
+                {visaData.conditions && (
+                  <div className="rounded-lg bg-white/80 backdrop-blur-sm border border-slate-200 px-4 py-3">
+                    <div className="text-xs text-slate-600 mb-1">Koşullar</div>
+                    <div className="text-sm font-bold text-slate-900">{visaData.conditions}</div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Visa Packages - Compact */}
+          {products.length > 0 && (
+            <div className="rounded-xl border-2 border-primary/20 bg-gradient-to-r from-primary/5 to-blue-50 p-4">
+              <div className="mb-3 flex items-center gap-2">
+                <Package className="h-5 w-5 text-primary" />
+                <h3 className="font-bold text-slate-900">Vize Paketleri</h3>
+              </div>
+              <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
+                {products.slice(0, 3).map((product, index) => (
+                  <div
+                    key={product.id}
+                    className="group relative rounded-lg border-2 border-white bg-white p-3 transition-all hover:border-primary hover:shadow-lg"
+                  >
+                    {index === 0 && (
+                      <div className="absolute -right-1 -top-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-white">
+                        ⭐ Popüler
+                      </div>
+                    )}
+                    <div className="mb-2">
+                      <div className="text-sm font-bold text-slate-900">{product.name}</div>
+                    </div>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-lg font-bold text-primary">
+                        {product.currency_id === 1 ? '₺' : product.currency_id === 2 ? '$' : '€'}
+                        {Number(product.price).toFixed(0)}
+                      </span>
+                      <span className="text-xs text-slate-500">/ başvuru</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {products.length > 3 && (
+                <button
+                  onClick={() => scrollToSection('vize-paketleri')}
+                  className="mt-2 text-xs text-primary hover:underline"
+                >
+                  Tüm paketleri gör →
+                </button>
               )}
             </div>
           )}

@@ -22,7 +22,6 @@ import { AskQuestionForm } from "@/components/country/AskQuestionForm";
 import { RelatedPages } from "@/components/country/RelatedPages";
 import { ContentWithIds } from "@/components/country/ContentWithIds";
 import { ExtendedCountryInfo } from "@/components/country/ExtendedCountryInfo";
-import { VisaRequirementsSection } from "@/components/country/VisaRequirementsSection";
 import { getBlogSlug, parseH2Headings, getMenuSlug } from "@/lib/helpers";
 import { GenericCommentSection } from "@/components/comments/GenericCommentSection";
 import { getLocalizedFields } from "@/lib/locale-content";
@@ -540,18 +539,12 @@ export default async function CountryPage({ params }: CountryPageParams) {
         ]}
       />
 
-      {/* HERO - New Improved Version */}
-      <CountryHero country={country} locale={locale as 'tr' | 'en'} />
-
-      {/* VISA REQUIREMENTS - PassportIndex Data (Moved to top) */}
-      {country.country_code && (
-        <section id="vize-gereklilikleri" className="scroll-mt-20">
-          <VisaRequirementsSection 
-            countryCode={country.country_code} 
-            countryName={country.name}
-          />
-        </section>
-      )}
+      {/* HERO - New Improved Version with Visa Requirements & Packages */}
+      <CountryHero 
+        country={country} 
+        locale={locale as 'tr' | 'en'} 
+        products={products}
+      />
 
       {/* STICKY CTA */}
       <StickyCTA countryName={country.name} />
