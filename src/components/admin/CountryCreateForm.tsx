@@ -50,6 +50,7 @@ export function CountryCreateForm() {
     max_stay_duration: "",
     visa_fee: "",
     processing_time: "",
+    application_steps: [] as string[],
     required_documents: [] as string[],
     important_notes: [] as string[],
     travel_tips: [] as string[],
@@ -474,6 +475,14 @@ export function CountryCreateForm() {
                 />
               </div>
             </div>
+
+            <ArrayInput
+              label="Başvuru Adımları"
+              value={formData.application_steps}
+              onChange={(value) => setFormData({ ...formData, application_steps: value })}
+              placeholder="Örn: Adım 1: Kolay Seyahat uzman danışmanlarıyla iletişime geçin"
+              helpText="Vize başvuru sürecinin adım adım açıklaması"
+            />
 
             <ArrayInput
               label="Gerekli Belgeler (Liste)"

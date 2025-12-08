@@ -53,6 +53,7 @@ export function CountryEditForm({ country }: { country: any }) {
     max_stay_duration: country.max_stay_duration || "",
     visa_fee: country.visa_fee || "",
     processing_time: country.processing_time || "",
+    application_steps: country.application_steps || [],
     required_documents: country.required_documents || [],
     important_notes: country.important_notes || [],
     travel_tips: country.travel_tips || [],
@@ -545,6 +546,14 @@ export function CountryEditForm({ country }: { country: any }) {
                 />
               </div>
             </div>
+
+            <ArrayInput
+              label="Başvuru Adımları"
+              value={formData.application_steps}
+              onChange={(value) => setFormData({ ...formData, application_steps: value })}
+              placeholder="Örn: Adım 1: Kolay Seyahat uzman danışmanlarıyla iletişime geçin"
+              helpText="Vize başvuru sürecinin adım adım açıklaması"
+            />
 
             <ArrayInput
               label="Gerekli Belgeler (Liste)"

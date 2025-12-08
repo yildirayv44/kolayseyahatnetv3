@@ -1,6 +1,6 @@
 "use client";
 
-import { MapPin, Calendar, Heart, AlertCircle, Plane, FileText, Phone } from "lucide-react";
+import { MapPin, Calendar, Heart, AlertCircle, Plane, FileText, Phone, CheckCircle2 } from "lucide-react";
 
 interface ExtendedCountryInfoProps {
   country: any;
@@ -11,6 +11,7 @@ export function ExtendedCountryInfo({ country, locale }: ExtendedCountryInfoProp
   const hasCountryInfo = country.capital || country.currency || country.language || country.timezone;
   const hasPopularCities = country.popular_cities && country.popular_cities.length > 0;
   const hasTravelTips = country.travel_tips && country.travel_tips.length > 0;
+  const hasApplicationSteps = country.application_steps && country.application_steps.length > 0;
   // Check both new array format and old HTML format for backward compatibility
   const hasRequiredDocs = (country.required_documents && country.required_documents.length > 0) || country.req_document;
   const hasImportantNotes = country.important_notes && country.important_notes.length > 0;
@@ -19,8 +20,8 @@ export function ExtendedCountryInfo({ country, locale }: ExtendedCountryInfoProp
      country.emergency_contacts.police || country.emergency_contacts.ambulance);
 
   // Hiçbir extended field yoksa component'i gösterme
-  if (!hasCountryInfo && !hasPopularCities && !hasTravelTips && !hasRequiredDocs && 
-      !hasImportantNotes && !hasEmergencyContacts && !country.best_time_to_visit && 
+  if (!hasCountryInfo && !hasPopularCities && !hasTravelTips && !hasApplicationSteps && 
+      !hasRequiredDocs && !hasImportantNotes && !hasEmergencyContacts && !country.best_time_to_visit && 
       !country.health_requirements && !country.customs_regulations && !country.why_kolay_seyahat) {
     return null;
   }
@@ -125,6 +126,28 @@ export function ExtendedCountryInfo({ country, locale }: ExtendedCountryInfoProp
               </li>
             ))}
           </ul>
+        </section>
+      )}
+
+      {/* Başvuru Adımları */}
+      {hasApplicationSteps && (
+        <section className="card border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-blue-50">
+          <div className="mb-4 flex items-center gap-2">
+            <CheckCircle2 className="h-5 w-5 text-primary" />
+            <h2 className="text-xl font-bold text-slate-900">
+              {locale === 'en' ? 'Application Steps' : 'Başvuru Adımları'}
+            </h2>
+          </div>
+          <ol className="space-y-3">
+            {country.application_steps.map((step: string, index: number) => (
+              <li key={index} className="flex items-start gap-3">
+                <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
+                  {index + 1}
+                </span>
+                <span className="flex-1 pt-1 text-slate-700">{step}</span>
+              </li>
+            ))}
+          </ol>
         </section>
       )}
 

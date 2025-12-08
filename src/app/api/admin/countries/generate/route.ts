@@ -56,6 +56,13 @@ Aşağıdaki JSON formatında yanıt ver:
   "seoDescription": "SEO için optimize edilmiş açıklama (max 160 karakter, ülke vize bilgileri + CTA)",
   "description": "Ülke hakkında 2-3 cümlelik kısa açıklama (seyahat odaklı)",
   "visaDescription": "SADECE GENEL ANLATIMSAL İÇERİK (EN AZ 8-10 paragraf, 1500+ kelime). ÖNEMLİ: Liste, madde, tablo kullanma! Sadece akıcı paragraflar. İçerik: 1) Ülke hakkında kapsamlı bilgi - tarihi, kültürü, turistik yerler, yaşam tarzı (3-4 paragraf), 2) Vize politikası genel açıklama - hangi durumlarda gerekli, vize türleri hakkında genel bilgi (2-3 paragraf), 3) Başvuru süreci genel anlatım - nasıl yapılır, nelere dikkat edilmeli, süreç nasıl işler (2-3 paragraf), 4) Kolay Seyahat avantajları - neden tercih edilmeli, nasıl kolaylık sağlar (2 paragraf). HTML formatında sadece <h3> başlıklar ve <p> paragraflar kullan. Liste veya madde işareti kullanma!",
+  "applicationSteps": [
+    "Adım 1: Kolay Seyahat uzman danışmanlarıyla iletişime geçin ve vize türünüzü belirleyin",
+    "Adım 2: Gerekli belgeleri hazırlayın ve danışmanlarımıza iletin",
+    "Adım 3: Başvuru formunu doldurun (danışmanlarımız yardımcı olur)",
+    "Adım 4: Randevu alın ve konsolosluğa gidin",
+    "Adım 5: Vize sonucunu bekleyin (takip için danışmanlarınızla iletişimde kalın)"
+  ],
   "requiredDocuments": [
     "Gerekli belge 1",
     "Gerekli belge 2",
@@ -155,6 +162,7 @@ SADECE JSON yanıtı ver, başka açıklama ekleme.`;
         max_stay_duration: countryData.maxStayDuration,
         visa_fee: countryData.visaFee,
         processing_time: countryData.processingTime,
+        application_steps: countryData.applicationSteps,
         required_documents: countryData.requiredDocuments,
         important_notes: countryData.importantNotes,
         travel_tips: countryData.travelTips,
