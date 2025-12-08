@@ -22,6 +22,7 @@ import { AskQuestionForm } from "@/components/country/AskQuestionForm";
 import { RelatedPages } from "@/components/country/RelatedPages";
 import { ContentWithIds } from "@/components/country/ContentWithIds";
 import { ExtendedCountryInfo } from "@/components/country/ExtendedCountryInfo";
+import { VisaRequirementsSection } from "@/components/country/VisaRequirementsSection";
 import { getBlogSlug, parseH2Headings, getMenuSlug } from "@/lib/helpers";
 import { GenericCommentSection } from "@/components/comments/GenericCommentSection";
 import { getLocalizedFields } from "@/lib/locale-content";
@@ -633,6 +634,16 @@ export default async function CountryPage({ params }: CountryPageParams) {
         <section id="gerekli-belgeler" className="scroll-mt-20 space-y-3">
           <h2 className="text-2xl font-bold text-slate-900">Gerekli Belgeler</h2>
           <ContentWithIds html={fixedReqDocument} />
+        </section>
+      )}
+
+      {/* VISA REQUIREMENTS - PassportIndex Data */}
+      {country.country_code && (
+        <section id="vize-gereklilikleri" className="scroll-mt-20">
+          <VisaRequirementsSection 
+            countryCode={country.country_code} 
+            countryName={country.name}
+          />
         </section>
       )}
 
