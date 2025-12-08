@@ -543,6 +543,16 @@ export default async function CountryPage({ params }: CountryPageParams) {
       {/* HERO - New Improved Version */}
       <CountryHero country={country} locale={locale as 'tr' | 'en'} />
 
+      {/* VISA REQUIREMENTS - PassportIndex Data (Moved to top) */}
+      {country.country_code && (
+        <section id="vize-gereklilikleri" className="scroll-mt-20">
+          <VisaRequirementsSection 
+            countryCode={country.country_code} 
+            countryName={country.name}
+          />
+        </section>
+      )}
+
       {/* STICKY CTA */}
       <StickyCTA countryName={country.name} />
 
@@ -634,16 +644,6 @@ export default async function CountryPage({ params }: CountryPageParams) {
         <section id="gerekli-belgeler" className="scroll-mt-20 space-y-3">
           <h2 className="text-2xl font-bold text-slate-900">Gerekli Belgeler</h2>
           <ContentWithIds html={fixedReqDocument} />
-        </section>
-      )}
-
-      {/* VISA REQUIREMENTS - PassportIndex Data */}
-      {country.country_code && (
-        <section id="vize-gereklilikleri" className="scroll-mt-20">
-          <VisaRequirementsSection 
-            countryCode={country.country_code} 
-            countryName={country.name}
-          />
         </section>
       )}
 
