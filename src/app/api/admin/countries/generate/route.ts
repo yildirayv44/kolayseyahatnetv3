@@ -168,7 +168,6 @@ SADECE JSON yanıtı ver, başka açıklama ekleme.`;
         max_stay_duration: countryData.maxStayDuration,
         visa_fee: countryData.visaFee,
         processing_time: countryData.processingTime,
-        application_steps: countryData.applicationSteps,
         required_documents: countryData.requiredDocuments,
         important_notes: countryData.importantNotes,
         travel_tips: countryData.travelTips,

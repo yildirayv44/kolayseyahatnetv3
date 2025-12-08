@@ -53,17 +53,10 @@ Clean, professional, and text-free design.`;
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          instances: [
-            {
-              prompt: prompt,
-            },
-          ],
-          parameters: {
-            sampleCount: 1,
-            aspectRatio: size === '1024x1024' ? '1:1' : size === '1792x1024' ? '16:9' : '9:16',
-            negativePrompt: 'text, letters, words, writing, watermark, signature',
-            safetyFilterLevel: 'BLOCK_ONLY_HIGH',
-          },
+          prompt: prompt,
+          numberOfImages: 1,
+          aspectRatio: size === '1024x1024' ? '1:1' : size === '1792x1024' ? '16:9' : '9:16',
+          safetyFilterLevel: 'BLOCK_ONLY_HIGH',
         }),
       }
     );
