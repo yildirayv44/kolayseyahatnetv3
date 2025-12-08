@@ -27,6 +27,7 @@ export function ImageUpload({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    console.log('🖼️ ImageUpload - currentImageUrl changed:', currentImageUrl);
     setPreview(currentImageUrl || null);
   }, [currentImageUrl]);
 
@@ -121,14 +122,18 @@ export function ImageUpload({
 
       {preview ? (
         <div className="relative">
-          <div className="relative w-full h-32 overflow-hidden rounded-lg bg-slate-100">
+          <div className="relative w-full h-48 overflow-hidden rounded-lg border-2 border-slate-200 bg-slate-100">
             <Image
               src={preview}
               alt="Preview"
               fill
               className="object-cover"
-              unoptimized={preview.startsWith("data:")}
+              unoptimized={preview.startsWith("data:") || preview.includes("pexels.com")}
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              onError={(e) => {
+                console.error('❌ Image load error:', preview);
+                setError('Resim yüklenemedi. URL geçersiz olabilir.');
+              }}
             />
             {uploading && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/50">
@@ -140,11 +145,14 @@ export function ImageUpload({
             <button
               type="button"
               onClick={handleRemove}
-              className="absolute right-2 top-2 rounded-full bg-red-500 p-1.5 text-white shadow-lg transition-colors hover:bg-red-600"
+              className="absolute right-2 top-2 rounded-full bg-red-500 p-2 text-white shadow-lg transition-colors hover:bg-red-600"
             >
-              <X className="h-3 w-3" />
+              <X className="h-4 w-4" />
             </button>
           )}
+          <p className="mt-2 text-xs text-slate-500">
+            ✅ Fotoğraf yüklendi
+          </p>
         </div>
       ) : (
         <div

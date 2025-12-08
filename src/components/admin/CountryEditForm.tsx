@@ -339,13 +339,23 @@ export function CountryEditForm({ country }: { country: any }) {
 
         {/* Image Upload - Only show in Turkish tab */}
         {activeLocale === 'tr' && (
-          <ImageUpload
-            currentImageUrl={formData.image_url}
-            onImageChange={(url) => setFormData({ ...formData, image_url: url })}
-            bucket="country-images"
-            label="Ülke Kapak Fotoğrafı"
-            aspectRatio="16/9"
-          />
+          <div className="space-y-3">
+            <ImageUpload
+              currentImageUrl={formData.image_url}
+              onImageChange={(url) => setFormData({ ...formData, image_url: url })}
+              bucket="country-images"
+              label="Ülke Kapak Fotoğrafı"
+              aspectRatio="16/9"
+            />
+            
+            {/* Current Image URL Display for Debugging */}
+            {formData.image_url && (
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                <p className="mb-1 text-xs font-semibold text-slate-700">Mevcut URL:</p>
+                <p className="break-all text-xs text-slate-600">{formData.image_url}</p>
+              </div>
+            )}
+          </div>
         )}
 
         <div className="space-y-2">
