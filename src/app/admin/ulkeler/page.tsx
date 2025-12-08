@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getCountries } from "@/lib/queries";
-import { Plus, Edit, Trash2, Eye } from "lucide-react";
+import { Plus, Edit, Trash2, Eye, Sparkles } from "lucide-react";
 
 export default async function CountriesPage() {
   const countries = await getCountries();
@@ -13,13 +13,22 @@ export default async function CountriesPage() {
           <h2 className="text-2xl font-bold text-slate-900">Ülkeler</h2>
           <p className="text-sm text-slate-600">Vize ülkelerini yönetin</p>
         </div>
-        <Link
-          href="/admin/ulkeler/yeni"
-          className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white shadow-lg transition-all hover:bg-primary-dark"
-        >
-          <Plus className="h-4 w-4" />
-          Yeni Ülke Ekle
-        </Link>
+        <div className="flex gap-3">
+          <Link
+            href="/admin/ulkeler/toplu-ekle"
+            className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg transition-all hover:from-purple-700 hover:to-blue-700"
+          >
+            <Sparkles className="h-4 w-4" />
+            AI ile Toplu Ekle
+          </Link>
+          <Link
+            href="/admin/ulkeler/yeni"
+            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white shadow-lg transition-all hover:bg-primary-dark"
+          >
+            <Plus className="h-4 w-4" />
+            Yeni Ülke Ekle
+          </Link>
+        </div>
       </div>
 
       {/* Countries Table */}
