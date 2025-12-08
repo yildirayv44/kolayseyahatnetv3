@@ -9,6 +9,9 @@ interface Country {
   region: string;
   visaRequired: boolean;
   selected: boolean;
+  id?: number;
+  completeness?: number;
+  missing_fields?: string[];
 }
 
 interface GeneratedCountry extends Country {
@@ -30,10 +33,32 @@ export default function BulkCountryImportPage() {
   const [startTime, setStartTime] = useState<number>(0);
   const [elapsedTime, setElapsedTime] = useState<string>('0:00');
 
-  // Fetch missing countries
+  // Fetch missing/incomplete countries
   const fetchMissingCountries = async () => {
     setLoading(true);
     try {
+      // First try to fetch incomplete countries (existing but missing content)
+      const incompleteResponse = await fetch('/api/admin/countries/incomplete');
+      const incompleteData = await incompleteResponse.json();
+      
+      if (incompleteData.success && incompleteData.countries.length > 0) {
+        // Use incomplete countries
+        setAllCountries([]);
+        setMissingCountries(incompleteData.countries.map((c: any) => ({ 
+          name: c.name,
+          code: c.code,
+          region: c.region,
+          visaRequired: c.visa_required,
+          selected: false,
+          id: c.id,
+          completeness: c.completeness,
+          missing_fields: c.missing_fields
+        })));
+        setStep('select');
+        return;
+      }
+      
+      // Fallback to missing countries (not in database)
       const response = await fetch('/api/admin/countries/missing');
       const data = await response.json();
       
@@ -290,9 +315,13 @@ export default function BulkCountryImportPage() {
 
             <div className="text-center">
               <Globe2 className="mx-auto mb-4 h-16 w-16 text-primary" />
-              <h2 className="mb-2 text-2xl font-bold text-slate-900">Eksik Ülkeleri Bul</h2>
+              <h2 className="mb-2 text-2xl font-bold text-slate-900">İçeriği Eksik Ülkeleri Bul</h2>
               <p className="mb-6 text-slate-600">
-                Sistemde kayıtlı ülkeler kontrol edilecek ve eksik olanlar listelenecek.
+                Sistemde kayıtlı ülkeler kontrol edilecek ve içeriği eksik olanlar listelenecek.
+                <br />
+                <span className="text-sm text-slate-500">
+                  (İçerik, açıklama, meta açıklama, fiyat gibi alanlar kontrol edilir)
+                </span>
               </p>
               <button
                 onClick={fetchMissingCountries}
@@ -400,6 +429,38 @@ export default function BulkCountryImportPage() {
                   </div>
                   <div className="text-sm font-semibold text-slate-900">{country.name}</div>
                   <div className="text-xs text-slate-500">{country.region}</div>
+                  
+                  {/* Completeness indicator for incomplete countries */}
+                  {country.completeness !== undefined && (
+                    <div className="mt-2">
+                      <div className="flex items-center justify-between text-xs mb-1">
+                        <span className="text-slate-600">Tamamlanma</span>
+                        <span className={`font-semibold ${
+                          country.completeness >= 60 ? 'text-green-600' :
+                          country.completeness >= 40 ? 'text-yellow-600' :
+                          'text-red-600'
+                        }`}>
+                          {country.completeness}%
+                        </span>
+                      </div>
+                      <div className="h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                        <div 
+                          className={`h-full transition-all ${
+                            country.completeness >= 60 ? 'bg-green-500' :
+                            country.completeness >= 40 ? 'bg-yellow-500' :
+                            'bg-red-500'
+                          }`}
+                          style={{ width: `${country.completeness}%` }}
+                        />
+                      </div>
+                      {country.missing_fields && country.missing_fields.length > 0 && (
+                        <div className="mt-1 text-[10px] text-slate-500">
+                          Eksik: {country.missing_fields.join(', ')}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
                   <div className="mt-2">
                     <span
                       className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${
