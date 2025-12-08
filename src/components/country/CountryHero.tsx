@@ -57,11 +57,35 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
   };
 
   const getVisaStatusConfig = (status: string) => {
-    const configs: Record<string, { label: string; color: string; bgColor: string; icon: string }> = {
-      'visa-free': { label: 'Vizesiz Giriş', color: 'text-green-700', bgColor: 'bg-green-50 border-green-200', icon: '✅' },
-      'visa-on-arrival': { label: 'Varışta Vize', color: 'text-blue-700', bgColor: 'bg-blue-50 border-blue-200', icon: '🛬' },
-      'eta': { label: 'eTA Gerekli', color: 'text-cyan-700', bgColor: 'bg-cyan-50 border-cyan-200', icon: '📧' },
-      'visa-required': { label: 'Vize Gerekli', color: 'text-orange-700', bgColor: 'bg-orange-50 border-orange-200', icon: '🏛️' },
+    const configs: Record<string, { label: string; color: string; bgColor: string; icon: string; description: string }> = {
+      'visa-free': { 
+        label: 'Vizesiz Giriş', 
+        color: 'text-green-700', 
+        bgColor: 'bg-green-50 border-green-200', 
+        icon: '✅',
+        description: 'Pasaportunuzla doğrudan seyahat edebilirsiniz. Önceden vize başvurusu gerekmez.'
+      },
+      'visa-on-arrival': { 
+        label: 'Varışta Vize', 
+        color: 'text-blue-700', 
+        bgColor: 'bg-blue-50 border-blue-200', 
+        icon: '🛬',
+        description: 'Vizenizi havaalanında/sınırda alabilirsiniz. Önceden başvuru gerekmez.'
+      },
+      'eta': { 
+        label: 'eTA Gerekli', 
+        color: 'text-cyan-700', 
+        bgColor: 'bg-cyan-50 border-cyan-200', 
+        icon: '📧',
+        description: 'Online elektronik seyahat izni başvurusu yapmanız gerekir. Hızlı ve kolaydır.'
+      },
+      'visa-required': { 
+        label: 'Vize Gerekli', 
+        color: 'text-orange-700', 
+        bgColor: 'bg-orange-50 border-orange-200', 
+        icon: '🏛️',
+        description: 'Seyahat öncesi vize başvurusu yapmanız gerekir. Size yardımcı olabiliriz.'
+      },
     };
     return configs[status] || configs['visa-required'];
   };
@@ -153,6 +177,12 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
                 <Globe className="h-5 w-5 text-primary" />
                 <h3 className="font-bold text-slate-900">Vize Gereklilikleri</h3>
               </div>
+              
+              {/* User-friendly description */}
+              <p className="mb-3 text-sm text-slate-600">
+                {getVisaStatusConfig(visaData.visaStatus).description}
+              </p>
+
               <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
                 <div className={`rounded-lg border-2 px-4 py-3 ${getVisaStatusConfig(visaData.visaStatus).bgColor}`}>
                   <div className="text-xs text-slate-600 mb-1">Vize Durumu</div>
@@ -185,8 +215,17 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
               </div>
               <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
                 {products.slice(0, 3).map((product, index) => (
-                  <div
+                  <Link
                     key={product.id}
+                    href={{
+                      pathname: '/vize-basvuru-formu',
+                      query: {
+                        country_id: country.id,
+                        country_name: country.name,
+                        package_id: product.id,
+                        package_name: product.name,
+                      },
+                    }}
                     className="group relative rounded-lg border-2 border-white bg-white p-3 transition-all hover:border-primary hover:shadow-lg"
                   >
                     {index === 0 && (
@@ -197,14 +236,17 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
                     <div className="mb-2">
                       <div className="text-sm font-bold text-slate-900">{product.name}</div>
                     </div>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-lg font-bold text-primary">
-                        {product.currency_id === 1 ? '₺' : product.currency_id === 2 ? '$' : '€'}
-                        {Number(product.price).toFixed(0)}
-                      </span>
-                      <span className="text-xs text-slate-500">/ başvuru</span>
+                    <div className="flex items-baseline justify-between">
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-lg font-bold text-primary">
+                          {product.currency_id === 1 ? '₺' : product.currency_id === 2 ? '$' : '€'}
+                          {Number(product.price).toFixed(0)}
+                        </span>
+                        <span className="text-xs text-slate-500">/ başvuru</span>
+                      </div>
+                      <ArrowRight className="h-4 w-4 text-primary transition-transform group-hover:translate-x-1" />
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
               {products.length > 3 && (
