@@ -135,16 +135,34 @@ SADECE JSON yanıtı ver, başka açıklama ekleme.`;
     console.log(`⏭️ Skipping image generation for ${country.name} (will add later)`);
 
     // Step 3: Insert country into database
-    // Only use fields that exist in the database schema
     const { data: insertedCountry, error: insertError } = await supabase
       .from("countries")
       .insert({
         name: countryData.name,
         title: countryData.seoTitle || `${countryData.name} Vizesi | Kolay Seyahat`,
         description: countryData.description,
+        meta_description: countryData.seoDescription,
         visa_description: countryData.visaDescription,
         visa_required: countryData.visaRequired ? 1 : 0,
+        visa_type: countryData.visaType,
+        max_stay_duration: countryData.maxStayDuration,
+        visa_fee: countryData.visaFee,
+        processing_time: countryData.processingTime,
+        required_documents: countryData.requiredDocuments,
+        important_notes: countryData.importantNotes,
+        travel_tips: countryData.travelTips,
+        popular_cities: countryData.popularCities,
+        best_time_to_visit: countryData.bestTimeToVisit,
+        health_requirements: countryData.healthRequirements,
+        customs_regulations: countryData.customsRegulations,
+        emergency_contacts: countryData.emergencyContacts,
+        why_kolay_seyahat: countryData.whyKolaySeyahat,
+        capital: countryData.capital,
+        currency: countryData.currency,
+        language: countryData.language,
+        timezone: countryData.timezone,
         country_code: countryData.code,
+        region: countryData.region,
         image_url: imageUrl,
         status: 1,
         sorted: 999,
