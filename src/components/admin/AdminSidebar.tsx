@@ -39,6 +39,8 @@ const menuItems = [
   { href: "/admin/affiliate-basvurular", label: "Affiliate Başvuruları", icon: UserPlus },
   { href: "/admin/yorumlar", label: "Yorumlar", icon: MessageSquare },
   { href: "/admin/ayarlar", label: "Ayarlar", icon: Settings },
+  { href: "/admin/fix-taxonomies", label: "🔧 Taxonomy Düzelt", icon: Settings, divider: true },
+  { href: "/admin/fix-slug", label: "🔗 Slug Düzelt", icon: Settings },
 ];
 
 export function AdminSidebar() {
@@ -63,33 +65,41 @@ export function AdminSidebar() {
 
       {/* Menu */}
       <nav className="flex-1 space-y-1 p-4 overflow-y-auto">
-        {menuItems.map((item) => {
+        {menuItems.map((item, index) => {
           const Icon = item.icon;
           const isActive = pathname === item.href || pathname?.startsWith(item.href + '/');
           const isHighlight = item.highlight;
 
           return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-all ${
-                isActive
-                  ? isHighlight
-                    ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg"
-                    : "bg-primary text-white"
-                  : isHighlight
-                  ? "text-purple-700 hover:bg-gradient-to-r hover:from-purple-50 hover:to-blue-50 border border-purple-200"
-                  : "text-slate-700 hover:bg-slate-100"
-              }`}
-            >
-              <Icon className={`h-5 w-5 ${isHighlight && !isActive ? 'animate-pulse' : ''}`} />
-              {item.label}
-              {isHighlight && !isActive && (
-                <span className="ml-auto text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-bold">
-                  NEW
-                </span>
+            <div key={item.href}>
+              {item.divider && (
+                <div className="my-3 border-t border-slate-200">
+                  <div className="mt-3 mb-2 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    Sistem Araçları
+                  </div>
+                </div>
               )}
-            </Link>
+              <Link
+                href={item.href}
+                className={`flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-all ${
+                  isActive
+                    ? isHighlight
+                      ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg"
+                      : "bg-primary text-white"
+                    : isHighlight
+                    ? "text-purple-700 hover:bg-gradient-to-r hover:from-purple-50 hover:to-blue-50 border border-purple-200"
+                    : "text-slate-700 hover:bg-slate-100"
+                }`}
+              >
+                <Icon className={`h-5 w-5 ${isHighlight && !isActive ? 'animate-pulse' : ''}`} />
+                {item.label}
+                {isHighlight && !isActive && (
+                  <span className="ml-auto text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-bold">
+                    NEW
+                  </span>
+                )}
+              </Link>
+            </div>
           );
         })}
       </nav>
