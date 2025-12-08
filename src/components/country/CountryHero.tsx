@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowRight, PhoneCall, Clock, CheckCircle2, Users, Shield, Package, MessageCircleQuestion, FileQuestion, Globe, DollarSign } from "lucide-react";
+import { ArrowRight, PhoneCall, Clock, CheckCircle2, Users, Shield, Package, MessageCircleQuestion, FileQuestion, Globe, DollarSign, Info } from "lucide-react";
 import { t } from "@/i18n/translations";
 import type { Locale } from "@/i18n/translations";
 
@@ -62,6 +62,28 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
       const offsetPosition = elementPosition + window.pageYOffset - offset;
       window.scrollTo({ top: offsetPosition, behavior: "smooth" });
     }
+  };
+
+  const getConditionTooltip = (condition: string): string => {
+    const tooltips: Record<string, string> = {
+      'eVisa available online': 'Online olarak elektronik vize başvurusu yapabilirsiniz. Hızlı ve pratik bir süreçtir.',
+      'eTA required': 'Elektronik Seyahat İzni (eTA) gereklidir. Online başvuru yapılır, genellikle dakikalar içinde onaylanır.',
+      'Schengen area': 'Schengen bölgesi ülkesidir. 180 gün içinde 90 gün kalış hakkı sağlar.',
+      'Schengen visa': 'Schengen vizesi gereklidir. Tüm Schengen ülkelerine geçerlidir.',
+      'Visa on arrival': 'Vizenizi havaalanında/sınır kapısında alabilirsiniz. Önceden başvuru gerekmez.',
+      'Tourist visa required': 'Turist vizesi başvurusu gereklidir. Konsolosluk randevusu alınmalıdır.',
+      'Business visa available': 'İş vizesi için ayrı başvuru yapılabilir. Davet mektubu gerekebilir.',
+      'Multiple entry possible': 'Çoklu giriş vizesi alınabilir. Vize süresi içinde birden fazla giriş yapabilirsiniz.',
+    };
+    
+    // Check for partial matches
+    for (const [key, value] of Object.entries(tooltips)) {
+      if (condition.toLowerCase().includes(key.toLowerCase())) {
+        return value;
+      }
+    }
+    
+    return condition; // Return original if no match
   };
 
   const getVisaStatusConfig = (status: string) => {
@@ -209,8 +231,17 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
                   </div>
                 )}
                 {visaData.conditions && (
-                  <div className="rounded-lg bg-white/80 backdrop-blur-sm border border-slate-200 px-4 py-3">
-                    <div className="text-xs text-slate-600 mb-1">Koşullar</div>
+                  <div className="group relative rounded-lg bg-white/80 backdrop-blur-sm border border-slate-200 px-4 py-3">
+                    <div className="flex items-center gap-1 text-xs text-slate-600 mb-1">
+                      <span>Koşullar</span>
+                      <div className="relative">
+                        <Info className="h-3 w-3 text-slate-400 cursor-help" />
+                        <div className="invisible group-hover:visible absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 rounded-lg bg-slate-900 px-3 py-2 text-xs text-white shadow-lg z-10">
+                          {getConditionTooltip(visaData.conditions)}
+                          <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900"></div>
+                        </div>
+                      </div>
+                    </div>
                     <div className="text-sm font-bold text-slate-900">{visaData.conditions}</div>
                   </div>
                 )}
