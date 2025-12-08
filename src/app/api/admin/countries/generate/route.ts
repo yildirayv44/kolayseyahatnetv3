@@ -55,7 +55,7 @@ Aşağıdaki JSON formatında yanıt ver:
   "seoTitle": "SEO için optimize edilmiş başlık (max 60 karakter, ülke adı + vize + Kolay Seyahat)",
   "seoDescription": "SEO için optimize edilmiş açıklama (max 160 karakter, ülke vize bilgileri + CTA)",
   "description": "Ülke hakkında 2-3 cümlelik kısa açıklama (seyahat odaklı)",
-  "visaDescription": "Vize süreci hakkında detaylı açıklama (3-4 paragraf). Kolay Seyahat'in uzman danışmanlarıyla başvuru yapılabileceğini vurgula.",
+  "visaDescription": "Vize süreci hakkında ÇOK DETAYLI ve KAPSAMLI açıklama (EN AZ 8-10 paragraf, 1500+ kelime). Şunları içermeli: 1) Ülke hakkında genel bilgi ve turizm potansiyeli, 2) Vize türleri detaylı açıklama, 3) Başvuru süreci adım adım, 4) Gerekli belgeler detaylı açıklama, 5) Ücretler ve ödeme yöntemleri, 6) İşlem süreleri ve takip, 7) Red durumunda yapılacaklar, 8) Kolay Seyahat'in uzman danışmanlarıyla başvuru avantajları. HTML formatında, <h3> başlıklar ve <p> paragraflar kullan.",
   "applicationSteps": [
     "Adım 1: ... (Kolay Seyahat uzman danışmanlarıyla iletişime geçin)",
     "Adım 2: ...",
@@ -87,8 +87,10 @@ Aşağıdaki JSON formatında yanıt ver:
   "healthRequirements": "Sağlık gereksinimleri (aşı, sigorta vb.)",
   "customsRegulations": "Gümrük kuralları özeti",
   "emergencyContacts": {
-    "embassy": "Türkiye'deki elçilik/konsolosluk bilgisi",
-    "emergencyNumber": "Acil durum numarası"
+    "embassy": "Türk Elçiliği/Konsolosluğu telefon ve adres bilgisi",
+    "emergencyNumber": "Genel acil durum numarası (örn: 112)",
+    "police": "Polis numarası",
+    "ambulance": "Ambulans numarası"
   },
   "whyKolaySeyahat": "Kolay Seyahat ile çalışmanın avantajları (2-3 cümle)"
 }

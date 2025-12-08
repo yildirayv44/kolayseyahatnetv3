@@ -11,7 +11,8 @@ export function ExtendedCountryInfo({ country, locale }: ExtendedCountryInfoProp
   const hasCountryInfo = country.capital || country.currency || country.language || country.timezone;
   const hasPopularCities = country.popular_cities && country.popular_cities.length > 0;
   const hasTravelTips = country.travel_tips && country.travel_tips.length > 0;
-  const hasRequiredDocs = country.required_documents && country.required_documents.length > 0;
+  // Check both new array format and old HTML format for backward compatibility
+  const hasRequiredDocs = (country.required_documents && country.required_documents.length > 0) || country.req_document;
   const hasImportantNotes = country.important_notes && country.important_notes.length > 0;
   const hasEmergencyContacts = country.emergency_contacts && 
     (country.emergency_contacts.embassy || country.emergency_contacts.emergencyNumber || 
@@ -136,14 +137,22 @@ export function ExtendedCountryInfo({ country, locale }: ExtendedCountryInfoProp
               {locale === 'en' ? 'Required Documents' : 'Gerekli Belgeler'}
             </h2>
           </div>
-          <ul className="space-y-2">
-            {country.required_documents.map((doc: string, index: number) => (
-              <li key={index} className="flex items-start gap-2">
-                <span className="mt-1 text-green-600">✓</span>
-                <span className="flex-1 text-slate-700">{doc}</span>
-              </li>
-            ))}
-          </ul>
+          {/* Prefer new array format, fallback to old HTML format for backward compatibility */}
+          {country.required_documents && country.required_documents.length > 0 ? (
+            <ul className="space-y-2">
+              {country.required_documents.map((doc: string, index: number) => (
+                <li key={index} className="flex items-start gap-2">
+                  <span className="mt-1 text-green-600">✓</span>
+                  <span className="flex-1 text-slate-700">{doc}</span>
+                </li>
+              ))}
+            </ul>
+          ) : country.req_document ? (
+            <div 
+              className="prose prose-slate max-w-none"
+              dangerouslySetInnerHTML={{ __html: country.req_document }}
+            />
+          ) : null}
         </section>
       )}
 

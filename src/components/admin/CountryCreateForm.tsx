@@ -223,19 +223,6 @@ export function CountryCreateForm() {
           </p>
         </div>
 
-        <div className="space-y-2">
-          <label className="block text-sm font-semibold text-slate-900">
-            Kısa Açıklama
-          </label>
-          <textarea
-            rows={4}
-            value={formData.description}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-            placeholder="SEO için kısa açıklama (meta description)"
-          />
-        </div>
-
         <ImageUpload
           currentImageUrl={formData.image_url}
           onImageChange={(url) => setFormData({ ...formData, image_url: url })}
