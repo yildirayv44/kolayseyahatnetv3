@@ -39,6 +39,7 @@ export function Header() {
   const [placeholderText, setPlaceholderText] = useState("");
   const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   
   const phrases = [
     "Ülke Ara...",
@@ -47,6 +48,11 @@ export function Header() {
     "Hangi Ülkeye Gidiyorsunuz?",
     "Rüya Tatilinizi Planlayın..."
   ];
+
+  // Set mounted flag to prevent hydration mismatch
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     getCurrentUser().then(setUser);
@@ -58,8 +64,8 @@ export function Header() {
 
   // Typewriter effect
   useEffect(() => {
-    // Don't run typewriter if user is typing
-    if (searchQuery) return;
+    // Don't run typewriter if user is typing or not mounted yet
+    if (searchQuery || !isMounted) return;
 
     const currentPhrase = phrases[currentPhraseIndex];
     const typingSpeed = isDeleting ? 50 : 100;
@@ -89,7 +95,7 @@ export function Header() {
     }, typingSpeed);
 
     return () => clearTimeout(timeout);
-  }, [placeholderText, isDeleting, currentPhraseIndex, searchQuery, phrases]);
+  }, [placeholderText, isDeleting, currentPhraseIndex, searchQuery, phrases, isMounted]);
 
   // Close search dropdown when clicking outside
   useEffect(() => {
@@ -192,11 +198,15 @@ export function Header() {
             
             <input
               type="text"
-              placeholder={`${placeholderText}${!searchQuery && !isDeleting ? '|' : ''}` || t(locale as Locale, "searchCountry")}
+              placeholder={
+                isMounted && placeholderText
+                  ? `${placeholderText}${!searchQuery && !isDeleting ? '|' : ''}`
+                  : t(locale as Locale, "searchCountry")
+              }
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => setSearchOpen(true)}
-              className="relative w-full rounded-lg border-2 border-primary/40 bg-white py-3 pl-11 pr-3 text-sm font-medium placeholder:text-slate-600 placeholder:font-semibold focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30 md:py-2 md:pl-14 md:pr-4 md:text-sm typewriter-cursor"
+              className="relative w-full rounded-lg border-2 border-primary/40 bg-white py-3 pl-11 pr-3 text-sm font-medium placeholder:text-slate-600 placeholder:font-semibold focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30 md:py-2 md:pl-14 md:pr-4 md:text-sm"
             />
             
             {/* Search Icon - Larger and more prominent - After input for proper z-index */}
