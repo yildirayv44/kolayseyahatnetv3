@@ -15,6 +15,7 @@ interface GeneratedCountry extends Country {
   status: 'pending' | 'generating' | 'success' | 'error';
   data?: any;
   error?: string;
+  currentStep?: string;
 }
 
 export default function BulkCountryImportPage() {
@@ -83,7 +84,7 @@ export default function BulkCountryImportPage() {
         // Update status to generating
         setSelectedCountries(prev => 
           prev.map((c, idx) => 
-            idx === i ? { ...c, status: 'generating' } : c
+            idx === i ? { ...c, status: 'generating', currentStep: 'Hazırlanıyor...' } : c
           )
         );
 
@@ -94,6 +95,13 @@ export default function BulkCountryImportPage() {
 
         while (retries > 0 && !success) {
           try {
+            // Update step: AI veri üretimi
+            setSelectedCountries(prev => 
+              prev.map((c, idx) => 
+                idx === i ? { ...c, currentStep: `AI ile veri üretiliyor (${aiProvider.toUpperCase()})...` } : c
+              )
+            );
+
             const response = await fetch('/api/admin/countries/generate', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -103,9 +111,10 @@ export default function BulkCountryImportPage() {
             const data = await response.json();
 
             if (data.success) {
+              // Update step: Tamamlandı
               setSelectedCountries(prev =>
                 prev.map((c, idx) =>
-                  idx === i ? { ...c, status: 'success', data: data.country } : c
+                  idx === i ? { ...c, status: 'success', data: data.country, currentStep: '✅ Tamamlandı' } : c
                 )
               );
               success = true;
@@ -114,6 +123,11 @@ export default function BulkCountryImportPage() {
               retries--;
               if (retries > 0) {
                 console.log(`Rate limit hit, waiting 60 seconds before retry...`);
+                setSelectedCountries(prev => 
+                  prev.map((c, idx) => 
+                    idx === i ? { ...c, currentStep: `⏳ Rate limit - 60 saniye bekleniyor... (${retries} deneme kaldı)` } : c
+                  )
+                );
                 await new Promise(resolve => setTimeout(resolve, 60000)); // Wait 60 seconds
                 continue;
               }
@@ -125,6 +139,11 @@ export default function BulkCountryImportPage() {
             lastError = fetchError;
             retries--;
             if (retries > 0) {
+              setSelectedCountries(prev => 
+                prev.map((c, idx) => 
+                  idx === i ? { ...c, currentStep: `⚠️ Hata oluştu, tekrar deneniyor... (${retries} deneme kaldı)` } : c
+                )
+              );
               await new Promise(resolve => setTimeout(resolve, 3000)); // Wait 3 seconds
             }
           }
@@ -136,12 +155,17 @@ export default function BulkCountryImportPage() {
 
         // Wait 10 seconds between countries to avoid rate limits
         if (i < selected.length - 1) {
+          setSelectedCountries(prev => 
+            prev.map((c, idx) => 
+              idx === i ? { ...c, currentStep: '⏸️ Sonraki ülke için 10 saniye bekleniyor...' } : c
+            )
+          );
           await new Promise(resolve => setTimeout(resolve, 10000));
         }
       } catch (error: any) {
         setSelectedCountries(prev =>
           prev.map((c, idx) =>
-            idx === i ? { ...c, status: 'error', error: error.message } : c
+            idx === i ? { ...c, status: 'error', error: error.message, currentStep: '❌ Hata' } : c
           )
         );
       } finally {
@@ -393,11 +417,16 @@ export default function BulkCountryImportPage() {
                   key={country.code}
                   className="flex items-center justify-between rounded-lg border border-slate-200 p-4"
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 flex-1">
                     <span className="text-2xl">{country.code}</span>
-                    <div>
+                    <div className="flex-1">
                       <div className="font-semibold text-slate-900">{country.name}</div>
                       <div className="text-xs text-slate-500">{country.region}</div>
+                      {country.currentStep && (
+                        <div className="mt-1 text-xs font-medium text-primary">
+                          {country.currentStep}
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
