@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { createClient } from "@supabase/supabase-js";
+import { getCountryCode } from "@/lib/country-codes";
 
 // Use service role key for admin operations (bypasses RLS)
 const supabase = createClient(
@@ -137,6 +138,11 @@ SADECE JSON yanıtı ver, başka açıklama ekleme.`;
     }
 
     console.log(`✅ Generated data for ${country.name}`);
+
+    // Auto-assign country_code based on country name
+    const autoCountryCode = getCountryCode(country.name) || country.code;
+    console.log(`🔖 Auto-assigned country code: ${autoCountryCode}`);
+    countryData.country_code = autoCountryCode;
 
     // Step 2: Get country image from Pexels and upload to Supabase Storage
     let imageUrl = null;
