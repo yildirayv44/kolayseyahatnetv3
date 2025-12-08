@@ -55,13 +55,7 @@ Aşağıdaki JSON formatında yanıt ver:
   "seoTitle": "SEO için optimize edilmiş başlık (max 60 karakter, ülke adı + vize + Kolay Seyahat)",
   "seoDescription": "SEO için optimize edilmiş açıklama (max 160 karakter, ülke vize bilgileri + CTA)",
   "description": "Ülke hakkında 2-3 cümlelik kısa açıklama (seyahat odaklı)",
-  "visaDescription": "Vize süreci hakkında ÇOK DETAYLI ve KAPSAMLI açıklama (EN AZ 8-10 paragraf, 1500+ kelime). Şunları içermeli: 1) Ülke hakkında genel bilgi ve turizm potansiyeli, 2) Vize türleri detaylı açıklama, 3) Başvuru süreci adım adım, 4) Gerekli belgeler detaylı açıklama, 5) Ücretler ve ödeme yöntemleri, 6) İşlem süreleri ve takip, 7) Red durumunda yapılacaklar, 8) Kolay Seyahat'in uzman danışmanlarıyla başvuru avantajları. HTML formatında, <h3> başlıklar ve <p> paragraflar kullan.",
-  "applicationSteps": [
-    "Adım 1: ... (Kolay Seyahat uzman danışmanlarıyla iletişime geçin)",
-    "Adım 2: ...",
-    "Adım 3: ...",
-    "..."
-  ],
+  "visaDescription": "SADECE GENEL ANLATIMSAL İÇERİK (EN AZ 8-10 paragraf, 1500+ kelime). ÖNEMLİ: Liste, madde, tablo kullanma! Sadece akıcı paragraflar. İçerik: 1) Ülke hakkında kapsamlı bilgi - tarihi, kültürü, turistik yerler, yaşam tarzı (3-4 paragraf), 2) Vize politikası genel açıklama - hangi durumlarda gerekli, vize türleri hakkında genel bilgi (2-3 paragraf), 3) Başvuru süreci genel anlatım - nasıl yapılır, nelere dikkat edilmeli, süreç nasıl işler (2-3 paragraf), 4) Kolay Seyahat avantajları - neden tercih edilmeli, nasıl kolaylık sağlar (2 paragraf). HTML formatında sadece <h3> başlıklar ve <p> paragraflar kullan. Liste veya madde işareti kullanma!",
   "requiredDocuments": [
     "Gerekli belge 1",
     "Gerekli belge 2",
