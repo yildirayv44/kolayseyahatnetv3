@@ -255,54 +255,79 @@ SADECE JSON yanıtı ver, başka açıklama ekleme.`;
       console.error(`❌ Image fetch error for ${country.name}:`, imageError);
     }
 
-    // Step 3: Insert country into database
-    // Now using all extended fields after migration
-    const { data: insertedCountry, error: insertError } = await supabase
-      .from("countries")
-      .insert({
-        name: countryData.name,
-        title: countryData.title || `${countryData.name} Vizesi`,
-        meta_title: countryData.seoTitle || `${countryData.name} Vizesi | Kolay Seyahat`,
-        description: countryData.description,
-        contents: countryData.visaDescription,
-        visa_required: countryData.visaRequired ? 1 : 0,
-        visa_type: countryData.visaType,
-        process_time: countryData.processingTime,
-        price_range: countryData.visaFee,
-        // Extended fields from migration
-        meta_description: countryData.seoDescription,
-        max_stay_duration: countryData.maxStayDuration,
-        visa_fee: countryData.visaFee,
-        processing_time: countryData.processingTime,
-        application_steps: countryData.applicationSteps,
-        required_documents: countryData.requiredDocuments,
-        important_notes: countryData.importantNotes,
-        travel_tips: countryData.travelTips,
-        popular_cities: countryData.popularCities,
-        best_time_to_visit: countryData.bestTimeToVisit,
-        health_requirements: countryData.healthRequirements,
-        customs_regulations: countryData.customsRegulations,
-        emergency_contacts: countryData.emergencyContacts,
-        why_kolay_seyahat: countryData.whyKolaySeyahat,
-        capital: countryData.capital,
-        currency: countryData.currency,
-        language: countryData.language,
-        timezone: countryData.timezone,
-        image_url: imageUrl,
-        status: 1,
-        sorted: 999,
-      })
-      .select()
-      .single();
+    // Step 3: Insert or Update country in database
+    // If country has an ID, update it. Otherwise, insert new.
+    const countryPayload = {
+      name: countryData.name,
+      title: countryData.title || `${countryData.name} Vizesi`,
+      meta_title: countryData.seoTitle || `${countryData.name} Vizesi | Kolay Seyahat`,
+      description: countryData.description,
+      contents: countryData.visaDescription,
+      visa_required: countryData.visaRequired ? 1 : 0,
+      visa_type: countryData.visaType,
+      process_time: countryData.processingTime,
+      price_range: countryData.visaFee,
+      // Extended fields from migration
+      meta_description: countryData.seoDescription,
+      max_stay_duration: countryData.maxStayDuration,
+      visa_fee: countryData.visaFee,
+      processing_time: countryData.processingTime,
+      application_steps: countryData.applicationSteps,
+      required_documents: countryData.requiredDocuments,
+      important_notes: countryData.importantNotes,
+      travel_tips: countryData.travelTips,
+      popular_cities: countryData.popularCities,
+      best_time_to_visit: countryData.bestTimeToVisit,
+      health_requirements: countryData.healthRequirements,
+      customs_regulations: countryData.customsRegulations,
+      emergency_contacts: countryData.emergencyContacts,
+      why_kolay_seyahat: countryData.whyKolaySeyahat,
+      capital: countryData.capital,
+      currency: countryData.currency,
+      language: countryData.language,
+      timezone: countryData.timezone,
+      country_code: autoCountryCode,
+      image_url: imageUrl,
+      status: 1,
+      sorted: 999,
+    };
 
-    if (insertError) {
-      console.error(`Database insert error for ${country.name}:`, insertError);
-      throw new Error(`Failed to insert country: ${insertError.message}`);
+    let insertedCountry;
+    let insertError;
+
+    if (country.id) {
+      // Update existing country
+      console.log(`🔄 Updating existing country with ID: ${country.id}`);
+      const { data, error } = await supabase
+        .from("countries")
+        .update(countryPayload)
+        .eq("id", country.id)
+        .select()
+        .single();
+      
+      insertedCountry = data;
+      insertError = error;
+    } else {
+      // Insert new country
+      console.log(`➕ Inserting new country: ${country.name}`);
+      const { data, error } = await supabase
+        .from("countries")
+        .insert(countryPayload)
+        .select()
+        .single();
+      
+      insertedCountry = data;
+      insertError = error;
     }
 
-    console.log(`✅ ${country.name} added to database with ID: ${insertedCountry.id}`);
+    if (insertError) {
+      console.error(`Database operation error for ${country.name}:`, insertError);
+      throw new Error(`Failed to save country: ${insertError.message}`);
+    }
 
-    // Step 4: Create taxonomy entry for URL slug
+    console.log(`✅ ${country.name} ${country.id ? 'updated' : 'added'} in database with ID: ${insertedCountry.id}`);
+
+    // Step 4: Create or update taxonomy entry for URL slug
     const slug = countryData.name
       // First replace Turkish uppercase characters before toLowerCase
       .replace(/İ/g, 'i')
@@ -323,19 +348,32 @@ SADECE JSON yanıtı ver, başka açıklama ekleme.`;
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '');
 
-    const { error: taxonomyError } = await supabase
+    // Check if taxonomy already exists
+    const { data: existingTaxonomy } = await supabase
       .from("taxonomies")
-      .insert({
-        model_id: insertedCountry.id,
-        type: "Country\\CountryController@detail",
-        slug: slug,
-      });
+      .select("id")
+      .eq("model_id", insertedCountry.id)
+      .eq("type", "Country\\CountryController@detail")
+      .single();
 
-    if (taxonomyError) {
-      console.error(`Taxonomy insert error for ${country.name}:`, taxonomyError);
-      // Continue even if taxonomy fails
+    if (!existingTaxonomy) {
+      // Create new taxonomy only if it doesn't exist
+      const { error: taxonomyError } = await supabase
+        .from("taxonomies")
+        .insert({
+          model_id: insertedCountry.id,
+          type: "Country\\CountryController@detail",
+          slug: slug,
+        });
+
+      if (taxonomyError) {
+        console.error(`Taxonomy insert error for ${country.name}:`, taxonomyError);
+        // Continue even if taxonomy fails
+      } else {
+        console.log(`✅ Taxonomy created for ${country.name}: ${slug}`);
+      }
     } else {
-      console.log(`✅ Taxonomy created for ${country.name}: ${slug}`);
+      console.log(`ℹ️ Taxonomy already exists for ${country.name}`);
     }
 
     return NextResponse.json({
@@ -344,7 +382,7 @@ SADECE JSON yanıtı ver, başka açıklama ekleme.`;
         ...insertedCountry,
         slug,
       },
-      message: `${country.name} successfully added`,
+      message: `${country.name} successfully ${country.id ? 'updated' : 'added'}`,
     });
 
   } catch (error: any) {
