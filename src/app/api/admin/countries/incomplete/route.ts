@@ -22,22 +22,23 @@ export async function GET() {
     if (error) throw error;
 
     // Define what makes a country "incomplete"
-    const incompleteCountries = countries?.filter(country => {
+    // Focus on recently added countries (last 50)
+    const recentCountries = countries?.slice(0, 50) || [];
+    
+    const incompleteCountries = recentCountries.filter(country => {
       const hasNoDescription = !country.description || country.description.length < 100;
       const hasNoMetaDescription = !country.meta_description || country.meta_description.length < 100;
-      const hasNoPrice = !country.price || country.price === 0;
       const hasBasicTitle = country.title === `${country.name} Vizesi`;
       
-      // Country is incomplete if it has ANY missing field (more strict)
+      // Country is incomplete if it has ANY missing field (excluding price)
       const missingFields = [
         hasNoDescription,
         hasNoMetaDescription,
-        hasNoPrice,
         hasBasicTitle
       ].filter(Boolean).length;
       
       return missingFields >= 1; // Any missing field
-    }) || [];
+    });
 
     // Get country codes for visa data
     const countryCodes = incompleteCountries
@@ -79,9 +80,6 @@ export async function GET() {
       if (!country.meta_description || country.meta_description.length < 100) {
         missingFields.push('meta_description');
       }
-      if (!country.price || country.price === 0) {
-        missingFields.push('price');
-      }
       if (country.title === `${country.name} Vizesi`) {
         missingFields.push('title');
       }
@@ -97,7 +95,7 @@ export async function GET() {
         price: country.price,
         created_at: country.created_at,
         missing_fields: missingFields,
-        completeness: Math.round(((4 - missingFields.length) / 4) * 100),
+        completeness: Math.round(((3 - missingFields.length) / 3) * 100),
         visa_status: visa?.visaStatus || 'unknown',
         visa_required: visa?.visaStatus === 'visa-required',
         region: getRegion(country.name)
