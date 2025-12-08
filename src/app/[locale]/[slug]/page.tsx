@@ -499,6 +499,9 @@ export default async function CountryPage({ params }: CountryPageParams) {
     { name: country.name, url: `/${country.slug || decodedSlug}` }
   ]);
 
+  // Check if we should show required documents section
+  const hasRequiredDocs = (country.required_documents && country.required_documents.length > 0) || fixedReqDocument;
+
   // TOC items
   const tocItems = [
     ...(menus.length > 0 ? [{ id: "vize-turleri", title: "İlişkili Sayfalar" }] : []),
@@ -512,7 +515,7 @@ export default async function CountryPage({ params }: CountryPageParams) {
         ]
       : []),
     ...(products.length > 0 ? [{ id: "vize-paketleri", title: t.visaPackages }] : []),
-    ...(fixedReqDocument ? [{ id: "gerekli-belgeler", title: t.requiredDocuments }] : []),
+    ...(hasRequiredDocs ? [{ id: "gerekli-belgeler", title: t.requiredDocuments }] : []),
     ...(faqParents.length > 0 ? [{ id: "sss", title: t.faq }] : []),
     { id: "soru-sor", title: t.askQuestion },
   ];
@@ -633,10 +636,23 @@ export default async function CountryPage({ params }: CountryPageParams) {
       )}
 
       {/* GEREKLİ BELGELER */}
-      {fixedReqDocument && (
+      {hasRequiredDocs && (
         <section id="gerekli-belgeler" className="scroll-mt-20 space-y-3">
-          <h2 className="text-2xl font-bold text-slate-900">Gerekli Belgeler</h2>
-          <ContentWithIds html={fixedReqDocument} />
+          <h2 className="text-2xl font-bold text-slate-900">{t.requiredDocuments}</h2>
+          {country.required_documents && country.required_documents.length > 0 ? (
+            <div className="card">
+              <ul className="space-y-3">
+                {country.required_documents.map((doc: string, index: number) => (
+                  <li key={index} className="flex items-start gap-3">
+                    <CheckCircle2 className="h-5 w-5 flex-shrink-0 text-primary mt-0.5" />
+                    <span className="flex-1 text-slate-700">{doc}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : fixedReqDocument ? (
+            <ContentWithIds html={fixedReqDocument} />
+          ) : null}
         </section>
       )}
 

@@ -51,7 +51,9 @@ export function ExtendedCountryInfo({ country, locale }: ExtendedCountryInfoProp
                 <div className="text-sm font-semibold text-slate-600">
                   {locale === 'en' ? 'Currency' : 'Para Birimi'}
                 </div>
-                <div className="mt-1 text-lg font-bold text-slate-900">{country.currency}</div>
+                <div className="mt-1 text-lg font-bold text-slate-900">
+                  {country.currency.split('(')[0].trim()}
+                </div>
               </div>
             )}
             {country.language && (
