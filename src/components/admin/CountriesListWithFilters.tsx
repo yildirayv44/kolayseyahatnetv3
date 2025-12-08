@@ -9,7 +9,6 @@ interface Country {
   name: string;
   title: string;
   status: number;
-  is_web: number;
   country_code: string | null;
   slug: string;
 }
@@ -263,14 +262,13 @@ export function CountriesListWithFilters({ initialCountries }: { initialCountrie
                 <th className="px-6 py-4 font-semibold">Kod</th>
                 <th className="px-6 py-4 font-semibold">Vize Durumu</th>
                 <th className="px-6 py-4 font-semibold">Durum</th>
-                <th className="px-6 py-4 font-semibold">Web</th>
                 <th className="px-6 py-4 font-semibold text-right">İşlemler</th>
               </tr>
             </thead>
             <tbody>
               {filteredCountries.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-sm text-slate-500">
+                  <td colSpan={6} className="px-6 py-12 text-center text-sm text-slate-500">
                     Filtrelerinize uygun ülke bulunamadı
                   </td>
                 </tr>
@@ -298,17 +296,6 @@ export function CountriesListWithFilters({ initialCountries }: { initialCountrie
                         }`}
                       >
                         {country.status === 1 ? "Aktif" : "Pasif"}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
-                          country.is_web === 1
-                            ? "bg-blue-100 text-blue-700"
-                            : "bg-slate-100 text-slate-700"
-                        }`}
-                      >
-                        {country.is_web === 1 ? "Gösteriliyor" : "Gizli"}
                       </span>
                     </td>
                     <td className="px-6 py-4">

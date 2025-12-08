@@ -18,7 +18,6 @@ export async function GET(request: NextRequest) {
         title,
         country_code,
         status,
-        is_web,
         created_at,
         updated_at
       `)
