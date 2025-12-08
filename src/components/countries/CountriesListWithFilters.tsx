@@ -3,9 +3,10 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Globe2, ArrowRight, TrendingDown, Search, Filter, CheckCircle, Clock, Globe, XCircle } from "lucide-react";
+import { Globe2, ArrowRight, TrendingDown, Search, Filter, CheckCircle, Clock, Globe, XCircle, Grid3x3, Map } from "lucide-react";
 import { getCountrySlug } from "@/lib/helpers";
 import { getCountryDefaultImage } from "@/lib/image-helpers";
+import { CountriesByContinent } from "./CountriesByContinent";
 
 interface Country {
   id: number;
@@ -31,6 +32,9 @@ export function CountriesListWithFilters({ initialCountries }: { initialCountrie
   const [filteredCountries, setFilteredCountries] = useState<Country[]>(initialCountries);
   const [visaData, setVisaData] = useState<Record<string, VisaRequirement>>({});
   const [loading, setLoading] = useState(false);
+  
+  // View mode
+  const [viewMode, setViewMode] = useState<'grid' | 'continent'>('grid');
   
   // Filters
   const [searchQuery, setSearchQuery] = useState("");
@@ -136,16 +140,44 @@ export function CountriesListWithFilters({ initialCountries }: { initialCountrie
         </p>
       </section>
 
-      {/* Filters */}
+      {/* View Mode Toggle & Filters */}
       <div className="card space-y-4">
-        <div className="flex items-center gap-2 text-sm font-semibold text-slate-700">
-          <Filter className="h-4 w-4" />
-          Filtreler
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Filter className="h-5 w-5 text-slate-400" />
+            <h2 className="text-lg font-semibold text-slate-900">Filtrele</h2>
+          </div>
+          
+          {/* View Mode Toggle */}
+          <div className="flex items-center gap-2 rounded-lg bg-slate-100 p-1">
+            <button
+              onClick={() => setViewMode('grid')}
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                viewMode === 'grid'
+                  ? 'bg-white text-slate-900 shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Grid3x3 className="h-4 w-4" />
+              Liste
+            </button>
+            <button
+              onClick={() => setViewMode('continent')}
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                viewMode === 'continent'
+                  ? 'bg-white text-slate-900 shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Map className="h-4 w-4" />
+              Kıtalara Göre
+            </button>
+          </div>
         </div>
-        
-        <div className="grid gap-4 md:grid-cols-2">
+
+        <div className="flex flex-col gap-3 sm:flex-row">
           {/* Search */}
-          <div className="relative">
+          <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
@@ -200,7 +232,7 @@ export function CountriesListWithFilters({ initialCountries }: { initialCountrie
         )}
       </div>
 
-      {/* Countries Grid */}
+      {/* Countries Display */}
       {filteredCountries.length === 0 ? (
         <div className="card py-12 text-center">
           <Globe2 className="mx-auto h-12 w-12 text-slate-300" />
@@ -211,6 +243,8 @@ export function CountriesListWithFilters({ initialCountries }: { initialCountrie
             Filtrelerinize uygun ülke bulunamadı. Lütfen farklı kriterler deneyin.
           </p>
         </div>
+      ) : viewMode === 'continent' ? (
+        <CountriesByContinent countries={filteredCountries} visaData={visaData} />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filteredCountries.map((country) => {
