@@ -34,6 +34,19 @@ export function Header() {
   const [user, setUser] = useState<any>(null);
   const [isNavigating, setIsNavigating] = useState(false);
   const { count: favoritesCount } = useFavorites();
+  
+  // Typewriter effect states
+  const [placeholderText, setPlaceholderText] = useState("");
+  const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
+  
+  const phrases = [
+    "Ülke Ara...",
+    "Yolculuk Nereye?",
+    "Vize Bilgilerini Öğren...",
+    "Hangi Ülkeye Gidiyorsunuz?",
+    "Rüya Tatilinizi Planlayın..."
+  ];
 
   useEffect(() => {
     getCurrentUser().then(setUser);
@@ -42,6 +55,41 @@ export function Header() {
   useEffect(() => {
     getCountries().then(setCountries);
   }, []);
+
+  // Typewriter effect
+  useEffect(() => {
+    // Don't run typewriter if user is typing
+    if (searchQuery) return;
+
+    const currentPhrase = phrases[currentPhraseIndex];
+    const typingSpeed = isDeleting ? 50 : 100;
+    const pauseAfterComplete = 2000; // 2 seconds pause after completing
+    const pauseAfterDelete = 500; // 0.5 seconds pause after deleting
+
+    const timeout = setTimeout(() => {
+      if (!isDeleting) {
+        // Typing
+        if (placeholderText.length < currentPhrase.length) {
+          setPlaceholderText(currentPhrase.slice(0, placeholderText.length + 1));
+        } else {
+          // Finished typing, wait then start deleting
+          setTimeout(() => setIsDeleting(true), pauseAfterComplete);
+        }
+      } else {
+        // Deleting
+        if (placeholderText.length > 0) {
+          setPlaceholderText(placeholderText.slice(0, -1));
+        } else {
+          // Finished deleting, move to next phrase
+          setIsDeleting(false);
+          setCurrentPhraseIndex((prev) => (prev + 1) % phrases.length);
+          setTimeout(() => {}, pauseAfterDelete);
+        }
+      }
+    }, typingSpeed);
+
+    return () => clearTimeout(timeout);
+  }, [placeholderText, isDeleting, currentPhraseIndex, searchQuery, phrases]);
 
   // Close search dropdown when clicking outside
   useEffect(() => {
@@ -144,11 +192,11 @@ export function Header() {
             
             <input
               type="text"
-              placeholder={t(locale as Locale, "searchCountry")}
+              placeholder={`${placeholderText}${!searchQuery && !isDeleting ? '|' : ''}` || t(locale as Locale, "searchCountry")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => setSearchOpen(true)}
-              className="relative w-full rounded-lg border-2 border-primary/40 bg-white py-3 pl-11 pr-3 text-sm font-medium placeholder:text-slate-600 placeholder:font-semibold focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30 md:py-2 md:pl-14 md:pr-4 md:text-sm"
+              className="relative w-full rounded-lg border-2 border-primary/40 bg-white py-3 pl-11 pr-3 text-sm font-medium placeholder:text-slate-600 placeholder:font-semibold focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30 md:py-2 md:pl-14 md:pr-4 md:text-sm typewriter-cursor"
             />
             
             {/* Search Icon - Larger and more prominent - After input for proper z-index */}
