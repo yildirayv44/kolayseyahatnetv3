@@ -7,6 +7,7 @@ import { Globe2, ArrowRight, TrendingDown, Search, Filter, CheckCircle, Clock, G
 import { getCountrySlug } from "@/lib/helpers";
 import { getCountryDefaultImage } from "@/lib/image-helpers";
 import { CountriesByContinent } from "./CountriesByContinent";
+import { VisaMap } from "./VisaMap";
 
 interface Country {
   id: number;
@@ -33,8 +34,8 @@ export function CountriesListWithFilters({ initialCountries }: { initialCountrie
   const [visaData, setVisaData] = useState<Record<string, VisaRequirement>>({});
   const [loading, setLoading] = useState(false);
   
-  // View mode
-  const [viewMode, setViewMode] = useState<'grid' | 'continent'>('grid');
+  // View mode - default to continent view
+  const [viewMode, setViewMode] = useState<'grid' | 'continent'>('continent');
   
   // Filters
   const [searchQuery, setSearchQuery] = useState("");
@@ -139,6 +140,9 @@ export function CountriesListWithFilters({ initialCountries }: { initialCountrie
           {filteredCountries.length} ülke için profesyonel vize danışmanlık hizmeti sunuyoruz.
         </p>
       </section>
+
+      {/* Visa Map */}
+      <VisaMap visaData={visaData} />
 
       {/* View Mode Toggle & Filters */}
       <div className="card space-y-4">
