@@ -78,7 +78,6 @@ export async function POST(request: NextRequest) {
           model_id: country.id,
           type: "Country\\CountryController@detail",
           slug: slug,
-          locale: "tr",
         });
 
       if (insertError) {

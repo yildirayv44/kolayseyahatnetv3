@@ -206,7 +206,6 @@ SADECE JSON yanıtı ver, başka açıklama ekleme.`;
         model_id: insertedCountry.id,
         type: "Country\\CountryController@detail",
         slug: slug,
-        locale: "tr",
       });
 
     if (taxonomyError) {
