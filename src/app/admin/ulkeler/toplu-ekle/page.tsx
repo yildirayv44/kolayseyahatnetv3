@@ -75,9 +75,9 @@ export default function BulkCountryImportPage() {
   };
 
   // Toggle country selection
-  const toggleCountry = (code: string) => {
+  const toggleCountry = (id: number | string) => {
     setMissingCountries(prev =>
-      prev.map(c => c.code === code ? { ...c, selected: !c.selected } : c)
+      prev.map(c => (c.id || c.code) === id ? { ...c, selected: !c.selected } : c)
     );
   };
 
@@ -411,10 +411,10 @@ export default function BulkCountryImportPage() {
 
             {/* Country Grid */}
             <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
-              {missingCountries.map((country) => (
+              {missingCountries.map((country, index) => (
                 <button
-                  key={country.code}
-                  onClick={() => toggleCountry(country.code)}
+                  key={country.id || `${country.code}-${index}`}
+                  onClick={() => toggleCountry(country.id || country.code)}
                   className={`rounded-lg border-2 p-4 text-left transition-all ${
                     country.selected
                       ? 'border-primary bg-primary/5'
