@@ -142,60 +142,77 @@ SADECE JSON yanıtı ver, başka açıklama ekleme.`;
     let imageUrl = null;
     try {
       console.log(`🖼️ Fetching image for ${country.name} from Pexels...`);
-      const pexelsResponse = await fetch(
-        `https://api.pexels.com/v1/search?query=${encodeURIComponent(country.name + ' landmark tourism')}&per_page=1&orientation=landscape`,
-        {
-          headers: {
-            Authorization: process.env.PEXELS_API_KEY || '',
-          },
-        }
-      );
-
-      if (pexelsResponse.ok) {
-        const pexelsData = await pexelsResponse.json();
-        if (pexelsData.photos && pexelsData.photos.length > 0) {
-          const pexelsImageUrl = pexelsData.photos[0].src.large;
-          console.log(`✅ Image found for ${country.name}: ${pexelsImageUrl}`);
-
-          // Download image from Pexels
-          console.log(`📥 Downloading image from Pexels...`);
-          const imageResponse = await fetch(pexelsImageUrl);
-          const imageBuffer = await imageResponse.arrayBuffer();
-          const imageBlob = new Blob([imageBuffer], { type: 'image/jpeg' });
-
-          // Generate unique filename
-          const timestamp = Date.now();
-          const sanitizedName = country.name.toLowerCase().replace(/[^a-z0-9]/g, '-');
-          const fileName = `${sanitizedName}-${timestamp}.jpg`;
-
-          // Upload to Supabase Storage
-          console.log(`📤 Uploading to Supabase Storage: ${fileName}`);
-          const { data: uploadData, error: uploadError } = await supabase.storage
-            .from('country-images')
-            .upload(fileName, imageBlob, {
-              contentType: 'image/jpeg',
-              cacheControl: '3600',
-              upsert: false,
-            });
-
-          if (uploadError) {
-            console.error(`❌ Upload error for ${country.name}:`, uploadError);
-            // Fallback to Pexels URL if upload fails
-            imageUrl = pexelsImageUrl;
-          } else {
-            // Get public URL from Supabase
-            const { data: publicUrlData } = supabase.storage
-              .from('country-images')
-              .getPublicUrl(fileName);
-            
-            imageUrl = publicUrlData.publicUrl;
-            console.log(`✅ Image uploaded to Supabase: ${imageUrl}`);
+      
+      // Try multiple search queries for better results
+      const searchQueries = [
+        `${country.name} famous landmark architecture`,
+        `${country.name} iconic building monument`,
+        `${country.name} capital city skyline`,
+        `${country.name} tourism destination`,
+      ];
+      
+      let pexelsImageUrl = null;
+      
+      // Try each query until we find a good image
+      for (const query of searchQueries) {
+        console.log(`🔍 Trying query: ${query}`);
+        const pexelsResponse = await fetch(
+          `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=3&orientation=landscape`,
+          {
+            headers: {
+              Authorization: process.env.PEXELS_API_KEY || '',
+            },
           }
+        );
+        
+        if (pexelsResponse.ok) {
+          const pexelsData = await pexelsResponse.json();
+          if (pexelsData.photos && pexelsData.photos.length > 0) {
+            // Get the first photo (best match)
+            pexelsImageUrl = pexelsData.photos[0].src.large;
+            console.log(`✅ Image found with query "${query}": ${pexelsImageUrl}`);
+            break;
+          }
+        }
+      }
+      
+      if (pexelsImageUrl) {
+        // Download image from Pexels
+        console.log(`📥 Downloading image from Pexels...`);
+        const imageResponse = await fetch(pexelsImageUrl);
+        const imageBuffer = await imageResponse.arrayBuffer();
+        const imageBlob = new Blob([imageBuffer], { type: 'image/jpeg' });
+
+        // Generate unique filename
+        const timestamp = Date.now();
+        const sanitizedName = country.name.toLowerCase().replace(/[^a-z0-9]/g, '-');
+        const fileName = `${sanitizedName}-${timestamp}.jpg`;
+
+        // Upload to Supabase Storage
+        console.log(`📤 Uploading to Supabase Storage: ${fileName}`);
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('country-images')
+          .upload(fileName, imageBlob, {
+            contentType: 'image/jpeg',
+            cacheControl: '3600',
+            upsert: false,
+          });
+
+        if (uploadError) {
+          console.error(`❌ Upload error for ${country.name}:`, uploadError);
+          // Fallback to Pexels URL if upload fails
+          imageUrl = pexelsImageUrl;
         } else {
-          console.log(`⚠️ No image found for ${country.name} on Pexels`);
+          // Get public URL from Supabase
+          const { data: publicUrlData } = supabase.storage
+            .from('country-images')
+            .getPublicUrl(fileName);
+          
+          imageUrl = publicUrlData.publicUrl;
+          console.log(`✅ Image uploaded to Supabase: ${imageUrl}`);
         }
       } else {
-        console.log(`⚠️ Pexels API error for ${country.name}`);
+        console.log(`⚠️ No image found for ${country.name} on Pexels`);
       }
     } catch (imageError) {
       console.error(`❌ Image fetch error for ${country.name}:`, imageError);
