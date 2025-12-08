@@ -15,7 +15,7 @@ export async function GET() {
     // Fetch all countries
     const { data: countries, error } = await supabase
       .from("countries")
-      .select("id, name, title, description, content, meta_description, price, created_at, country_code")
+      .select("id, name, title, description, meta_description, price, created_at, country_code")
       .eq("status", 1)
       .order("created_at", { ascending: false });
 
@@ -23,22 +23,20 @@ export async function GET() {
 
     // Define what makes a country "incomplete"
     const incompleteCountries = countries?.filter(country => {
-      const hasNoContent = !country.content || country.content.length < 100;
-      const hasNoDescription = !country.description || country.description.length < 50;
-      const hasNoMetaDescription = !country.meta_description || country.meta_description.length < 50;
+      const hasNoDescription = !country.description || country.description.length < 100;
+      const hasNoMetaDescription = !country.meta_description || country.meta_description.length < 100;
       const hasNoPrice = !country.price || country.price === 0;
       const hasBasicTitle = country.title === `${country.name} Vizesi`;
       
-      // Country is incomplete if it has 2 or more missing fields
+      // Country is incomplete if it has ANY missing field (more strict)
       const missingFields = [
-        hasNoContent,
         hasNoDescription,
         hasNoMetaDescription,
         hasNoPrice,
         hasBasicTitle
       ].filter(Boolean).length;
       
-      return missingFields >= 2;
+      return missingFields >= 1; // Any missing field
     }) || [];
 
     // Get country codes for visa data
@@ -75,13 +73,10 @@ export async function GET() {
     const formattedCountries = incompleteCountries.map(country => {
       const missingFields = [];
       
-      if (!country.content || country.content.length < 100) {
-        missingFields.push('content');
-      }
-      if (!country.description || country.description.length < 50) {
+      if (!country.description || country.description.length < 100) {
         missingFields.push('description');
       }
-      if (!country.meta_description || country.meta_description.length < 50) {
+      if (!country.meta_description || country.meta_description.length < 100) {
         missingFields.push('meta_description');
       }
       if (!country.price || country.price === 0) {
@@ -99,11 +94,10 @@ export async function GET() {
         code: country.country_code || 'XX',
         title: country.title,
         description: country.description,
-        content: country.content,
         price: country.price,
         created_at: country.created_at,
         missing_fields: missingFields,
-        completeness: Math.round(((5 - missingFields.length) / 5) * 100),
+        completeness: Math.round(((4 - missingFields.length) / 4) * 100),
         visa_status: visa?.visaStatus || 'unknown',
         visa_required: visa?.visaStatus === 'visa-required',
         region: getRegion(country.name)
