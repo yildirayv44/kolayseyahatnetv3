@@ -5,7 +5,7 @@ export function generateSlug(text: string): string {
   const turkishMap: Record<string, string> = {
     'ç': 'c', 'Ç': 'c',
     'ğ': 'g', 'Ğ': 'g',
-    'ı': 'i', 'İ': 'i',
+    'ı': 'i', 'İ': 'i', 'I': 'i', // Handle both Turkish İ and English I
     'ö': 'o', 'Ö': 'o',
     'ş': 's', 'Ş': 's',
     'ü': 'u', 'Ü': 'u',

@@ -192,7 +192,16 @@ SADECE JSON yanıtı ver, başka açıklama ekleme.`;
 
     // Step 4: Create taxonomy entry for URL slug
     const slug = countryData.name
+      // First replace Turkish uppercase characters before toLowerCase
+      .replace(/İ/g, 'i')
+      .replace(/I/g, 'i')
+      .replace(/Ğ/g, 'g')
+      .replace(/Ü/g, 'u')
+      .replace(/Ş/g, 's')
+      .replace(/Ö/g, 'o')
+      .replace(/Ç/g, 'c')
       .toLowerCase()
+      // Then replace lowercase Turkish characters
       .replace(/ı/g, 'i')
       .replace(/ğ/g, 'g')
       .replace(/ü/g, 'u')
