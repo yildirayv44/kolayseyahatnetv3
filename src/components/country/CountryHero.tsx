@@ -30,6 +30,7 @@ interface CountryHeroProps {
 export function CountryHero({ country, locale = "tr", products = [] }: CountryHeroProps) {
   const [visaData, setVisaData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedPackage, setSelectedPackage] = useState<any>(products[0] || null);
 
   useEffect(() => {
     if (country.country_code) {
@@ -46,6 +47,13 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
     }
   }, [country.country_code]);
 
+  // Auto-select first package
+  useEffect(() => {
+    if (products.length > 0 && !selectedPackage) {
+      setSelectedPackage(products[0]);
+    }
+  }, [products, selectedPackage]);
+
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
@@ -57,34 +65,38 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
   };
 
   const getVisaStatusConfig = (status: string) => {
-    const configs: Record<string, { label: string; color: string; bgColor: string; icon: string; description: string }> = {
+    const configs: Record<string, { label: string; color: string; bgColor: string; icon: string; description: string; cta: string }> = {
       'visa-free': { 
         label: 'Vizesiz Giriş', 
         color: 'text-green-700', 
         bgColor: 'bg-green-50 border-green-200', 
         icon: '✅',
-        description: 'Pasaportunuzla doğrudan seyahat edebilirsiniz. Önceden vize başvurusu gerekmez.'
+        description: 'Pasaportunuzla doğrudan seyahat edebilirsiniz. Ancak seyahat planlaması, otel rezervasyonu ve sigorta konularında uzman desteğimizden faydalanabilirsiniz.',
+        cta: 'Seyahat danışmanlığı almak ister misiniz?'
       },
       'visa-on-arrival': { 
         label: 'Varışta Vize', 
         color: 'text-blue-700', 
         bgColor: 'bg-blue-50 border-blue-200', 
         icon: '🛬',
-        description: 'Vizenizi havaalanında/sınırda alabilirsiniz. Önceden başvuru gerekmez.'
+        description: 'Vizenizi havaalanında alabilirsiniz. Ancak doğru evraklar ve ön hazırlık için profesyonel destek almanızı öneririz. Reddedilme riskini sıfırlayın!',
+        cta: 'Garantili geçiş için danışmanlık alın'
       },
       'eta': { 
         label: 'eTA Gerekli', 
         color: 'text-cyan-700', 
         bgColor: 'bg-cyan-50 border-cyan-200', 
         icon: '📧',
-        description: 'Online elektronik seyahat izni başvurusu yapmanız gerekir. Hızlı ve kolaydır.'
+        description: 'Online başvuru hızlı görünse de hata yapma riski yüksektir. Uzman desteğimizle ilk seferde onay alın, zaman ve para kaybetmeyin!',
+        cta: 'Hatasız başvuru için destek alın'
       },
       'visa-required': { 
         label: 'Vize Gerekli', 
         color: 'text-orange-700', 
         bgColor: 'bg-orange-50 border-orange-200', 
         icon: '🏛️',
-        description: 'Seyahat öncesi vize başvurusu yapmanız gerekir. Size yardımcı olabiliriz.'
+        description: 'Vize başvurusu karmaşık ve zaman alıcıdır. Evrak eksikliği veya hata reddedilme sebebidir. %98 başarı oranımızla vizenizi garantiye alın!',
+        cta: 'Garantili vize için hemen başlayın'
       },
     };
     return configs[status] || configs['visa-required'];
@@ -215,22 +227,23 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
               </div>
               <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
                 {products.slice(0, 3).map((product, index) => (
-                  <Link
+                  <button
                     key={product.id}
-                    href={{
-                      pathname: '/vize-basvuru-formu',
-                      query: {
-                        country_id: country.id,
-                        country_name: country.name,
-                        package_id: product.id,
-                        package_name: product.name,
-                      },
-                    }}
-                    className="group relative rounded-lg border-2 border-white bg-white p-3 transition-all hover:border-primary hover:shadow-lg"
+                    onClick={() => setSelectedPackage(product)}
+                    className={`group relative rounded-lg border-2 p-3 text-left transition-all hover:shadow-lg ${
+                      selectedPackage?.id === product.id
+                        ? 'border-primary bg-primary/5 shadow-md'
+                        : 'border-white bg-white hover:border-primary'
+                    }`}
                   >
                     {index === 0 && (
                       <div className="absolute -right-1 -top-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-white">
                         ⭐ Popüler
+                      </div>
+                    )}
+                    {selectedPackage?.id === product.id && (
+                      <div className="absolute -left-1 -top-1 rounded-full bg-green-500 p-1">
+                        <CheckCircle2 className="h-3 w-3 text-white" />
                       </div>
                     )}
                     <div className="mb-2">
@@ -244,9 +257,11 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
                         </span>
                         <span className="text-xs text-slate-500">/ başvuru</span>
                       </div>
-                      <ArrowRight className="h-4 w-4 text-primary transition-transform group-hover:translate-x-1" />
+                      {selectedPackage?.id === product.id && (
+                        <span className="text-xs font-semibold text-green-600">Seçili</span>
+                      )}
                     </div>
-                  </Link>
+                  </button>
                 ))}
               </div>
               {products.length > 3 && (
@@ -263,10 +278,21 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
           {/* CTA Buttons */}
           <div className="grid gap-3 sm:grid-cols-3">
             <Link
-              href="/vize-basvuru-formu"
+              href={{
+                pathname: '/vize-basvuru-formu',
+                query: selectedPackage ? {
+                  country_id: country.id,
+                  country_name: country.name,
+                  package_id: selectedPackage.id,
+                  package_name: selectedPackage.name,
+                } : {
+                  country_id: country.id,
+                  country_name: country.name,
+                },
+              }}
               className="group inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-4 text-base font-bold text-white shadow-xl transition-all hover:bg-primary/90 hover:shadow-2xl hover:scale-105"
             >
-              <span>{t(locale, "applyNow")}</span>
+              <span>{selectedPackage ? `${selectedPackage.name} - Hemen Başvur` : t(locale, "applyNow")}</span>
               <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
             </Link>
             <a
