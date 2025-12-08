@@ -21,6 +21,7 @@ import { TableOfContents } from "@/components/country/TableOfContents";
 import { AskQuestionForm } from "@/components/country/AskQuestionForm";
 import { RelatedPages } from "@/components/country/RelatedPages";
 import { ContentWithIds } from "@/components/country/ContentWithIds";
+import { ExtendedCountryInfo } from "@/components/country/ExtendedCountryInfo";
 import { getBlogSlug, parseH2Headings, getMenuSlug } from "@/lib/helpers";
 import { GenericCommentSection } from "@/components/comments/GenericCommentSection";
 import { getLocalizedFields } from "@/lib/locale-content";
@@ -634,6 +635,9 @@ export default async function CountryPage({ params }: CountryPageParams) {
           <ContentWithIds html={fixedReqDocument} />
         </section>
       )}
+
+      {/* EXTENDED COUNTRY INFO - AI Generated Fields */}
+      <ExtendedCountryInfo country={country} locale={locale as 'tr' | 'en'} />
 
       {/* SSS - New Improved Version */}
       {faqParents.length > 0 && (
