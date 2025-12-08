@@ -20,7 +20,13 @@ export async function POST(request: NextRequest) {
     // Step 1: Generate comprehensive country data with Gemini
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
 
-    const prompt = `Sen bir vize danışmanlığı uzmanısın. ${country.name} (${country.code}) ülkesi için Türkiye vatandaşları için detaylı vize bilgileri oluştur.
+    const prompt = `Sen Kolay Seyahat vize danışmanlık firmasının uzman içerik yazarısın. ${country.name} (${country.code}) ülkesi için Türkiye vatandaşları için detaylı vize bilgileri oluştur.
+
+ÖNEMLİ KURALLAR:
+1. Vize başvuru adımlarında "Kolay Seyahat'in uzman danışmanlarıyla başvuru yapabilirsiniz" vurgusunu yap
+2. Ücret bilgilerinde "Danışmanlık hizmet bedelleri hariçtir" notunu ekle
+3. SEO için optimize edilmiş title ve meta description oluştur
+4. Profesyonel ve güvenilir bir dil kullan
 
 Aşağıdaki JSON formatında yanıt ver:
 
@@ -35,10 +41,18 @@ Aşağıdaki JSON formatında yanıt ver:
   "visaRequired": ${country.visaRequired},
   "visaType": "Vize türü (Vizesiz, E-Vize, Vize Gerekli, vb.)",
   "maxStayDuration": "Maksimum kalış süresi",
-  "visaFee": "Vize ücreti (varsa)",
+  "visaFee": "Vize ücreti (Danışmanlık hizmet bedelleri hariçtir notu ekle)",
   "processingTime": "İşlem süresi",
+  "seoTitle": "SEO için optimize edilmiş başlık (max 60 karakter, ülke adı + vize + Kolay Seyahat)",
+  "seoDescription": "SEO için optimize edilmiş açıklama (max 160 karakter, ülke vize bilgileri + CTA)",
   "description": "Ülke hakkında 2-3 cümlelik kısa açıklama (seyahat odaklı)",
-  "visaDescription": "Vize süreci hakkında detaylı açıklama (3-4 paragraf)",
+  "visaDescription": "Vize süreci hakkında detaylı açıklama (3-4 paragraf). Kolay Seyahat'in uzman danışmanlarıyla başvuru yapılabileceğini vurgula.",
+  "applicationSteps": [
+    "Adım 1: ... (Kolay Seyahat uzman danışmanlarıyla iletişime geçin)",
+    "Adım 2: ...",
+    "Adım 3: ...",
+    "..."
+  ],
   "requiredDocuments": [
     "Gerekli belge 1",
     "Gerekli belge 2",
@@ -47,6 +61,7 @@ Aşağıdaki JSON formatında yanıt ver:
   "importantNotes": [
     "Önemli not 1",
     "Önemli not 2",
+    "Kolay Seyahat uzman danışmanları tüm süreçte size yardımcı olur",
     "..."
   ],
   "travelTips": [
@@ -65,7 +80,8 @@ Aşağıdaki JSON formatında yanıt ver:
   "emergencyContacts": {
     "embassy": "Türkiye'deki elçilik/konsolosluk bilgisi",
     "emergencyNumber": "Acil durum numarası"
-  }
+  },
+  "whyKolaySeyahat": "Kolay Seyahat ile çalışmanın avantajları (2-3 cümle)"
 }
 
 SADECE JSON yanıtı ver, başka açıklama ekleme.`;
@@ -113,13 +129,16 @@ SADECE JSON yanıtı ver, başka açıklama ekleme.`;
       .from("countries")
       .insert({
         name: countryData.name,
+        title: countryData.seoTitle || `${countryData.name} Vizesi | Kolay Seyahat`,
         description: countryData.description,
+        meta_description: countryData.seoDescription,
         visa_description: countryData.visaDescription,
         visa_required: countryData.visaRequired,
         visa_type: countryData.visaType,
         max_stay_duration: countryData.maxStayDuration,
         visa_fee: countryData.visaFee,
         processing_time: countryData.processingTime,
+        application_steps: countryData.applicationSteps,
         required_documents: countryData.requiredDocuments,
         important_notes: countryData.importantNotes,
         travel_tips: countryData.travelTips,
@@ -128,6 +147,7 @@ SADECE JSON yanıtı ver, başka açıklama ekleme.`;
         health_requirements: countryData.healthRequirements,
         customs_regulations: countryData.customsRegulations,
         emergency_contacts: countryData.emergencyContacts,
+        why_kolay_seyahat: countryData.whyKolaySeyahat,
         capital: countryData.capital,
         currency: countryData.currency,
         language: countryData.language,
