@@ -151,33 +151,7 @@ export function ExtendedCountryInfo({ country, locale }: ExtendedCountryInfoProp
         </section>
       )}
 
-      {/* Gerekli Belgeler */}
-      {hasRequiredDocs && (
-        <section className="card">
-          <div className="mb-4 flex items-center gap-2">
-            <FileText className="h-5 w-5 text-primary" />
-            <h2 className="text-xl font-bold text-slate-900">
-              {locale === 'en' ? 'Required Documents' : 'Gerekli Belgeler'}
-            </h2>
-          </div>
-          {/* Prefer new array format, fallback to old HTML format for backward compatibility */}
-          {country.required_documents && country.required_documents.length > 0 ? (
-            <ul className="space-y-2">
-              {country.required_documents.map((doc: string, index: number) => (
-                <li key={index} className="flex items-start gap-2">
-                  <span className="mt-1 text-green-600">✓</span>
-                  <span className="flex-1 text-slate-700">{doc}</span>
-                </li>
-              ))}
-            </ul>
-          ) : country.req_document ? (
-            <div 
-              className="prose prose-slate max-w-none"
-              dangerouslySetInnerHTML={{ __html: country.req_document }}
-            />
-          ) : null}
-        </section>
-      )}
+      {/* Gerekli Belgeler - REMOVED: Already shown above in main content section */}
 
       {/* Önemli Notlar */}
       {hasImportantNotes && (
