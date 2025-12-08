@@ -131,7 +131,7 @@ export function getCountryDefaultImage(countryName: string): string {
     "Norveç": "https://images.unsplash.com/photo-1601439678777-b2b3c56fa627?w=1200&h=630&q=80&fit=crop",
     "İsveç": "https://images.unsplash.com/photo-1509356843151-3e7d96241e11?w=1200&h=630&q=80&fit=crop",
     "Danimarka": "https://images.unsplash.com/photo-1513622470522-26c3c8a854bc?w=1200&h=630&q=80&fit=crop",
-    "Finlandiya": "https://images.unsplash.com/photo-1535498051285-2f2a1458e2e7?w=1200&h=630&q=80&fit=crop",
+    "Finlandiya": "https://images.unsplash.com/photo-1564507592333-c60657eea523?w=1200&h=630&q=80&fit=crop",
     "İzlanda": "https://images.unsplash.com/photo-1504829857797-ddff29c27927?w=1200&h=630&q=80&fit=crop",
     
     // Europe - Eastern & Southern
@@ -176,6 +176,21 @@ export function getCountryDefaultImage(countryName: string): string {
     "Fas": "https://images.unsplash.com/photo-1489749798305-4fea3ae63d43?w=1200&h=630&q=80&fit=crop",
     "Kenya": "https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=1200&h=630&q=80&fit=crop",
     "Tanzanya": "https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=1200&h=630&q=80&fit=crop",
+    "Togo": "https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?w=1200&h=630&q=80&fit=crop",
+    "Benin": "https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?w=1200&h=630&q=80&fit=crop",
+    "Uganda": "https://images.unsplash.com/photo-1621542320937-4a8b6b6e1b8e?w=1200&h=630&q=80&fit=crop",
+    "Zambiya": "https://images.unsplash.com/photo-1489392191049-fc10c97e64b6?w=1200&h=630&q=80&fit=crop",
+    
+    // Europe - Other
+    "Vatikan": "https://images.unsplash.com/photo-1531572753322-ad063cecc140?w=1200&h=630&q=80&fit=crop",
+    "Rusya": "https://images.unsplash.com/photo-1513326738677-b964603b136d?w=1200&h=630&q=80&fit=crop",
+    "Ukrayna": "https://images.unsplash.com/photo-1559628376-f3fe5f782a2e?w=1200&h=630&q=80&fit=crop",
+    
+    // Asia - Other
+    "Bhutan": "https://images.unsplash.com/photo-1561361513-2d000a50f0dc?w=1200&h=630&q=80&fit=crop",
+    "Nepal": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&h=630&q=80&fit=crop",
+    "Sri Lanka": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1200&h=630&q=80&fit=crop",
+    "Hindistan": "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=1200&h=630&q=80&fit=crop",
   };
 
   // Try exact match first
