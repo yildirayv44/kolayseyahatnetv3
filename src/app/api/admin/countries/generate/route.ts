@@ -18,7 +18,8 @@ export async function POST(request: NextRequest) {
     console.log(`🌍 Generating data for: ${country.name}`);
 
     // Step 1: Generate comprehensive country data with Gemini
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+    // Use gemini-1.5-flash for better quota limits
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const prompt = `Sen Kolay Seyahat vize danışmanlık firmasının uzman içerik yazarısın. ${country.name} (${country.code}) ülkesi için Türkiye vatandaşları için detaylı vize bilgileri oluştur.
 

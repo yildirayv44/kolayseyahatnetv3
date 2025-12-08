@@ -112,7 +112,8 @@ export default function BulkCountryImportPage() {
               // Rate limit - wait and retry
               retries--;
               if (retries > 0) {
-                await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
+                console.log(`Rate limit hit, waiting 60 seconds before retry...`);
+                await new Promise(resolve => setTimeout(resolve, 60000)); // Wait 60 seconds
                 continue;
               }
               throw new Error('Rate limit exceeded. Please try again later.');
@@ -132,9 +133,9 @@ export default function BulkCountryImportPage() {
           throw lastError || new Error('Failed after retries');
         }
 
-        // Wait 2 seconds between countries to avoid rate limits
+        // Wait 10 seconds between countries to avoid rate limits
         if (i < selected.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 2000));
+          await new Promise(resolve => setTimeout(resolve, 10000));
         }
       } catch (error: any) {
         setSelectedCountries(prev =>
@@ -194,6 +195,23 @@ export default function BulkCountryImportPage() {
         {/* Step 1: Prepare */}
         {step === 'prepare' && (
           <div className="rounded-lg bg-white p-8 shadow-sm">
+            {/* Warning Banner */}
+            <div className="mb-6 rounded-lg border-l-4 border-yellow-500 bg-yellow-50 p-4">
+              <div className="flex items-start gap-3">
+                <div className="text-yellow-600">⚠️</div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-yellow-900">Önemli Bilgilendirme</h3>
+                  <ul className="mt-2 space-y-1 text-sm text-yellow-800">
+                    <li>• Her ülke için AI ile veri üretimi yapılacaktır (yaklaşık 30 saniye/ülke)</li>
+                    <li>• Ülkeler arası 10 saniye bekleme süresi vardır</li>
+                    <li>• 10 ülke eklemek yaklaşık 6-7 dakika sürer</li>
+                    <li>• API quota limitleri nedeniyle günde maksimum 50-100 ülke eklenebilir</li>
+                    <li>• Quota dolduğunda 24 saat beklemeniz gerekebilir</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
             <div className="text-center">
               <Globe2 className="mx-auto mb-4 h-16 w-16 text-primary" />
               <h2 className="mb-2 text-2xl font-bold text-slate-900">Eksik Ülkeleri Bul</h2>
