@@ -255,14 +255,11 @@ export function getCountriesByContinent(countries: any[]): Record<Continent, any
     const continent = getContinent(country.name);
     if (continent) {
       grouped[continent].push(country);
-    } else {
-      // Default to appropriate continent or create "Diğer"
-      if (!grouped['Diğer']) grouped['Diğer'] = [];
-      grouped['Diğer'].push(country);
     }
+    // Skip countries without continent mapping (should not happen now)
   });
   
-  // Remove empty groups
+  // Remove empty groups for consistent rendering
   Object.keys(grouped).forEach(key => {
     if (grouped[key].length === 0) {
       delete grouped[key];
