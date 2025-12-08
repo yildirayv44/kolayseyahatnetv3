@@ -3,19 +3,23 @@ import { NextRequest, NextResponse } from 'next/server';
 /**
  * Fetch visa requirements from PassportIndex for Turkish passport holders
  * 
- * PassportIndex structure:
- * - visa-free: No visa required
- * - visa-on-arrival: Visa available at border/airport
- * - eta: Electronic Travel Authorization
- * - evisa: Electronic visa (apply online)
- * - visa-required: Must apply at embassy
- * - no-admission: Entry not permitted
+ * PassportIndex Categories (OFFICIAL):
+ * - visa-free (69 countries): No visa required - GREEN
+ * - visa-on-arrival (48 countries): Visa available at border/airport - BLUE
+ * - eta (6 countries): Electronic Travel Authorization required - ORANGE
+ * - visa-required (75 countries): Must apply at embassy/consulate - RED
+ * 
+ * Total: 198 countries
+ * 
+ * Note: Many "visa-required" countries offer eVisa option, but they're still
+ * categorized as "visa-required" on PassportIndex. eVisa info is stored in
+ * the conditions field.
  */
 
 interface VisaRequirement {
   countryCode: string;
   countryName: string;
-  visaStatus: 'visa-free' | 'visa-on-arrival' | 'eta' | 'evisa' | 'visa-required' | 'no-admission';
+  visaStatus: 'visa-free' | 'visa-on-arrival' | 'eta' | 'visa-required';
   allowedStay?: string;
   conditions?: string;
   visaCost?: string;
@@ -24,8 +28,14 @@ interface VisaRequirement {
 }
 
 // Comprehensive data based on PassportIndex for Turkish passport holders
-// 190+ countries with accurate visa requirements
-// In production, this would be fetched from PassportIndex API or scraped
+// 198 countries with accurate visa requirements (as of December 2024)
+// Data extracted from: https://www.passportindex.org/passport/turkey/
+// 
+// Categories:
+// - visa-free: 69 countries (GREEN)
+// - visa-on-arrival: 48 countries (BLUE) 
+// - eta: 6 countries (ORANGE)
+// - visa-required: 75 countries (RED)
 const TURKISH_PASSPORT_VISA_REQUIREMENTS: VisaRequirement[] = [
   // EUROPE - Schengen Countries (VISA REQUIRED for Turkish passport holders)
   { countryCode: 'DEU', countryName: 'Almanya', visaStatus: 'visa-required', allowedStay: 'Up to 90 days', conditions: 'Schengen visa required', visaCost: '€80', processingTime: '15 days', applicationMethod: 'embassy' },
