@@ -402,34 +402,29 @@ export async function getBlogs(options?: { home?: number; limit?: number }) {
 
   if (!blogs) return [];
 
-  // Her blog için taxonomy slug'ını al
-  const blogsWithSlugs = await Promise.all(
-    blogs.map(async (blog) => {
-      // Önce Blog\\BlogController@detail dene
-      let { data: taxonomy } = await supabase
-        .from("taxonomies")
-        .select("slug")
-        .eq("model_id", blog.id)
-        .eq("type", "Blog\\BlogController@detail")
-        .maybeSingle();
+  // Tüm blog ID'lerini topla
+  const blogIds = blogs.map(b => b.id);
 
-      // Bulamazsa Country\\CountryController@blogDetail dene
-      if (!taxonomy) {
-        const result = await supabase
-          .from("taxonomies")
-          .select("slug")
-          .eq("model_id", blog.id)
-          .eq("type", "Country\\CountryController@blogDetail")
-          .maybeSingle();
-        taxonomy = result.data;
-      }
+  // Tek sorguda tüm taxonomy'leri çek
+  const { data: taxonomies } = await supabase
+    .from("taxonomies")
+    .select("model_id, slug, type")
+    .in("model_id", blogIds)
+    .in("type", ["Blog\\BlogController@detail", "Country\\CountryController@blogDetail"]);
 
-      return {
-        ...blog,
-        taxonomy_slug: taxonomy?.slug || null,
-      };
-    })
-  );
+  // Taxonomy map'i oluştur (öncelik Blog\\BlogController@detail)
+  const taxonomyMap = new Map<number, string>();
+  taxonomies?.forEach(tax => {
+    if (!taxonomyMap.has(tax.model_id) || tax.type === "Blog\\BlogController@detail") {
+      taxonomyMap.set(tax.model_id, tax.slug);
+    }
+  });
+
+  // Blog'lara slug'ları ekle
+  const blogsWithSlugs = blogs.map(blog => ({
+    ...blog,
+    taxonomy_slug: taxonomyMap.get(blog.id) || null,
+  }));
 
   return blogsWithSlugs;
 }
