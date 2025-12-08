@@ -141,8 +141,8 @@ export function CountriesListWithFilters({ initialCountries }: { initialCountrie
         </p>
       </section>
 
-      {/* Visa Map */}
-      <VisaMap visaData={visaData} />
+      {/* Visa Statistics */}
+      <VisaMap visaData={visaData} totalCountries={countries.length} />
 
       {/* View Mode Toggle & Filters */}
       <div className="card space-y-4">
