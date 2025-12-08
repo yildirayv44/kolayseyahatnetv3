@@ -13,6 +13,7 @@ import { AIToolsQuickAccess } from "./AIToolsQuickAccess";
 import { ArrayInput } from "./ArrayInput";
 import { AIRegenerateModal } from "./AIRegenerateModal";
 import { generateSlug } from "@/lib/helpers";
+import { getCountryCode, getAllCountryCodes } from "@/lib/country-codes";
 
 export function CountryEditForm({ country }: { country: any }) {
   const router = useRouter();
@@ -20,6 +21,7 @@ export function CountryEditForm({ country }: { country: any }) {
   const [translating, setTranslating] = useState(false);
   const [showRegenerateModal, setShowRegenerateModal] = useState(false);
   const [activeLocale, setActiveLocale] = useState<'tr' | 'en'>('tr');
+  const [visaRequirementPreview, setVisaRequirementPreview] = useState<any>(null);
   const [expandedSections, setExpandedSections] = useState({
     basic: true,
     seo: false,
@@ -35,6 +37,7 @@ export function CountryEditForm({ country }: { country: any }) {
   const [formData, setFormData] = useState({
     name: country.name || "",
     slug: country.slug || generateSlug(country.name || ""),
+    country_code: country.country_code || "",
     title: country.title || "",
     meta_title: country.meta_title || "",
     meta_description: country.meta_description || "",
@@ -71,16 +74,27 @@ export function CountryEditForm({ country }: { country: any }) {
     timezone: country.timezone || "",
   });
 
-  // Debug: Log initial image URL
+  // Load visa requirements on mount
   useEffect(() => {
     console.log('🏞️ Country Edit Form - Initial country data:', {
       id: country.id,
       name: country.name,
+      country_code: country.country_code,
       image_url: country.image_url,
-      image_url_type: typeof country.image_url,
-      image_url_length: country.image_url?.length,
     });
-    console.log('🏞️ FormData image_url:', formData.image_url);
+    
+    // Load visa requirements if country_code exists
+    if (formData.country_code) {
+      fetch(`/api/admin/visa-requirements/fetch-passportindex`)
+        .then(res => res.json())
+        .then(data => {
+          const visaReq = data.data?.find((v: any) => v.countryCode === formData.country_code);
+          if (visaReq) {
+            setVisaRequirementPreview(visaReq);
+          }
+        })
+        .catch(console.error);
+    }
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -308,11 +322,25 @@ export function CountryEditForm({ country }: { country: any }) {
             value={formData.name}
             onChange={(e) => {
               const name = e.target.value;
+              const autoCode = getCountryCode(name);
+              
               setFormData({ 
                 ...formData, 
                 name,
-                slug: generateSlug(name) // Otomatik slug güncelle
+                slug: generateSlug(name), // Otomatik slug güncelle
+                country_code: autoCode || formData.country_code // Otomatik kod ataması
               });
+              
+              // Vize gerekliliklerini yükle
+              if (autoCode) {
+                fetch(`/api/admin/visa-requirements/fetch-passportindex`)
+                  .then(res => res.json())
+                  .then(data => {
+                    const visaReq = data.data?.find((v: any) => v.countryCode === autoCode);
+                    setVisaRequirementPreview(visaReq);
+                  })
+                  .catch(console.error);
+              }
             }}
             required
             className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -333,6 +361,54 @@ export function CountryEditForm({ country }: { country: any }) {
           <p className="text-xs text-slate-500">
             URL: /{formData.slug}
           </p>
+        </div>
+
+        <div className="space-y-2">
+          <label className="flex items-center gap-1 text-sm font-semibold text-slate-900">
+            Ülke Kodu (ISO 3166-1 alpha-3)
+            {visaRequirementPreview && <span className="text-green-600 text-xs">✓ Vize bilgisi bulundu</span>}
+          </label>
+          <input
+            type="text"
+            value={formData.country_code}
+            onChange={(e) => {
+              const code = e.target.value.toUpperCase();
+              setFormData({ ...formData, country_code: code });
+              
+              // Vize gerekliliklerini yükle
+              if (code.length === 3) {
+                fetch(`/api/admin/visa-requirements/fetch-passportindex`)
+                  .then(res => res.json())
+                  .then(data => {
+                    const visaReq = data.data?.find((v: any) => v.countryCode === code);
+                    setVisaRequirementPreview(visaReq);
+                  })
+                  .catch(console.error);
+              }
+            }}
+            className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm font-mono uppercase focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            placeholder="Örn: MNE"
+            maxLength={3}
+          />
+          <p className="text-xs text-slate-500">
+            Otomatik atanır. Ülke adı değiştirildiğinde ISO kodu bulunur.
+          </p>
+          {visaRequirementPreview && (
+            <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+              <p className="text-xs font-semibold text-green-900 mb-1">
+                📋 Vize Gerekliliği Bulundu:
+              </p>
+              <div className="text-xs text-green-800 space-y-1">
+                <p><strong>Durum:</strong> {visaRequirementPreview.visaStatus}</p>
+                {visaRequirementPreview.allowedStay && (
+                  <p><strong>Kalış Süresi:</strong> {visaRequirementPreview.allowedStay}</p>
+                )}
+                {visaRequirementPreview.conditions && (
+                  <p><strong>Koşullar:</strong> {visaRequirementPreview.conditions}</p>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         {activeLocale === 'tr' && (
