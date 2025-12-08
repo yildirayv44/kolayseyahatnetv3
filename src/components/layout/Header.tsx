@@ -142,18 +142,18 @@ export function Header() {
             {/* Pulse Animation Ring */}
             <div className="absolute -inset-1 rounded-lg bg-primary/20 opacity-75 blur-sm animate-pulse pointer-events-none"></div>
             
-            {/* Search Icon - Larger and more prominent */}
-            <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-primary z-10 stroke-[2.5]" />
-            <span className="absolute left-9 top-1/2 -translate-y-1/2 z-10 hidden md:inline text-sm font-semibold text-primary/80">|</span>
-            
             <input
               type="text"
               placeholder={t(locale as Locale, "searchCountry")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => setSearchOpen(true)}
-              className="relative z-10 w-full rounded-lg border-2 border-primary/40 bg-white py-3 pl-11 pr-3 text-sm font-medium placeholder:text-slate-600 placeholder:font-semibold focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30 md:py-2 md:pl-14 md:pr-4 md:text-sm"
+              className="relative w-full rounded-lg border-2 border-primary/40 bg-white py-3 pl-11 pr-3 text-sm font-medium placeholder:text-slate-600 placeholder:font-semibold focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30 md:py-2 md:pl-14 md:pr-4 md:text-sm"
             />
+            
+            {/* Search Icon - Larger and more prominent - After input for proper z-index */}
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-primary stroke-[2.5]" />
+            <span className="pointer-events-none absolute left-9 top-1/2 -translate-y-1/2 hidden md:inline text-sm font-semibold text-primary/80">|</span>
           </div>
 
           {searchOpen && (
