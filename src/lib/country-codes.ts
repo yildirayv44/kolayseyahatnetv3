@@ -20,6 +20,7 @@ export const COUNTRY_NAME_TO_CODE: Record<string, string> = {
   'Azerbaycan': 'AZE',
   
   // B
+  'Bahamas': 'BHS',
   'Bahamalar': 'BHS',
   'Bahreyn': 'BHR',
   'Bangladeş': 'BGD',
@@ -35,6 +36,7 @@ export const COUNTRY_NAME_TO_CODE: Record<string, string> = {
   'İngiltere': 'GBR',
   'Bolivya': 'BOL',
   'Bosna-Hersek': 'BIH',
+  'Bosna Hersek': 'BIH',
   'Botsvana': 'BWA',
   'Brezilya': 'BRA',
   'Brunei': 'BRN',
@@ -76,6 +78,8 @@ export const COUNTRY_NAME_TO_CODE: Record<string, string> = {
   'Filistin': 'PSE',
   'Finlandiya': 'FIN',
   'Fransa': 'FRA',
+  'Fransız Polinezyası': 'PYF',
+  'Fransız Guyanası': 'GUF',
   
   // G
   'Gabon': 'GAB',
@@ -145,6 +149,7 @@ export const COUNTRY_NAME_TO_CODE: Record<string, string> = {
   'Letonya': 'LVA',
   'Liberya': 'LBR',
   'Libya': 'LBY',
+  'Liechtenstein': 'LIE',
   'Lihtenştayn': 'LIE',
   'Litvanya': 'LTU',
   'Lübnan': 'LBN',
@@ -155,6 +160,7 @@ export const COUNTRY_NAME_TO_CODE: Record<string, string> = {
   'Madagaskar': 'MDG',
   'Makao': 'MAC',
   'Malavi': 'MWI',
+  'Malawi': 'MWI',
   'Maldivler': 'MDV',
   'Malezya': 'MYS',
   'Mali': 'MLI',
@@ -206,6 +212,7 @@ export const COUNTRY_NAME_TO_CODE: Record<string, string> = {
   'Samoa': 'WSM',
   'San Marino': 'SMR',
   'São Tomé ve Príncipe': 'STP',
+  'Sao Tome ve Principe': 'STP',
   'Senegal': 'SEN',
   'Seyşeller': 'SYC',
   'Sierra Leone': 'SLE',
@@ -219,6 +226,7 @@ export const COUNTRY_NAME_TO_CODE: Record<string, string> = {
   'Surinam': 'SUR',
   'Suriye': 'SYR',
   'Suudi Arabistan': 'SAU',
+  'Svaziland': 'SWZ',
   'Sırbistan': 'SRB',
   
   // Ş
@@ -253,6 +261,7 @@ export const COUNTRY_NAME_TO_CODE: Record<string, string> = {
   
   // Y
   'Yemen': 'YEM',
+  'Yeni Kaledonya': 'NCL',
   'Yeni Zelanda': 'NZL',
   'Yunanistan': 'GRC',
   
