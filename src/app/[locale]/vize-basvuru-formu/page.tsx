@@ -34,7 +34,7 @@ export default async function ApplicationPage({ params }: ApplicationPageProps) 
         </h1>
         <p className="text-base text-slate-600 md:text-lg">
           {t(locale as Locale, "expertContactIn24Hours").split('24 saat içinde').map((part, i) => 
-            i === 0 ? part : <><strong className="text-slate-900">24 saat içinde</strong>{part}</>
+            i === 0 ? <span key={i}>{part}</span> : <span key={i}><strong className="text-slate-900">24 saat içinde</strong>{part}</span>
           )}
         </p>
         <a 
