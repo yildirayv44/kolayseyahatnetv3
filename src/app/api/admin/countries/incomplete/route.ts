@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { getCountryCode } from "@/lib/country-codes";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -86,10 +87,13 @@ export async function GET() {
 
       const visa = country.country_code ? visaData[country.country_code] : null;
 
+      // Auto-generate country code if missing
+      const autoCode = country.country_code || getCountryCode(country.name);
+      
       return {
         id: country.id,
         name: country.name,
-        code: country.country_code || 'XX',
+        code: autoCode || 'XX',
         title: country.title,
         description: country.description,
         price: country.price,
