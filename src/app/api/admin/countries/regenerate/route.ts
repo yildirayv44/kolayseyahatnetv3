@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { createClient } from "@supabase/supabase-js";
+import { getCountryCode } from "@/lib/country-codes";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -42,6 +43,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Get country_code and fetch visa requirements from PassportIndex
+    const countryCode = country.country_code || getCountryCode(country.name);
+    let visaRequirementData = null;
+    
+    if (countryCode) {
+      try {
+        const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.includes('localhost') 
+          ? 'http://localhost:3000'
+          : process.env.NEXT_PUBLIC_SUPABASE_URL?.replace('/rest/v1', '');
+        const visaResponse = await fetch(`${baseUrl}/api/admin/visa-requirements/fetch-passportindex`);
+        if (visaResponse.ok) {
+          const visaData = await visaResponse.json();
+          visaRequirementData = visaData.data?.find((v: any) => v.countryCode === countryCode);
+          if (visaRequirementData) {
+            console.log(`📋 Found visa requirement data for ${country.name}:`, visaRequirementData.visaStatus);
+          }
+        }
+      } catch (error) {
+        console.log(`⚠️ Could not fetch visa requirements for ${country.name}`);
+      }
+    }
+
     // Build dynamic prompt based on selected fields
     const fieldPrompts: Record<string, string> = {
       contents: `"contents": "SADECE GENEL ANLATIMSAL İÇERİK (EN AZ 8-10 paragraf, 1500+ kelime). ÖNEMLİ: Liste, madde, tablo kullanma! Sadece akıcı paragraflar. İçerik: 1) Ülke hakkında kapsamlı bilgi - tarihi, kültürü, turistik yerler, yaşam tarzı (3-4 paragraf), 2) Vize politikası genel açıklama - hangi durumlarda gerekli, vize türleri hakkında genel bilgi (2-3 paragraf), 3) Başvuru süreci genel anlatım - nasıl yapılır, nelere dikkat edilmeli, süreç nasıl işler (2-3 paragraf), 4) Kolay Seyahat avantajları - neden tercih edilmeli, nasıl kolaylık sağlar (2 paragraf). HTML formatında sadece <h3> başlıklar ve <p> paragraflar kullan."`,
@@ -68,7 +91,18 @@ export async function POST(request: NextRequest) {
       .map((field: string) => fieldPrompts[field])
       .join(',\n  ');
 
-    const prompt = `Sen Kolay Seyahat vize danışmanlık firmasının uzman içerik yazarısın. ${country.name} ülkesi için aşağıdaki alanları yeniden oluştur.
+    // Add visa context if available
+    const visaInfoContext = visaRequirementData ? `
+
+ÖNEMLI - GERÇEK VİZE BİLGİSİ (PassportIndex):
+- Vize Durumu: ${visaRequirementData.visaStatus}
+- Kalış Süresi: ${visaRequirementData.allowedStay || 'Belirtilmemiş'}
+- Koşullar: ${visaRequirementData.conditions || 'Yok'}
+- Başvuru Yöntemi: ${visaRequirementData.applicationMethod || 'Belirtilmemiş'}
+
+Bu bilgileri MUTLAKA kullan ve içeriğe yansıt. Vize durumu ve kalış süresini doğru belirt.` : '';
+
+    const prompt = `Sen Kolay Seyahat vize danışmanlık firmasının uzman içerik yazarısın. ${country.name} ülkesi için aşağıdaki alanları yeniden oluştur.${visaInfoContext}
 
 ÖNEMLİ KURALLAR:
 1. Vize başvuru adımlarında "Kolay Seyahat'in uzman danışmanlarıyla başvuru yapabilirsiniz" vurgusunu yap
