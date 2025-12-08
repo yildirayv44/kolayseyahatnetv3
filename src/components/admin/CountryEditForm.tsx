@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { Save, ArrowLeft, Languages, Loader2, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
@@ -70,6 +70,18 @@ export function CountryEditForm({ country }: { country: any }) {
     language: country.language || "",
     timezone: country.timezone || "",
   });
+
+  // Debug: Log initial image URL
+  useEffect(() => {
+    console.log('🏞️ Country Edit Form - Initial country data:', {
+      id: country.id,
+      name: country.name,
+      image_url: country.image_url,
+      image_url_type: typeof country.image_url,
+      image_url_length: country.image_url?.length,
+    });
+    console.log('🏞️ FormData image_url:', formData.image_url);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

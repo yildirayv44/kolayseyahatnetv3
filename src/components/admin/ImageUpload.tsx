@@ -28,7 +28,17 @@ export function ImageUpload({
 
   useEffect(() => {
     console.log('🖼️ ImageUpload - currentImageUrl changed:', currentImageUrl);
-    setPreview(currentImageUrl || null);
+    console.log('🖼️ ImageUpload - type:', typeof currentImageUrl);
+    console.log('🖼️ ImageUpload - length:', currentImageUrl?.length);
+    
+    // Handle empty string, null, undefined
+    if (currentImageUrl && currentImageUrl.trim() !== '') {
+      setPreview(currentImageUrl);
+      console.log('✅ Preview set to:', currentImageUrl);
+    } else {
+      setPreview(null);
+      console.log('❌ Preview cleared - empty URL');
+    }
   }, [currentImageUrl]);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
