@@ -29,8 +29,40 @@ export async function POST(request: NextRequest) {
 
     console.log(`🌍 Generating data for: ${country.name} using ${aiProvider.toUpperCase()}`);
 
+    // Auto-assign country_code based on country name (needed for visa data lookup)
+    const autoCountryCode = getCountryCode(country.name) || country.code;
+    console.log(`🔖 Country code for ${country.name}: ${autoCountryCode}`);
+
+    // Fetch visa requirements from PassportIndex data
+    let visaRequirementData = null;
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.includes('localhost') 
+        ? 'http://localhost:3000'
+        : process.env.NEXT_PUBLIC_SUPABASE_URL?.replace('/rest/v1', '');
+      const visaResponse = await fetch(`${baseUrl}/api/admin/visa-requirements/fetch-passportindex`);
+      if (visaResponse.ok) {
+        const visaData = await visaResponse.json();
+        visaRequirementData = visaData.data?.find((v: any) => v.countryCode === autoCountryCode);
+        if (visaRequirementData) {
+          console.log(`📋 Found visa requirement data for ${country.name}:`, visaRequirementData.visaStatus);
+        }
+      }
+    } catch (error) {
+      console.log(`⚠️ Could not fetch visa requirements for ${country.name}`, error);
+    }
+
     // Step 1: Generate comprehensive country data with selected AI provider
-    const prompt = `Sen Kolay Seyahat vize danışmanlık firmasının uzman içerik yazarısın. ${country.name} (${country.code}) ülkesi için Türkiye vatandaşları için detaylı vize bilgileri oluştur.
+    const visaInfoContext = visaRequirementData ? `
+
+ÖNEMLI - GERÇEK VİZE BİLGİSİ (PassportIndex):
+- Vize Durumu: ${visaRequirementData.visaStatus}
+- Kalış Süresi: ${visaRequirementData.allowedStay || 'Belirtilmemiş'}
+- Koşullar: ${visaRequirementData.conditions || 'Yok'}
+- Başvuru Yöntemi: ${visaRequirementData.applicationMethod || 'Belirtilmemiş'}
+
+Bu bilgileri MUTLAKA kullan ve içeriğe yansıt. Vize durumu ve kalış süresini doğru belirt.` : '';
+
+    const prompt = `Sen Kolay Seyahat vize danışmanlık firmasının uzman içerik yazarısın. ${country.name} (${country.code}) ülkesi için Türkiye vatandaşları için detaylı vize bilgileri oluştur.${visaInfoContext}
 
 ÖNEMLİ KURALLAR:
 1. Vize başvuru adımlarında "Kolay Seyahat'in uzman danışmanlarıyla başvuru yapabilirsiniz" vurgusunu yap
@@ -140,9 +172,7 @@ SADECE JSON yanıtı ver, başka açıklama ekleme.`;
 
     console.log(`✅ Generated data for ${country.name}`);
 
-    // Auto-assign country_code based on country name
-    const autoCountryCode = getCountryCode(country.name) || country.code;
-    console.log(`🔖 Auto-assigned country code: ${autoCountryCode}`);
+    // Use the country_code we already determined earlier
     countryData.country_code = autoCountryCode;
 
     // Step 2: Get country image from Pexels and upload to Supabase Storage
