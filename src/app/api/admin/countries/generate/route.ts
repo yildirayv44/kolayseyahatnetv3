@@ -135,7 +135,7 @@ SADECE JSON yanıtı ver, başka açıklama ekleme.`;
     console.log(`⏭️ Skipping image generation for ${country.name} (will add later)`);
 
     // Step 3: Insert country into database
-    // Use only existing columns in the schema
+    // Now using all extended fields after migration
     const { data: insertedCountry, error: insertError } = await supabase
       .from("countries")
       .insert({
@@ -148,6 +148,24 @@ SADECE JSON yanıtı ver, başka açıklama ekleme.`;
         visa_type: countryData.visaType,
         process_time: countryData.processingTime,
         price_range: countryData.visaFee,
+        // Extended fields from migration
+        meta_description: countryData.seoDescription,
+        max_stay_duration: countryData.maxStayDuration,
+        visa_fee: countryData.visaFee,
+        processing_time: countryData.processingTime,
+        required_documents: countryData.requiredDocuments,
+        important_notes: countryData.importantNotes,
+        travel_tips: countryData.travelTips,
+        popular_cities: countryData.popularCities,
+        best_time_to_visit: countryData.bestTimeToVisit,
+        health_requirements: countryData.healthRequirements,
+        customs_regulations: countryData.customsRegulations,
+        emergency_contacts: countryData.emergencyContacts,
+        why_kolay_seyahat: countryData.whyKolaySeyahat,
+        capital: countryData.capital,
+        currency: countryData.currency,
+        language: countryData.language,
+        timezone: countryData.timezone,
         image_url: imageUrl,
         status: 1,
         sorted: 999,
