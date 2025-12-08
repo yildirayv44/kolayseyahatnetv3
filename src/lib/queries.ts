@@ -17,25 +17,32 @@ export async function getCountries() {
   // Import COUNTRY_ID_TO_SLUG from helpers
   const { COUNTRY_ID_TO_SLUG } = await import("./helpers");
 
-  // Her ülke için taxonomy'den slug çek
-  const countriesWithSlugs = await Promise.all(
-    countries.map(async (country) => {
-      const { data: taxonomy } = await supabase
-        .from("taxonomies")
-        .select("slug")
-        .eq("model_id", country.id)
-        .eq("type", "Country\\CountryController@detail")
-        .maybeSingle();
+  // Tüm ülke ID'lerini topla
+  const countryIds = countries.map(c => c.id);
 
-      // Öncelik sırası: taxonomy slug > mapping > fallback
-      const slug = taxonomy?.slug || COUNTRY_ID_TO_SLUG[country.id] || `country-${country.id}`;
+  // Tek sorguda tüm taxonomy'leri çek
+  const { data: taxonomies } = await supabase
+    .from("taxonomies")
+    .select("model_id, slug")
+    .in("model_id", countryIds)
+    .eq("type", "Country\\CountryController@detail");
 
-      return {
-        ...country,
-        slug,
-      };
-    })
-  );
+  // Taxonomy map'i oluştur
+  const taxonomyMap = new Map<number, string>();
+  taxonomies?.forEach(tax => {
+    taxonomyMap.set(tax.model_id, tax.slug);
+  });
+
+  // Ülkelere slug'ları ekle
+  const countriesWithSlugs = countries.map(country => {
+    // Öncelik sırası: taxonomy slug > mapping > fallback
+    const slug = taxonomyMap.get(country.id) || COUNTRY_ID_TO_SLUG[country.id] || `country-${country.id}`;
+    
+    return {
+      ...country,
+      slug,
+    };
+  });
 
   return countriesWithSlugs;
 }
