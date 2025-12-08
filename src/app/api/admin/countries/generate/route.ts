@@ -138,7 +138,7 @@ SADECE JSON yanıtı ver, başka açıklama ekleme.`;
 
     console.log(`✅ Generated data for ${country.name}`);
 
-    // Step 2: Get country image from Pexels
+    // Step 2: Get country image from Pexels and upload to Supabase Storage
     let imageUrl = null;
     try {
       console.log(`🖼️ Fetching image for ${country.name} from Pexels...`);
@@ -154,8 +154,43 @@ SADECE JSON yanıtı ver, başka açıklama ekleme.`;
       if (pexelsResponse.ok) {
         const pexelsData = await pexelsResponse.json();
         if (pexelsData.photos && pexelsData.photos.length > 0) {
-          imageUrl = pexelsData.photos[0].src.large;
-          console.log(`✅ Image found for ${country.name}: ${imageUrl}`);
+          const pexelsImageUrl = pexelsData.photos[0].src.large;
+          console.log(`✅ Image found for ${country.name}: ${pexelsImageUrl}`);
+
+          // Download image from Pexels
+          console.log(`📥 Downloading image from Pexels...`);
+          const imageResponse = await fetch(pexelsImageUrl);
+          const imageBuffer = await imageResponse.arrayBuffer();
+          const imageBlob = new Blob([imageBuffer], { type: 'image/jpeg' });
+
+          // Generate unique filename
+          const timestamp = Date.now();
+          const sanitizedName = country.name.toLowerCase().replace(/[^a-z0-9]/g, '-');
+          const fileName = `${sanitizedName}-${timestamp}.jpg`;
+
+          // Upload to Supabase Storage
+          console.log(`📤 Uploading to Supabase Storage: ${fileName}`);
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('country-images')
+            .upload(fileName, imageBlob, {
+              contentType: 'image/jpeg',
+              cacheControl: '3600',
+              upsert: false,
+            });
+
+          if (uploadError) {
+            console.error(`❌ Upload error for ${country.name}:`, uploadError);
+            // Fallback to Pexels URL if upload fails
+            imageUrl = pexelsImageUrl;
+          } else {
+            // Get public URL from Supabase
+            const { data: publicUrlData } = supabase.storage
+              .from('country-images')
+              .getPublicUrl(fileName);
+            
+            imageUrl = publicUrlData.publicUrl;
+            console.log(`✅ Image uploaded to Supabase: ${imageUrl}`);
+          }
         } else {
           console.log(`⚠️ No image found for ${country.name} on Pexels`);
         }
