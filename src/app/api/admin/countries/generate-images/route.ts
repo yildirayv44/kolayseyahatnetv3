@@ -9,7 +9,7 @@ const supabase = createClient(
 
 /**
  * Download and save country cover images to Supabase Storage
- * GET /api/admin/countries/generate-images?save=true
+ * GET /api/admin/countries/generate-images?save=true&auto_search=true
  * GET /api/admin/countries/generate-images (just check)
  */
 export async function GET(request: NextRequest) {
@@ -17,6 +17,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const countryId = searchParams.get('country_id');
     const shouldSave = searchParams.get('save') === 'true';
+    const autoSearch = searchParams.get('auto_search') === 'true';
 
     // Import image helper
     const { getCountryDefaultImage, DEFAULT_IMAGES } = await import("@/lib/image-helpers");
@@ -35,18 +36,24 @@ export async function GET(request: NextRequest) {
 
     if (error) throw error;
 
-    // Check which countries are using fallback
+    // Check which countries are using fallback or external URLs
     const countriesWithFallback = countries?.filter(c => {
       const imageUrl = getCountryDefaultImage(c.name);
       return imageUrl === DEFAULT_IMAGES.country;
     }) || [];
 
-    const countriesWithSpecificImage = countries?.filter(c => {
+    const countriesWithExternalImage = countries?.filter(c => {
       const imageUrl = getCountryDefaultImage(c.name);
-      return imageUrl !== DEFAULT_IMAGES.country;
+      return imageUrl !== DEFAULT_IMAGES.country && !imageUrl.includes('supabase.co/storage');
     }) || [];
 
-    console.log(`📸 ${countriesWithSpecificImage.length} countries have specific images`);
+    const countriesWithStorageImage = countries?.filter(c => {
+      const imageUrl = getCountryDefaultImage(c.name);
+      return imageUrl.includes('supabase.co/storage');
+    }) || [];
+
+    console.log(`✅ ${countriesWithStorageImage.length} countries already in storage`);
+    console.log(`🌐 ${countriesWithExternalImage.length} countries using external URLs`);
     console.log(`⚠️  ${countriesWithFallback.length} countries using generic fallback`);
 
     // If not saving, just return the check results
@@ -54,30 +61,111 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({
         success: true,
         total: countries?.length || 0,
-        with_specific_image: countriesWithSpecificImage.length,
+        in_storage: countriesWithStorageImage.length,
+        external_urls: countriesWithExternalImage.length,
         using_fallback: countriesWithFallback.length,
-        fallback_countries: countriesWithFallback.map(c => ({
-          id: c.id,
-          name: c.name,
-          fallback_image: DEFAULT_IMAGES.country
-        })),
-        countries_with_images: countriesWithSpecificImage.map(c => ({
+        storage_countries: countriesWithStorageImage.map((c: any) => ({
           id: c.id,
           name: c.name,
           image: getCountryDefaultImage(c.name)
+        })),
+        external_countries: countriesWithExternalImage.map((c: any) => ({
+          id: c.id,
+          name: c.name,
+          image: getCountryDefaultImage(c.name)
+        })),
+        fallback_countries: countriesWithFallback.map((c: any) => ({
+          id: c.id,
+          name: c.name,
+          fallback_image: DEFAULT_IMAGES.country
         }))
       });
     }
 
+    // Determine which countries to process
+    const countriesToProcess = autoSearch 
+      ? [...countriesWithFallback, ...countriesWithExternalImage]
+      : countriesWithExternalImage;
+
     // Save images to Supabase Storage
-    console.log(`💾 Starting to save ${countriesWithSpecificImage.length} images to storage...`);
+    console.log(`💾 Starting to save ${countriesToProcess.length} images to storage...`);
     
     const savedImages = [];
     const failedImages = [];
 
-    for (const country of countriesWithSpecificImage) {
+    for (const country of countriesToProcess) {
       try {
-        const imageUrl = getCountryDefaultImage(country.name);
+        let imageUrl = getCountryDefaultImage(country.name);
+        
+        // If using fallback and auto_search enabled, search for image
+        if (autoSearch && imageUrl === DEFAULT_IMAGES.country) {
+          console.log(`🔍 Searching image for ${country.name}...`);
+          
+          // Try Pexels first
+          const PEXELS_API_KEY = process.env.PEXELS_API_KEY;
+          if (PEXELS_API_KEY) {
+            try {
+              const searchQuery = `${country.name} landmark travel`;
+              const pexelsResponse = await fetch(
+                `https://api.pexels.com/v1/search?query=${encodeURIComponent(searchQuery)}&per_page=1&orientation=landscape`,
+                {
+                  headers: {
+                    'Authorization': PEXELS_API_KEY
+                  }
+                }
+              );
+
+              if (pexelsResponse.ok) {
+                const pexelsData = await pexelsResponse.json();
+                if (pexelsData.photos && pexelsData.photos.length > 0) {
+                  imageUrl = pexelsData.photos[0].src.large;
+                  console.log(`✅ Found Pexels image for ${country.name}`);
+                }
+              }
+            } catch (error) {
+              console.log(`⚠️  Pexels search failed for ${country.name}`);
+            }
+          }
+
+          // If still no image, try Unsplash
+          if (imageUrl === DEFAULT_IMAGES.country) {
+            const UNSPLASH_ACCESS_KEY = process.env.UNSPLASH_ACCESS_KEY;
+            if (UNSPLASH_ACCESS_KEY) {
+              try {
+                const searchQuery = `${country.name} landmark`;
+                const unsplashResponse = await fetch(
+                  `https://api.unsplash.com/search/photos?query=${encodeURIComponent(searchQuery)}&per_page=1&orientation=landscape`,
+                  {
+                    headers: {
+                      'Authorization': `Client-ID ${UNSPLASH_ACCESS_KEY}`
+                    }
+                  }
+                );
+
+                if (unsplashResponse.ok) {
+                  const unsplashData = await unsplashResponse.json();
+                  if (unsplashData.results && unsplashData.results.length > 0) {
+                    imageUrl = unsplashData.results[0].urls.regular;
+                    console.log(`✅ Found Unsplash image for ${country.name}`);
+                  }
+                }
+              } catch (error) {
+                console.log(`⚠️  Unsplash search failed for ${country.name}`);
+              }
+            }
+          }
+
+          // If still no image found, skip
+          if (imageUrl === DEFAULT_IMAGES.country) {
+            console.log(`❌ No image found for ${country.name}, skipping`);
+            failedImages.push({
+              id: country.id,
+              name: country.name,
+              error: 'No image found'
+            });
+            continue;
+          }
+        }
         
         // Skip if already using storage
         if (imageUrl.includes('supabase.co/storage')) {
