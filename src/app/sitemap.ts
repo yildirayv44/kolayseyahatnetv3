@@ -2,6 +2,9 @@ import type { MetadataRoute } from "next";
 import { getCountries, getBlogs } from "@/lib/queries";
 import { supabase } from "@/lib/supabase";
 
+// Revalidate sitemap every 24 hours (86400 seconds)
+export const revalidate = 86400;
+
 async function getCustomPages() {
   const { data } = await supabase
     .from("custom_pages")
@@ -11,6 +14,8 @@ async function getCustomPages() {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  console.log('🗺️ Generating sitemap...');
+  const startTime = Date.now();
   const baseUrl = "https://www.kolayseyahat.net";
   const locales = ["tr", "en"];
 
@@ -150,5 +155,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: page.page_type === "legal" ? 0.4 : page.page_type === "corporate" ? 0.6 : 0.5,
   }));
 
-  return [...staticPages, ...countryPages, ...blogPages, ...dynamicPages];
+  const allPages = [...staticPages, ...countryPages, ...blogPages, ...dynamicPages];
+  
+  const endTime = Date.now();
+  console.log(`✅ Sitemap generated in ${endTime - startTime}ms with ${allPages.length} URLs`);
+  
+  return allPages;
 }
