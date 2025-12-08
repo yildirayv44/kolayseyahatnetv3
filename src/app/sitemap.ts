@@ -127,12 +127,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ];
   });
 
-  const blogPages = blogs.map((blog: any) => ({
-    url: blog.slug ? `${baseUrl}/blog/${blog.slug}` : `${baseUrl}/blog/${blog.id}`,
-    lastModified: new Date(blog.updated_at || blog.created_at),
-    changeFrequency: "monthly" as const,
-    priority: 0.6,
-  }));
+  const blogPages = blogs
+    .filter((blog: any) => {
+      if (!blog.taxonomy_slug) {
+        console.warn(`Blog ${blog.id} (${blog.title}) has no slug, skipping sitemap`);
+        return false;
+      }
+      return true;
+    })
+    .map((blog: any) => ({
+      url: `${baseUrl}/blog/${blog.taxonomy_slug}`,
+      lastModified: new Date(blog.updated_at || blog.created_at),
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
+    }));
 
   // Dynamic custom pages from database
   const dynamicPages = customPages.map((page: any) => ({
