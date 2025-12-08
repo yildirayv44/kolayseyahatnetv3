@@ -53,7 +53,8 @@ Aşağıdaki JSON formatında yanıt ver:
   "maxStayDuration": "Maksimum kalış süresi",
   "visaFee": "Vize ücreti (Danışmanlık hizmet bedelleri hariçtir notu ekle)",
   "processingTime": "İşlem süresi",
-  "seoTitle": "SEO için optimize edilmiş başlık (max 60 karakter, ülke adı + vize + Kolay Seyahat)",
+  "title": "Sayfa başlığı (örn: 'Amerika Vizesi' - Kolay Seyahat OLMADAN, sadece ülke + vize)",
+  "seoTitle": "SEO meta title (max 60 karakter, örn: 'Amerika Vizesi | Kolay Seyahat' - ayraçla Kolay Seyahat ekle)",
   "seoDescription": "SEO için optimize edilmiş açıklama (max 160 karakter, ülke vize bilgileri + CTA)",
   "description": "Ülke hakkında 2-3 cümlelik kısa açıklama (seyahat odaklı)",
   "visaDescription": "SADECE GENEL ANLATIMSAL İÇERİK (EN AZ 8-10 paragraf, 1500+ kelime). ÖNEMLİ: Liste, madde, tablo kullanma! Sadece akıcı paragraflar. İçerik: 1) Ülke hakkında kapsamlı bilgi - tarihi, kültürü, turistik yerler, yaşam tarzı (3-4 paragraf), 2) Vize politikası genel açıklama - hangi durumlarda gerekli, vize türleri hakkında genel bilgi (2-3 paragraf), 3) Başvuru süreci genel anlatım - nasıl yapılır, nelere dikkat edilmeli, süreç nasıl işler (2-3 paragraf), 4) Kolay Seyahat avantajları - neden tercih edilmeli, nasıl kolaylık sağlar (2 paragraf). HTML formatında sadece <h3> başlıklar ve <p> paragraflar kullan. Liste veya madde işareti kullanma!",
@@ -230,8 +231,8 @@ SADECE JSON yanıtı ver, başka açıklama ekleme.`;
       .from("countries")
       .insert({
         name: countryData.name,
-        title: countryData.seoTitle || `${countryData.name} Vizesi | Kolay Seyahat`,
-        meta_title: countryData.seoDescription,
+        title: countryData.title || `${countryData.name} Vizesi`,
+        meta_title: countryData.seoTitle || `${countryData.name} Vizesi | Kolay Seyahat`,
         description: countryData.description,
         contents: countryData.visaDescription,
         visa_required: countryData.visaRequired ? 1 : 0,
