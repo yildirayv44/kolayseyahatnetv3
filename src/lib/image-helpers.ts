@@ -121,17 +121,17 @@ export function getCountryDefaultImage(countryName: string): string {
     "İtalya": "https://images.unsplash.com/photo-1515542622106-78bda8ba0e5b?w=1200&h=630&q=80&fit=crop",
     "İspanya": "https://images.unsplash.com/photo-1543783207-ec64e4d95325?w=1200&h=630&q=80&fit=crop",
     "Hollanda": "https://images.unsplash.com/photo-1534351590666-13e3e96b5017?w=1200&h=630&q=80&fit=crop",
-    "Belçika": "https://images.unsplash.com/photo-1559564484-e48bf5f6c69a?w=1200&h=630&q=80&fit=crop",
+    "Belçika": "https://images.unsplash.com/photo-1558862107-d49ef2a04d72?w=1200&h=630&q=80&fit=crop",
     "İsviçre": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&h=630&q=80&fit=crop",
     "Avusturya": "https://images.unsplash.com/photo-1516550893923-42d28e5677af?w=1200&h=630&q=80&fit=crop",
     "Portekiz": "https://images.unsplash.com/photo-1555881400-74d7acaacd8b?w=1200&h=630&q=80&fit=crop",
     "İrlanda": "https://images.unsplash.com/photo-1590089415225-401ed6f9db8e?w=1200&h=630&q=80&fit=crop",
     
     // Europe - Northern
-    "Norveç": "https://images.unsplash.com/photo-1513519245088-0e12902e35ca?w=1200&h=630&q=80&fit=crop",
+    "Norveç": "https://images.unsplash.com/photo-1601439678777-b2b3c56fa627?w=1200&h=630&q=80&fit=crop",
     "İsveç": "https://images.unsplash.com/photo-1509356843151-3e7d96241e11?w=1200&h=630&q=80&fit=crop",
     "Danimarka": "https://images.unsplash.com/photo-1513622470522-26c3c8a854bc?w=1200&h=630&q=80&fit=crop",
-    "Finlandiya": "https://images.unsplash.com/photo-1517639493569-5666a7556f98?w=1200&h=630&q=80&fit=crop",
+    "Finlandiya": "https://images.unsplash.com/photo-1535498051285-2f2a1458e2e7?w=1200&h=630&q=80&fit=crop",
     "İzlanda": "https://images.unsplash.com/photo-1504829857797-ddff29c27927?w=1200&h=630&q=80&fit=crop",
     
     // Europe - Eastern & Southern
@@ -160,11 +160,11 @@ export function getCountryDefaultImage(countryName: string): string {
     // Middle East
     "Dubai": "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=1200&h=630&q=80&fit=crop",
     "Birleşik Arap Emirlikleri": "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=1200&h=630&q=80&fit=crop",
-    "Katar": "https://images.unsplash.com/photo-1570106468660-b39ab8c2b4c6?w=1200&h=630&q=80&fit=crop",
-    "Bahreyn": "https://images.unsplash.com/photo-1570106468660-b39ab8c2b4c6?w=1200&h=630&q=80&fit=crop",
-    "Kuveyt": "https://images.unsplash.com/photo-1570106468660-b39ab8c2b4c6?w=1200&h=630&q=80&fit=crop",
-    "Umman": "https://images.unsplash.com/photo-1570106468660-b39ab8c2b4c6?w=1200&h=630&q=80&fit=crop",
-    "İsrail": "https://images.unsplash.com/photo-1544783287-5e0e7e8e0c6c?w=1200&h=630&q=80&fit=crop",
+    "Katar": "https://images.unsplash.com/photo-1539037116277-4db20889f2d4?w=1200&h=630&q=80&fit=crop",
+    "Bahreyn": "https://images.unsplash.com/photo-1539037116277-4db20889f2d4?w=1200&h=630&q=80&fit=crop",
+    "Kuveyt": "https://images.unsplash.com/photo-1539037116277-4db20889f2d4?w=1200&h=630&q=80&fit=crop",
+    "Umman": "https://images.unsplash.com/photo-1591608971362-f08b2a75731a?w=1200&h=630&q=80&fit=crop",
+    "İsrail": "https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=1200&h=630&q=80&fit=crop",
     
     // Oceania
     "Avustralya": "https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?w=1200&h=630&q=80&fit=crop",
