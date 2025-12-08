@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { Save, ArrowLeft, Languages, Loader2, ChevronDown, ChevronUp } from "lucide-react";
+import { Save, ArrowLeft, Languages, Loader2, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { RichTextEditor } from "./RichTextEditor";
 import { ImageUrlFixer } from "./ImageUrlFixer";
@@ -11,12 +11,14 @@ import { UnifiedAIAssistant } from "./UnifiedAIAssistant";
 import { ImageUpload } from "./ImageUpload";
 import { AIToolsQuickAccess } from "./AIToolsQuickAccess";
 import { ArrayInput } from "./ArrayInput";
+import { AIRegenerateModal } from "./AIRegenerateModal";
 import { generateSlug } from "@/lib/helpers";
 
 export function CountryEditForm({ country }: { country: any }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [translating, setTranslating] = useState(false);
+  const [showRegenerateModal, setShowRegenerateModal] = useState(false);
   const [activeLocale, setActiveLocale] = useState<'tr' | 'en'>('tr');
   const [expandedSections, setExpandedSections] = useState({
     basic: true,
@@ -158,20 +160,30 @@ export function CountryEditForm({ country }: { country: any }) {
           </Link>
           <h1 className="text-2xl font-bold text-slate-900">Ülke Düzenle</h1>
         </div>
-        <AIToolsQuickAccess
-          currentContent={activeLocale === 'tr' ? formData.contents : formData.contents_en}
-          currentTitle={formData.name}
-          onOptimize={(optimizedContent) => {
-            if (activeLocale === 'tr') {
-              setFormData({ ...formData, contents: optimizedContent });
-            } else {
-              setFormData({ ...formData, contents_en: optimizedContent });
-            }
-          }}
-          onImageGenerated={(imageUrl) => {
-            setFormData({ ...formData, image_url: imageUrl });
-          }}
-        />
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setShowRegenerateModal(true)}
+            className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 px-4 py-2 text-sm font-semibold text-white hover:from-purple-700 hover:to-blue-700"
+          >
+            <Sparkles className="h-4 w-4" />
+            AI ile Yenile
+          </button>
+          <AIToolsQuickAccess
+            currentContent={activeLocale === 'tr' ? formData.contents : formData.contents_en}
+            currentTitle={formData.name}
+            onOptimize={(optimizedContent) => {
+              if (activeLocale === 'tr') {
+                setFormData({ ...formData, contents: optimizedContent });
+              } else {
+                setFormData({ ...formData, contents_en: optimizedContent });
+              }
+            }}
+            onImageGenerated={(imageUrl) => {
+              setFormData({ ...formData, image_url: imageUrl });
+            }}
+          />
+        </div>
       </div>
 
       {/* Unified AI Assistant */}
@@ -815,6 +827,19 @@ export function CountryEditForm({ country }: { country: any }) {
           {loading ? "Kaydediliyor..." : "Kaydet"}
         </button>
       </div>
+
+      {/* AI Regenerate Modal */}
+      {showRegenerateModal && (
+        <AIRegenerateModal
+          countryId={country.id}
+          countryName={country.name}
+          onClose={() => setShowRegenerateModal(false)}
+          onSuccess={() => {
+            // Refresh page to load new data
+            router.refresh();
+          }}
+        />
+      )}
     </form>
   );
 }
