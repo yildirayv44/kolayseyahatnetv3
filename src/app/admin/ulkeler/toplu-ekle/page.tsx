@@ -91,8 +91,8 @@ export default function BulkCountryImportPage() {
   };
 
   // Retry failed country
-  const retryCountry = async (countryCode: string) => {
-    const countryIndex = selectedCountries.findIndex(c => c.code === countryCode);
+  const retryCountry = async (countryId: number | string) => {
+    const countryIndex = selectedCountries.findIndex(c => (c.id || c.code) === countryId);
     if (countryIndex === -1) return;
 
     const country = selectedCountries[countryIndex];
@@ -547,7 +547,7 @@ export default function BulkCountryImportPage() {
             <div className="space-y-2">
               {selectedCountries.map((country, idx) => (
                 <div
-                  key={country.code}
+                  key={country.id || `${country.code}-${idx}`}
                   className="flex items-center justify-between rounded-lg border border-slate-200 p-4"
                 >
                   <div className="flex items-center gap-3 flex-1">
@@ -591,7 +591,7 @@ export default function BulkCountryImportPage() {
                         </div>
                         {!generating && (
                           <button
-                            onClick={() => retryCountry(country.code)}
+                            onClick={() => retryCountry(country.id || country.code)}
                             className="ml-2 rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-600"
                           >
                             🔄 Tekrar Dene
