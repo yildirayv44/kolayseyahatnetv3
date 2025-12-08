@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@supabase/supabase-js";
+
+// Use service role key for admin operations (bypasses RLS)
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
