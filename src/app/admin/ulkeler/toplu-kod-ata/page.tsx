@@ -35,11 +35,19 @@ export default function BulkCountryCodeAssignmentPage() {
     setLoading(true);
     try {
       const response = await fetch('/api/admin/countries');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to fetch countries');
+      }
+      
       setCountries(data.countries || []);
       
       // Prepare preview
-      const preview = data.countries.map((c: Country) => ({
+      const preview = (data.countries || []).map((c: Country) => ({
         id: c.id,
         name: c.name,
         oldCode: c.country_code,
@@ -49,8 +57,9 @@ export default function BulkCountryCodeAssignmentPage() {
       }));
       setResults(preview);
       setStep('preview');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch countries:', error);
+      alert('Ülkeler yüklenirken hata oluştu: ' + error.message);
     } finally {
       setLoading(false);
     }
