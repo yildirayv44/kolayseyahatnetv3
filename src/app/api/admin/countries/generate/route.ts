@@ -138,10 +138,33 @@ SADECE JSON yanıtı ver, başka açıklama ekleme.`;
 
     console.log(`✅ Generated data for ${country.name}`);
 
-    // Step 2: Generate country image with Imagen
-    // Temporarily disabled - will add back once Imagen API is fixed
+    // Step 2: Get country image from Pexels
     let imageUrl = null;
-    console.log(`⏭️ Skipping image generation for ${country.name} (will add later)`);
+    try {
+      console.log(`🖼️ Fetching image for ${country.name} from Pexels...`);
+      const pexelsResponse = await fetch(
+        `https://api.pexels.com/v1/search?query=${encodeURIComponent(country.name + ' landmark tourism')}&per_page=1&orientation=landscape`,
+        {
+          headers: {
+            Authorization: process.env.PEXELS_API_KEY || '',
+          },
+        }
+      );
+
+      if (pexelsResponse.ok) {
+        const pexelsData = await pexelsResponse.json();
+        if (pexelsData.photos && pexelsData.photos.length > 0) {
+          imageUrl = pexelsData.photos[0].src.large;
+          console.log(`✅ Image found for ${country.name}: ${imageUrl}`);
+        } else {
+          console.log(`⚠️ No image found for ${country.name} on Pexels`);
+        }
+      } else {
+        console.log(`⚠️ Pexels API error for ${country.name}`);
+      }
+    } catch (imageError) {
+      console.error(`❌ Image fetch error for ${country.name}:`, imageError);
+    }
 
     // Step 3: Insert country into database
     // Now using all extended fields after migration
