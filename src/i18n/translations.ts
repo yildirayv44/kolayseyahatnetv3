@@ -37,7 +37,7 @@ export const translations = {
     about: "Hakkımızda",
     faq: "SSS",
     menu: "Menü",
-    searchCountry: "Ülke ara...",
+    searchCountry: "Ülke Ara...",
     popularCountries: "Popüler Ülkeler",
     searchResults: "Arama Sonuçları",
     login: "Giriş Yap",

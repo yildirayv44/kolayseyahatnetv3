@@ -142,14 +142,19 @@ export function Header() {
             {/* Pulse Animation Ring */}
             <div className="absolute -inset-1 rounded-lg bg-primary/20 opacity-75 blur-sm animate-pulse pointer-events-none"></div>
             
-            <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-primary z-10 md:h-4 md:w-4" />
+            {/* Search Icon - Larger and more prominent */}
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10 flex items-center gap-2">
+              <Search className="h-5 w-5 text-primary md:h-5 md:w-5 stroke-[2.5]" />
+              <span className="hidden md:inline text-sm font-semibold text-primary/80">|</span>
+            </div>
+            
             <input
               type="text"
               placeholder={t(locale as Locale, "searchCountry")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => setSearchOpen(true)}
-              className="relative z-10 w-full rounded-lg border-2 border-primary/40 bg-white py-3 pl-11 pr-3 text-sm font-medium placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30 md:py-2 md:pl-10 md:pr-4 md:text-sm"
+              className="relative z-10 w-full rounded-lg border-2 border-primary/40 bg-white py-3 pl-11 pr-3 text-sm font-medium placeholder:text-slate-600 placeholder:font-semibold focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30 md:py-2 md:pl-14 md:pr-4 md:text-sm"
             />
           </div>
 
