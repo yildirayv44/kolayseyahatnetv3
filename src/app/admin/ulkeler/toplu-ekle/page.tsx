@@ -27,6 +27,8 @@ export default function BulkCountryImportPage() {
   const [generating, setGenerating] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
   const [aiProvider, setAiProvider] = useState<'openai' | 'gemini'>('openai');
+  const [startTime, setStartTime] = useState<number>(0);
+  const [elapsedTime, setElapsedTime] = useState<string>('0:00');
 
   // Fetch missing countries
   const fetchMissingCountries = async () => {
@@ -63,6 +65,46 @@ export default function BulkCountryImportPage() {
     setMissingCountries(prev => prev.map(c => ({ ...c, selected: false })));
   };
 
+  // Retry failed country
+  const retryCountry = async (countryCode: string) => {
+    const countryIndex = selectedCountries.findIndex(c => c.code === countryCode);
+    if (countryIndex === -1) return;
+
+    const country = selectedCountries[countryIndex];
+    
+    try {
+      setSelectedCountries(prev => 
+        prev.map((c, idx) => 
+          idx === countryIndex ? { ...c, status: 'generating', currentStep: 'Tekrar deneniyor...', error: undefined } : c
+        )
+      );
+
+      const response = await fetch('/api/admin/countries/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ country, aiProvider }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setSelectedCountries(prev =>
+          prev.map((c, idx) =>
+            idx === countryIndex ? { ...c, status: 'success', data: data.country, currentStep: '✅ Tamamlandı' } : c
+          )
+        );
+      } else {
+        throw new Error(data.error || 'Generation failed');
+      }
+    } catch (error: any) {
+      setSelectedCountries(prev =>
+        prev.map((c, idx) =>
+          idx === countryIndex ? { ...c, status: 'error', error: error.message, currentStep: '❌ Hata' } : c
+        )
+      );
+    }
+  };
+
   // Start generation
   const startGeneration = async () => {
     const selected = missingCountries.filter(c => c.selected);
@@ -75,6 +117,15 @@ export default function BulkCountryImportPage() {
     setStep('generate');
     setGenerating(true);
     setProgress({ current: 0, total: selected.length });
+    setStartTime(Date.now());
+    
+    // Update elapsed time every second
+    const timer = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - Date.now()) / 1000);
+      const minutes = Math.floor(elapsed / 60);
+      const seconds = elapsed % 60;
+      setElapsedTime(`${minutes}:${seconds.toString().padStart(2, '0')}`);
+    }, 1000);
 
     // Process countries sequentially (one at a time to avoid rate limits)
     for (let i = 0; i < selected.length; i++) {
@@ -394,19 +445,40 @@ export default function BulkCountryImportPage() {
               </p>
             </div>
 
-            {/* Progress Bar */}
-            <div className="mb-6">
-              <div className="mb-2 flex items-center justify-between text-sm">
-                <span className="font-medium text-slate-700">İlerleme</span>
-                <span className="text-slate-600">
-                  {progress.current} / {progress.total}
-                </span>
+            {/* Enhanced Progress Bar */}
+            <div className="mb-6 rounded-lg border-2 border-primary/20 bg-primary/5 p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <div>
+                  <div className="text-sm font-semibold text-slate-900">
+                    İlerleme: {progress.current} / {progress.total} ülke
+                  </div>
+                  <div className="mt-1 text-xs text-slate-600">
+                    {progress.total - progress.current > 0 && (
+                      <>
+                        Kalan: {progress.total - progress.current} ülke • 
+                        Tahmini süre: ~{(progress.total - progress.current) * 40} saniye
+                      </>
+                    )}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm font-semibold text-primary">
+                    {Math.round((progress.current / progress.total) * 100)}%
+                  </div>
+                  <div className="text-xs text-slate-600">
+                    Geçen: {elapsedTime}
+                  </div>
+                </div>
               </div>
-              <div className="h-3 overflow-hidden rounded-full bg-slate-200">
+              <div className="h-4 overflow-hidden rounded-full bg-slate-200">
                 <div
-                  className="h-full bg-primary transition-all duration-500"
+                  className="h-full bg-gradient-to-r from-primary to-blue-600 transition-all duration-500"
                   style={{ width: `${(progress.current / progress.total) * 100}%` }}
                 />
+              </div>
+              <div className="mt-2 flex items-center justify-between text-xs text-slate-500">
+                <span>Başarılı: {selectedCountries.filter(c => c.status === 'success').length}</span>
+                <span>Hatalı: {selectedCountries.filter(c => c.status === 'error').length}</span>
               </div>
             </div>
 
@@ -447,8 +519,23 @@ export default function BulkCountryImportPage() {
                     )}
                     {country.status === 'error' && (
                       <>
-                        <XCircle className="h-5 w-5 text-red-500" />
-                        <span className="text-sm text-red-600">Hata</span>
+                        <div className="flex flex-col items-end gap-1">
+                          <div className="flex items-center gap-2">
+                            <XCircle className="h-5 w-5 text-red-500" />
+                            <span className="text-sm text-red-600">Hata</span>
+                          </div>
+                          {country.error && (
+                            <span className="text-xs text-red-500">{country.error}</span>
+                          )}
+                        </div>
+                        {!generating && (
+                          <button
+                            onClick={() => retryCountry(country.code)}
+                            className="ml-2 rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-600"
+                          >
+                            🔄 Tekrar Dene
+                          </button>
+                        )}
                       </>
                     )}
                   </div>

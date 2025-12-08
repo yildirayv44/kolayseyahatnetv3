@@ -15,6 +15,8 @@ import { generateSlug } from "@/lib/helpers";
 export function CountryCreateForm() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [expandedSections, setExpandedSections] = useState({
     basic: true,
     seo: false,
@@ -66,8 +68,45 @@ export function CountryCreateForm() {
     timezone: "",
   });
 
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+    
+    if (!formData.name.trim()) {
+      newErrors.name = 'Ülke adı zorunludur';
+    }
+    
+    if (!formData.slug.trim()) {
+      newErrors.slug = 'Slug zorunludur';
+    } else if (!/^[a-z0-9-]+$/.test(formData.slug)) {
+      newErrors.slug = 'Slug sadece küçük harf, rakam ve tire içerebilir';
+    }
+    
+    if (!formData.title.trim()) {
+      newErrors.title = 'Sayfa başlığı zorunludur';
+    }
+    
+    if (!formData.description.trim()) {
+      newErrors.description = 'Açıklama zorunludur';
+    }
+    
+    if (!formData.contents.trim()) {
+      newErrors.contents = 'Ana içerik zorunludur';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate form
+    if (!validateForm()) {
+      alert('Lütfen tüm zorunlu alanları doldurun');
+      setExpandedSections({ basic: true, seo: true, visa: true, extended: false, country: false });
+      return;
+    }
+    
     setLoading(true);
 
     try {
@@ -134,61 +173,116 @@ export function CountryCreateForm() {
         />
       </div>
 
-      {/* Unified AI Assistant */}
-      <UnifiedAIAssistant
-        type="country"
-        currentContent={formData.contents}
-        onGenerate={(data) => {
-          setFormData({
-            ...formData,
-            name: data.title || formData.name,
-            slug: data.title ? generateSlug(data.title) : formData.slug,
-            title: data.title || formData.title,
-            meta_title: data.title || formData.meta_title,
-            description: data.description || formData.description,
-            contents: data.contents || formData.contents,
-            image_url: data.image_url || formData.image_url,
-          });
-        }}
-      />
-
-      <div className="card">
-        <div className="space-y-2">
-          <label className="block text-sm font-semibold text-slate-900">
-            Ülke Adı *
-          </label>
-          <input
-            type="text"
-            required
-            value={formData.name}
-            onChange={(e) => {
-              const name = e.target.value;
-              setFormData({ 
-                ...formData, 
-                name,
-                slug: generateSlug(name) // Otomatik slug oluştur
-              });
-            }}
-            className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-            placeholder="Örn: Karadağ"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label className="block text-sm font-semibold text-slate-900">
-            URL Slug *
-          </label>
-          <input
-            type="text"
-            required
-            value={formData.slug}
-            onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-            className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm font-mono focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-            placeholder="Örn: karadag"
-          />
-          <p className="text-xs text-slate-500">
-            URL: /{formData.slug || "karadag"}
+      {/* AI Assistant with Explanation */}
+      <div className="rounded-lg border-2 border-purple-200 bg-gradient-to-r from-purple-50 to-blue-50 p-6">
+        <div className="mb-4">
+          <h3 className="mb-2 text-lg font-bold text-purple-900">
+            🤖 AI Asistan ile Hızlı Başla
+          </h3>
+          <p className="text-sm text-purple-700">
+            Sadece ülke adını girin, AI tüm bilgileri otomatik oluştursun. 
+            Vize detayları, SEO başlıkları, içerik ve daha fazlası AI tarafından hazırlanır.
           </p>
+          <ul className="mt-2 space-y-1 text-xs text-purple-600">
+            <li>• Ülke adı, başlık ve açıklama</li>
+            <li>• SEO optimize edilmiş meta başlıklar</li>
+            <li>• Detaylı vize bilgileri ve içerik</li>
+            <li>• Pexels'ten otomatik kapak fotoğrafı</li>
+          </ul>
+        </div>
+        <UnifiedAIAssistant
+          type="country"
+          currentContent={formData.contents}
+          onGenerate={(data) => {
+            setFormData({
+              ...formData,
+              name: data.title || formData.name,
+              slug: data.title ? generateSlug(data.title) : formData.slug,
+              title: data.title || formData.title,
+              meta_title: data.title || formData.meta_title,
+              description: data.description || formData.description,
+              contents: data.contents || formData.contents,
+              image_url: data.image_url || formData.image_url,
+            });
+            setHasUnsavedChanges(true);
+          }}
+        />
+      </div>
+
+      {/* Basic Info & Image Upload Side by Side */}
+      <div className="card">
+        <div className="grid gap-6 lg:grid-cols-2">
+          {/* Left Column - Basic Info */}
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="flex items-center gap-1 text-sm font-semibold text-slate-900">
+                Ülke Adı
+                <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.name}
+                onChange={(e) => {
+                  const name = e.target.value;
+                  setHasUnsavedChanges(true);
+                  if (errors.name) setErrors({ ...errors, name: '' });
+                  setFormData({ 
+                    ...formData, 
+                    name,
+                    slug: generateSlug(name) // Otomatik slug oluştur
+                  });
+                }}
+                className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                placeholder="Örn: Karadağ"
+              />
+              {errors.name && (
+                <p className="text-xs text-red-600 mt-1">{errors.name}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <label className="flex items-center gap-1 text-sm font-semibold text-slate-900">
+                URL Slug
+                <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.slug}
+                onChange={(e) => {
+                  setFormData({ ...formData, slug: e.target.value });
+                  setHasUnsavedChanges(true);
+                  if (errors.slug) setErrors({ ...errors, slug: '' });
+                }}
+                className={`w-full rounded-lg border px-4 py-2 text-sm font-mono focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 ${
+                  errors.slug ? 'border-red-500' : 'border-slate-200'
+                }`}
+                placeholder="Örn: karadag"
+              />
+              {errors.slug ? (
+                <p className="text-xs text-red-600 mt-1">{errors.slug}</p>
+              ) : (
+                <p className="text-xs text-slate-500">
+                  URL: /{formData.slug || "karadag"}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Right Column - Image Upload */}
+          <div>
+            <ImageUpload
+              currentImageUrl={formData.image_url}
+              onImageChange={(url) => {
+                setFormData({ ...formData, image_url: url });
+                setHasUnsavedChanges(true);
+              }}
+              bucket="country-images"
+              label="Ülke Kapak Fotoğrafı"
+              aspectRatio="16/9"
+            />
+          </div>
         </div>
 
         <div className="space-y-2">
@@ -223,14 +317,6 @@ export function CountryCreateForm() {
             Sayfada gösterilecek ana başlık
           </p>
         </div>
-
-        <ImageUpload
-          currentImageUrl={formData.image_url}
-          onImageChange={(url) => setFormData({ ...formData, image_url: url })}
-          bucket="country-images"
-          label="Ülke Kapak Fotoğrafı"
-          aspectRatio="16/9"
-        />
 
         {/* Fiyatlandırma */}
         <div className="grid grid-cols-3 gap-4 rounded-lg border border-slate-200 p-4">
@@ -727,23 +813,42 @@ export function CountryCreateForm() {
         )}
       </div>
 
-      <div className="flex items-center justify-between">
-        <Link
-          href="/admin/ulkeler"
-          className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          İptal
-        </Link>
+      {/* Sticky Save Button */}
+      <div className="sticky bottom-0 z-10 border-t border-slate-200 bg-white px-6 py-4 shadow-lg">
+        <div className="mx-auto flex max-w-7xl items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Link
+              href="/admin/ulkeler"
+              className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              İptal
+            </Link>
+            {hasUnsavedChanges && (
+              <span className="text-sm text-amber-600">
+                ⚠️ Kaydedilmemiş değişiklikler var
+              </span>
+            )}
+          </div>
 
-        <button
-          type="submit"
-          disabled={loading || !formData.name.trim()}
-          className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-2 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-50"
-        >
-          <Save className="h-4 w-4" />
-          {loading ? "Kaydediliyor..." : "Kaydet"}
-        </button>
+          <div className="flex items-center gap-3">
+            <div className="text-sm text-slate-600">
+              {Object.keys(errors).length > 0 && (
+                <span className="text-red-600">
+                  ❌ {Object.keys(errors).length} hata var
+                </span>
+              )}
+            </div>
+            <button
+              type="submit"
+              disabled={loading || !formData.name.trim()}
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-50 shadow-md"
+            >
+              <Save className="h-4 w-4" />
+              {loading ? "Kaydediliyor..." : "Kaydet"}
+            </button>
+          </div>
+        </div>
       </div>
     </form>
   );

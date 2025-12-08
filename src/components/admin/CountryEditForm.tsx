@@ -217,51 +217,85 @@ export function CountryEditForm({ country }: { country: any }) {
         />
       )}
 
-      <div className="card">
-        <div className="flex items-center justify-between border-b border-slate-200 pb-4">
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => setActiveLocale('tr')}
-              className={`px-4 py-2 text-sm font-semibold rounded-lg transition-colors ${
-                activeLocale === 'tr'
-                  ? 'bg-primary text-white'
-                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-              }`}
-            >
-              🇹🇷 Türkçe
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveLocale('en')}
-              className={`px-4 py-2 text-sm font-semibold rounded-lg transition-colors ${
-                activeLocale === 'en'
-                  ? 'bg-primary text-white'
-                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-              }`}
-            >
-              🇬🇧 English
-            </button>
+      {/* Language Selector & Translation */}
+      <div className="rounded-lg border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-6">
+        <div className="flex items-center justify-between">
+          <div className="flex-1">
+            <h3 className="mb-2 text-lg font-bold text-slate-900">🌍 Dil Seçimi</h3>
+            <p className="mb-4 text-sm text-slate-600">
+              {activeLocale === 'tr' 
+                ? 'Şu anda Türkçe içeriği düzenliyorsunuz' 
+                : 'Şu anda İngilizce içeriği düzenliyorsunuz'}
+            </p>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setActiveLocale('tr')}
+                className={`flex items-center gap-2 rounded-lg px-6 py-3 font-semibold transition-all ${
+                  activeLocale === 'tr'
+                    ? 'bg-primary text-white shadow-lg scale-105'
+                    : 'bg-white text-slate-700 border-2 border-slate-200 hover:border-primary'
+                }`}
+              >
+                <span className="text-2xl">🇹🇷</span>
+                <div className="text-left">
+                  <div className="text-sm">Türkçe</div>
+                  {activeLocale === 'tr' && (
+                    <div className="text-xs opacity-90">✓ Aktif</div>
+                  )}
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveLocale('en')}
+                className={`flex items-center gap-2 rounded-lg px-6 py-3 font-semibold transition-all ${
+                  activeLocale === 'en'
+                    ? 'bg-primary text-white shadow-lg scale-105'
+                    : 'bg-white text-slate-700 border-2 border-slate-200 hover:border-primary'
+                }`}
+              >
+                <span className="text-2xl">🇬🇧</span>
+                <div className="text-left">
+                  <div className="text-sm">English</div>
+                  {activeLocale === 'en' && (
+                    <div className="text-xs opacity-90">✓ Active</div>
+                  )}
+                  {!formData.title_en && activeLocale !== 'en' && (
+                    <div className="text-xs text-amber-600">⚠️ Boş</div>
+                  )}
+                </div>
+              </button>
+            </div>
           </div>
           
-          <button
-            type="button"
-            onClick={translateToEnglish}
-            disabled={translating || activeLocale === 'en'}
-            className="inline-flex items-center gap-2 rounded-lg bg-blue-500 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {translating ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Çevriliyor...
-              </>
-            ) : (
-              <>
-                <Languages className="h-4 w-4" />
-                İngilizce'ye Çevir
-              </>
-            )}
-          </button>
+          {activeLocale === 'tr' && !formData.title_en && (
+            <div className="ml-6 rounded-lg border-2 border-blue-300 bg-white p-4">
+              <div className="mb-2 text-sm font-semibold text-blue-900">
+                🌍 İngilizce Çeviri Yok
+              </div>
+              <p className="mb-3 text-xs text-blue-700">
+                Türkçe içeriği otomatik olarak İngilizce'ye çevirebilirsiniz
+              </p>
+              <button
+                type="button"
+                onClick={translateToEnglish}
+                disabled={translating}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+              >
+                {translating ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Çevriliyor...
+                  </>
+                ) : (
+                  <>
+                    <Languages className="h-4 w-4" />
+                    İngilizce'ye Çevir
+                  </>
+                )}
+              </button>
+            </div>
+          )}
         </div>
       </div>
       <div className="card space-y-6">
