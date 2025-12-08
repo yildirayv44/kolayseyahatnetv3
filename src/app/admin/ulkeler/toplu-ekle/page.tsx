@@ -74,24 +74,25 @@ export default function BulkCountryImportPage() {
     setGenerating(true);
     setProgress({ current: 0, total: selected.length });
 
-    // Process countries in batches of 5
-    const batchSize = 5;
-    for (let i = 0; i < selected.length; i += batchSize) {
-      const batch = selected.slice(i, i + batchSize);
+    // Process countries sequentially (one at a time to avoid rate limits)
+    for (let i = 0; i < selected.length; i++) {
+      const country = selected[i];
       
-      await Promise.all(
-        batch.map(async (country, batchIndex) => {
-          const globalIndex = i + batchIndex;
-          
-          try {
-            // Update status to generating
-            setSelectedCountries(prev => 
-              prev.map((c, idx) => 
-                idx === globalIndex ? { ...c, status: 'generating' } : c
-              )
-            );
+      try {
+        // Update status to generating
+        setSelectedCountries(prev => 
+          prev.map((c, idx) => 
+            idx === i ? { ...c, status: 'generating' } : c
+          )
+        );
 
-            // Generate country data
+        // Generate country data with retry logic
+        let retries = 3;
+        let success = false;
+        let lastError = null;
+
+        while (retries > 0 && !success) {
+          try {
             const response = await fetch('/api/admin/countries/generate', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -103,23 +104,47 @@ export default function BulkCountryImportPage() {
             if (data.success) {
               setSelectedCountries(prev =>
                 prev.map((c, idx) =>
-                  idx === globalIndex ? { ...c, status: 'success', data: data.country } : c
+                  idx === i ? { ...c, status: 'success', data: data.country } : c
                 )
               );
+              success = true;
+            } else if (response.status === 429) {
+              // Rate limit - wait and retry
+              retries--;
+              if (retries > 0) {
+                await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
+                continue;
+              }
+              throw new Error('Rate limit exceeded. Please try again later.');
             } else {
               throw new Error(data.error || 'Generation failed');
             }
-          } catch (error: any) {
-            setSelectedCountries(prev =>
-              prev.map((c, idx) =>
-                idx === globalIndex ? { ...c, status: 'error', error: error.message } : c
-              )
-            );
-          } finally {
-            setProgress(prev => ({ ...prev, current: prev.current + 1 }));
+          } catch (fetchError: any) {
+            lastError = fetchError;
+            retries--;
+            if (retries > 0) {
+              await new Promise(resolve => setTimeout(resolve, 3000)); // Wait 3 seconds
+            }
           }
-        })
-      );
+        }
+
+        if (!success) {
+          throw lastError || new Error('Failed after retries');
+        }
+
+        // Wait 2 seconds between countries to avoid rate limits
+        if (i < selected.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+      } catch (error: any) {
+        setSelectedCountries(prev =>
+          prev.map((c, idx) =>
+            idx === i ? { ...c, status: 'error', error: error.message } : c
+          )
+        );
+      } finally {
+        setProgress(prev => ({ ...prev, current: prev.current + 1 }));
+      }
     }
 
     setGenerating(false);
