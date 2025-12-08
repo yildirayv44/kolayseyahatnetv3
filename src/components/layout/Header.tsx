@@ -143,10 +143,8 @@ export function Header() {
             <div className="absolute -inset-1 rounded-lg bg-primary/20 opacity-75 blur-sm animate-pulse pointer-events-none"></div>
             
             {/* Search Icon - Larger and more prominent */}
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10 flex items-center gap-2">
-              <Search className="h-5 w-5 text-primary md:h-5 md:w-5 stroke-[2.5]" />
-              <span className="hidden md:inline text-sm font-semibold text-primary/80">|</span>
-            </div>
+            <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-primary z-10 stroke-[2.5]" />
+            <span className="absolute left-9 top-1/2 -translate-y-1/2 z-10 hidden md:inline text-sm font-semibold text-primary/80">|</span>
             
             <input
               type="text"
