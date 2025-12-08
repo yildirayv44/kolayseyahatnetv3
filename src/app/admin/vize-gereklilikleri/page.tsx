@@ -50,6 +50,7 @@ export default function VisaRequirementsPage() {
   const [filteredRequirements, setFilteredRequirements] = useState<VisaRequirement[]>([]);
   const [loading, setLoading] = useState(true);
   const [importing, setImporting] = useState(false);
+  const [tableExists, setTableExists] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [stats, setStats] = useState({
@@ -78,11 +79,22 @@ export default function VisaRequirementsPage() {
         .select('*')
         .order('country_name', { ascending: true });
 
-      if (error) throw error;
-      setRequirements(data || []);
+      if (error) {
+        if (error.message.includes('does not exist') || error.message.includes('schema cache')) {
+          setTableExists(false);
+          setRequirements([]);
+        } else {
+          throw error;
+        }
+      } else {
+        setTableExists(true);
+        setRequirements(data || []);
+      }
     } catch (error: any) {
       console.error('Error fetching requirements:', error);
-      alert('Veri yüklenirken hata oluştu: ' + error.message);
+      if (!error.message.includes('does not exist') && !error.message.includes('schema cache')) {
+        alert('Veri yüklenirken hata oluştu: ' + error.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -148,6 +160,48 @@ export default function VisaRequirementsPage() {
 
   return (
     <div className="space-y-6">
+      {/* Migration Warning */}
+      {!tableExists && (
+        <div className="rounded-lg border-2 border-red-200 bg-red-50 p-6">
+          <div className="flex items-start gap-4">
+            <XCircle className="h-6 w-6 flex-shrink-0 text-red-600" />
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-red-900">Tablo Bulunamadı</h3>
+              <p className="mt-2 text-sm text-red-700">
+                <code>visa_requirements</code> tablosu henüz oluşturulmamış. Devam etmek için migration'ı çalıştırmanız gerekiyor.
+              </p>
+              <div className="mt-4 space-y-2">
+                <p className="text-sm font-semibold text-red-900">Adımlar:</p>
+                <ol className="ml-4 list-decimal space-y-1 text-sm text-red-700">
+                  <li>Supabase Dashboard'a gidin → SQL Editor</li>
+                  <li>
+                    <code className="rounded bg-red-100 px-2 py-1 text-xs">
+                      /supabase/migrations/create_visa_requirements_table.sql
+                    </code> dosyasını açın
+                  </li>
+                  <li>SQL kodunu kopyalayıp SQL Editor'da çalıştırın</li>
+                  <li>
+                    <code className="rounded bg-red-100 px-2 py-1 text-xs">
+                      /supabase/migrations/add_country_code_and_visa_link.sql
+                    </code> dosyasını da çalıştırın
+                  </li>
+                  <li>Bu sayfayı yenileyin</li>
+                </ol>
+              </div>
+              <div className="mt-4">
+                <button
+                  onClick={() => window.location.reload()}
+                  className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Sayfayı Yenile
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
