@@ -84,6 +84,8 @@ ALTER TABLE visa_requirements ENABLE ROW LEVEL SECURITY;
 -- Drop existing policies if they exist
 DROP POLICY IF EXISTS "Allow public read access to visa requirements" ON visa_requirements;
 DROP POLICY IF EXISTS "Allow authenticated users to manage visa requirements" ON visa_requirements;
+DROP POLICY IF EXISTS "Allow service role to manage visa requirements" ON visa_requirements;
+DROP POLICY IF EXISTS "Allow anon to insert visa requirements" ON visa_requirements;
 
 -- Allow public read access
 CREATE POLICY "Allow public read access to visa requirements"
@@ -98,4 +100,19 @@ CREATE POLICY "Allow authenticated users to manage visa requirements"
   FOR ALL
   TO authenticated
   USING (true)
+  WITH CHECK (true);
+
+-- Allow service role (API) to manage visa requirements
+CREATE POLICY "Allow service role to manage visa requirements"
+  ON visa_requirements
+  FOR ALL
+  TO service_role
+  USING (true)
+  WITH CHECK (true);
+
+-- Allow anon role to insert (for API imports)
+CREATE POLICY "Allow anon to insert visa requirements"
+  ON visa_requirements
+  FOR INSERT
+  TO anon
   WITH CHECK (true);

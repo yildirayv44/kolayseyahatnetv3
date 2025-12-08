@@ -25,6 +25,7 @@ export async function POST(request: NextRequest) {
     let imported = 0;
     let updated = 0;
     let errors = 0;
+    const errorDetails: any[] = [];
 
     // Import each record
     for (const item of visaData) {
@@ -34,6 +35,14 @@ export async function POST(request: NextRequest) {
           .select('id')
           .eq('country_code', item.countryCode)
           .single();
+
+        if (checkError && checkError.code !== 'PGRST116') {
+          // PGRST116 = not found, which is expected for new records
+          console.error(`❌ Check error for ${item.countryCode}:`, checkError);
+          errors++;
+          errorDetails.push({ country: item.countryCode, error: checkError.message });
+          continue;
+        }
 
         if (existing) {
           // Update existing record
@@ -54,6 +63,7 @@ export async function POST(request: NextRequest) {
           if (updateError) {
             console.error(`❌ Update error for ${item.countryCode}:`, updateError);
             errors++;
+            errorDetails.push({ country: item.countryCode, error: updateError.message });
           } else {
             updated++;
           }
@@ -76,6 +86,7 @@ export async function POST(request: NextRequest) {
           if (insertError) {
             console.error(`❌ Insert error for ${item.countryCode}:`, insertError);
             errors++;
+            errorDetails.push({ country: item.countryCode, error: insertError.message });
           } else {
             imported++;
           }
@@ -83,6 +94,7 @@ export async function POST(request: NextRequest) {
       } catch (itemError: any) {
         console.error(`❌ Error processing ${item.countryCode}:`, itemError);
         errors++;
+        errorDetails.push({ country: item.countryCode, error: itemError.message });
       }
     }
 
@@ -97,6 +109,7 @@ export async function POST(request: NextRequest) {
         updated,
         errors,
       },
+      errorDetails: errorDetails.length > 0 ? errorDetails.slice(0, 10) : undefined, // Show first 10 errors
     });
   } catch (error: any) {
     console.error('❌ Import error:', error);
