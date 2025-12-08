@@ -99,7 +99,7 @@ const TURKISH_PASSPORT_VISA_REQUIREMENTS: VisaRequirement[] = [
   
   // EUROPE - Non-Schengen (Visa-free)
   { countryCode: 'ALB', countryName: 'Arnavutluk', visaStatus: 'visa-free', allowedStay: '90 days', conditions: 'Tourism', applicationMethod: 'not-required' },
-  { countryCode: 'AND', countryName: 'Andorra', visaStatus: 'visa-free', allowedStay: '90 days', conditions: 'Tourism', applicationMethod: 'not-required' },
+  { countryCode: 'AND', countryName: 'Andorra', visaStatus: 'visa-required', allowedStay: 'Varies', conditions: 'Visa required', visaCost: '€60', processingTime: '2-4 weeks', applicationMethod: 'embassy' },
   { countryCode: 'BIH', countryName: 'Bosna-Hersek', visaStatus: 'visa-free', allowedStay: '90 days', conditions: 'Tourism', applicationMethod: 'not-required' },
   { countryCode: 'BGR', countryName: 'Bulgaristan', visaStatus: 'visa-free', allowedStay: '90 days in 180 days', conditions: 'EU member', applicationMethod: 'not-required' },
   { countryCode: 'HRV', countryName: 'Hırvatistan', visaStatus: 'visa-free', allowedStay: '90 days in 180 days', conditions: 'Schengen area', applicationMethod: 'not-required' },
@@ -122,7 +122,7 @@ const TURKISH_PASSPORT_VISA_REQUIREMENTS: VisaRequirement[] = [
   { countryCode: 'KGZ', countryName: 'Kırgızistan', visaStatus: 'visa-free', allowedStay: '60 days', conditions: 'Tourism', applicationMethod: 'not-required' },
   { countryCode: 'UZB', countryName: 'Özbekistan', visaStatus: 'visa-free', allowedStay: '30 days', conditions: 'Tourism', applicationMethod: 'not-required' },
   { countryCode: 'TJK', countryName: 'Tacikistan', visaStatus: 'visa-free', allowedStay: '30 days', conditions: 'Tourism', applicationMethod: 'not-required' },
-  { countryCode: 'AZE', countryName: 'Azerbaycan', visaStatus: 'visa-free', allowedStay: '90 days', conditions: 'Tourism', applicationMethod: 'not-required' },
+  { countryCode: 'AZE', countryName: 'Azerbaycan', visaStatus: 'evisa', allowedStay: '90 days', conditions: 'e-Visa required', visaCost: '$20', processingTime: '3 days', applicationMethod: 'online' },
   { countryCode: 'MAC', countryName: 'Makao', visaStatus: 'visa-free', allowedStay: '30 days', conditions: 'Tourism', applicationMethod: 'not-required' },
   { countryCode: 'MNG', countryName: 'Moğolistan', visaStatus: 'visa-free', allowedStay: '30 days', conditions: 'Tourism', applicationMethod: 'not-required' },
   { countryCode: 'TWN', countryName: 'Tayvan', visaStatus: 'evisa', allowedStay: '90 days', conditions: 'e-Visa required', visaCost: 'Free', processingTime: '1-2 days', applicationMethod: 'online' },
@@ -180,7 +180,7 @@ const TURKISH_PASSPORT_VISA_REQUIREMENTS: VisaRequirement[] = [
   
   // AFRICA - Visa Required
   { countryCode: 'DZA', countryName: 'Cezayir', visaStatus: 'visa-required', allowedStay: 'Varies', conditions: 'Visa required', visaCost: '€85', processingTime: '2-4 weeks', applicationMethod: 'embassy' },
-  { countryCode: 'AGO', countryName: 'Angola', visaStatus: 'visa-required', allowedStay: 'Varies', conditions: 'Visa required', visaCost: '$120', processingTime: '2-3 weeks', applicationMethod: 'embassy' },
+  { countryCode: 'AGO', countryName: 'Angola', visaStatus: 'visa-free', allowedStay: '30 days', conditions: 'Tourism', applicationMethod: 'not-required' },
   { countryCode: 'BEN', countryName: 'Benin', visaStatus: 'visa-required', allowedStay: 'Varies', conditions: 'Visa required', visaCost: '$100', processingTime: '1-2 weeks', applicationMethod: 'embassy' },
   { countryCode: 'BFA', countryName: 'Burkina Faso', visaStatus: 'visa-required', allowedStay: 'Varies', conditions: 'Visa required', visaCost: '$100', processingTime: '1-2 weeks', applicationMethod: 'embassy' },
   { countryCode: 'BDI', countryName: 'Burundi', visaStatus: 'visa-required', allowedStay: 'Varies', conditions: 'Visa required', visaCost: '$90', processingTime: '1-2 weeks', applicationMethod: 'embassy' },
@@ -207,7 +207,8 @@ const TURKISH_PASSPORT_VISA_REQUIREMENTS: VisaRequirement[] = [
   
   // AMERICAS - Additional Countries
   { countryCode: 'ATG', countryName: 'Antigua ve Barbuda', visaStatus: 'visa-free', allowedStay: '180 days', conditions: 'Tourism', applicationMethod: 'not-required' },
-  { countryCode: 'BHS', countryName: 'Bahamalar', visaStatus: 'visa-free', allowedStay: '90 days', conditions: 'Tourism', applicationMethod: 'not-required' },
+  { countryCode: 'ARM', countryName: 'Ermenistan', visaStatus: 'evisa', allowedStay: '120 days', conditions: 'e-Visa or visa on arrival', visaCost: '$7', processingTime: 'Instant', applicationMethod: 'online' },
+  { countryCode: 'BHS', countryName: 'Bahamalar', visaStatus: 'visa-free', allowedStay: '240 days', conditions: 'Tourism', applicationMethod: 'not-required' },
   { countryCode: 'BRB', countryName: 'Barbados', visaStatus: 'visa-free', allowedStay: '90 days', conditions: 'Tourism', applicationMethod: 'not-required' },
   { countryCode: 'BLZ', countryName: 'Belize', visaStatus: 'visa-free', allowedStay: '90 days', conditions: 'Tourism', applicationMethod: 'not-required' },
   { countryCode: 'BOL', countryName: 'Bolivya', visaStatus: 'visa-free', allowedStay: '90 days', conditions: 'Tourism', applicationMethod: 'not-required' },
