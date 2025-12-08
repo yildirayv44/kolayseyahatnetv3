@@ -25,6 +25,7 @@ export default function BulkCountryImportPage() {
   const [selectedCountries, setSelectedCountries] = useState<GeneratedCountry[]>([]);
   const [generating, setGenerating] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
+  const [aiProvider, setAiProvider] = useState<'openai' | 'gemini'>('openai');
 
   // Fetch missing countries
   const fetchMissingCountries = async () => {
@@ -96,7 +97,7 @@ export default function BulkCountryImportPage() {
             const response = await fetch('/api/admin/countries/generate', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ country }),
+              body: JSON.stringify({ country, aiProvider }),
             });
 
             const data = await response.json();
@@ -263,6 +264,43 @@ export default function BulkCountryImportPage() {
                   className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
                 >
                   Hiçbirini Seçme
+                </button>
+              </div>
+            </div>
+
+            {/* AI Provider Selection */}
+            <div className="mb-6 rounded-lg border-2 border-slate-200 bg-slate-50 p-4">
+              <h3 className="mb-3 text-sm font-semibold text-slate-900">AI Model Seçimi</h3>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => setAiProvider('openai')}
+                  className={`flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-all ${
+                    aiProvider === 'openai'
+                      ? 'border-green-500 bg-green-50'
+                      : 'border-slate-200 hover:border-slate-300'
+                  }`}
+                >
+                  <div className="text-2xl">🤖</div>
+                  <div className="text-center">
+                    <div className="font-semibold text-slate-900">OpenAI GPT-4o Mini</div>
+                    <div className="text-xs text-slate-600">Hızlı ve güvenilir</div>
+                    <div className="mt-1 text-xs text-green-600">✅ Yüksek quota</div>
+                  </div>
+                </button>
+                <button
+                  onClick={() => setAiProvider('gemini')}
+                  className={`flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-all ${
+                    aiProvider === 'gemini'
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-slate-200 hover:border-slate-300'
+                  }`}
+                >
+                  <div className="text-2xl">✨</div>
+                  <div className="text-center">
+                    <div className="font-semibold text-slate-900">Google Gemini 1.5 Flash</div>
+                    <div className="text-xs text-slate-600">Ücretsiz ve hızlı</div>
+                    <div className="mt-1 text-xs text-yellow-600">⚠️ Günlük limit var</div>
+                  </div>
                 </button>
               </div>
             </div>

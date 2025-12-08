@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
+import OpenAI from "openai";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { supabase } from "@/lib/supabase";
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API_KEY || "");
 
 export async function POST(request: NextRequest) {
   try {
-    const { country } = await request.json();
+    const { country, aiProvider = 'openai' } = await request.json();
 
     if (!country || !country.name || !country.code) {
       return NextResponse.json(
@@ -15,12 +20,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log(`🌍 Generating data for: ${country.name}`);
+    console.log(`🌍 Generating data for: ${country.name} using ${aiProvider.toUpperCase()}`);
 
-    // Step 1: Generate comprehensive country data with Gemini
-    // Use gemini-1.5-flash for better quota limits
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
+    // Step 1: Generate comprehensive country data with selected AI provider
     const prompt = `Sen Kolay Seyahat vize danışmanlık firmasının uzman içerik yazarısın. ${country.name} (${country.code}) ülkesi için Türkiye vatandaşları için detaylı vize bilgileri oluştur.
 
 ÖNEMLİ KURALLAR:
@@ -87,17 +89,44 @@ Aşağıdaki JSON formatında yanıt ver:
 
 SADECE JSON yanıtı ver, başka açıklama ekleme.`;
 
-    const result = await model.generateContent(prompt);
-    const response = result.response;
-    const text = response.text();
+    let countryData;
 
-    // Parse JSON response
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      throw new Error("Failed to parse AI response");
+    if (aiProvider === 'openai') {
+      // Use OpenAI GPT-4o Mini
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content: "Sen bir vize danışmanlığı uzmanısın. Verilen ülke için detaylı ve doğru vize bilgileri üretiyorsun. Sadece JSON formatında yanıt veriyorsun."
+          },
+          {
+            role: "user",
+            content: prompt
+          }
+        ],
+        temperature: 0.7,
+        response_format: { type: "json_object" }
+      });
+
+      const text = completion.choices[0].message.content || "{}";
+      countryData = JSON.parse(text);
+    } else {
+      // Use Google Gemini 1.5 Flash
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const result = await model.generateContent(prompt);
+      const response = result.response;
+      const text = response.text();
+
+      // Parse JSON response
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        throw new Error("Failed to parse AI response");
+      }
+
+      countryData = JSON.parse(jsonMatch[0]);
     }
 
-    const countryData = JSON.parse(jsonMatch[0]);
     console.log(`✅ Generated data for ${country.name}`);
 
     // Step 2: Generate country image with Imagen
