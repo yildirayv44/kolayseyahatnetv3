@@ -40,6 +40,8 @@ export default function SEODuzenlePage() {
   const [fixing, setFixing] = useState(false);
   const [previewMode, setPreviewMode] = useState(true);
   const [fixResults, setFixResults] = useState<FixResult[]>([]);
+  const [allCountries, setAllCountries] = useState<any[]>([]);
+  const [showAllCountries, setShowAllCountries] = useState(false);
   const [stats, setStats] = useState({
     total: 0,
     issues_count: 0,
@@ -51,6 +53,7 @@ export default function SEODuzenlePage() {
       const response = await fetch("/api/admin/countries/check-seo");
       const data = await response.json();
       setIssues(data.issues || []);
+      setAllCountries(data.all_countries || []);
       setStats({
         total: data.total_countries || 0,
         issues_count: data.countries_with_issues || 0,
@@ -344,12 +347,78 @@ export default function SEODuzenlePage() {
 
       {/* No Issues */}
       {!loading && issues.length === 0 && fixResults.length === 0 && (
-        <div className="rounded-xl border-2 border-green-200 bg-green-50 p-8 text-center">
-          <CheckCircle2 className="mx-auto h-12 w-12 text-green-600" />
-          <h3 className="mt-4 text-xl font-bold text-green-900">Tüm Ülkeler SEO Uyumlu!</h3>
-          <p className="mt-2 text-green-700">
-            Tüm ülke sayfalarının SEO başlık ve açıklamaları düzgün şekilde ayarlanmış.
-          </p>
+        <div className="space-y-6">
+          <div className="rounded-xl border-2 border-green-200 bg-green-50 p-8 text-center">
+            <CheckCircle2 className="mx-auto h-12 w-12 text-green-600" />
+            <h3 className="mt-4 text-xl font-bold text-green-900">Tüm Ülkeler SEO Uyumlu!</h3>
+            <p className="mt-2 text-green-700">
+              Tüm ülke sayfalarının SEO başlık ve açıklamaları düzgün şekilde ayarlanmış.
+            </p>
+            <button
+              onClick={() => setShowAllCountries(!showAllCountries)}
+              className="mt-4 inline-flex items-center gap-2 rounded-lg bg-green-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-green-700"
+            >
+              {showAllCountries ? "Listeyi Gizle" : "Tüm Ülkeleri Göster"} ({allCountries.length})
+            </button>
+          </div>
+
+          {/* All Countries Table */}
+          {showAllCountries && (
+            <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-slate-50 border-b border-slate-200">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                        #
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                        Ülke
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                        SEO Meta Title
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                        SEO Meta Description
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200">
+                    {allCountries.map((country, index) => (
+                      <tr key={country.id} className="hover:bg-slate-50 transition-colors">
+                        <td className="px-6 py-4 text-sm text-slate-500">
+                          {index + 1}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="font-semibold text-slate-900">{country.name}</div>
+                          <div className="text-xs text-slate-500">ID: {country.id}</div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-sm text-slate-900 max-w-md">
+                            {country.meta_title || <span className="italic text-slate-400">Boş</span>}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-sm text-slate-900 max-w-lg">
+                            {country.meta_description ? (
+                              <>
+                                <div className="line-clamp-2">{country.meta_description}</div>
+                                <div className="mt-1 text-xs text-slate-500">
+                                  {country.meta_description.length} karakter
+                                </div>
+                              </>
+                            ) : (
+                              <span className="italic text-slate-400">Boş</span>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

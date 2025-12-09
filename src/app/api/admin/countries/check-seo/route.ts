@@ -49,6 +49,12 @@ export async function GET() {
       total_countries: countries?.length || 0,
       countries_with_issues: issues.length,
       issues: issues,
+      all_countries: countries?.map(c => ({
+        id: c.id,
+        name: c.name,
+        meta_title: c.meta_title,
+        meta_description: c.meta_description,
+      })) || [],
     });
   } catch (error: any) {
     console.error("Error checking SEO:", error);
