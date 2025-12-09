@@ -411,9 +411,10 @@ export default async function CountryPage({ params }: CountryPageParams) {
           <StickyCTA countryName={menuCountry?.name || menu.name} />
         </div>
       );
-    }
-    
-    // Ne ülke ne de alt sayfa bulunamadı
+  }
+  
+  // Ne ülke ne de alt sayfa bulunamadı
+  if (!country) {
     notFound();
   }
 
