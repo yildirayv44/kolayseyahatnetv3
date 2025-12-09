@@ -8,7 +8,7 @@ interface DetectedImage {
   id: string;
   url: string;
   alt: string;
-  status: 'ok' | 'error' | 'checking';
+  status: 'ok' | 'error' | 'checking' | 'missing';
   source: {
     type: 'blog' | 'country';
     id: number;
@@ -21,13 +21,14 @@ interface Stats {
   total: number;
   ok: number;
   error: number;
+  missing: number;
 }
 
 export default function ImageDetectionPage() {
   const [images, setImages] = useState<DetectedImage[]>([]);
-  const [stats, setStats] = useState<Stats>({ total: 0, ok: 0, error: 0 });
+  const [stats, setStats] = useState<Stats>({ total: 0, ok: 0, error: 0, missing: 0 });
   const [loading, setLoading] = useState(false);
-  const [filter, setFilter] = useState<'all' | 'ok' | 'error'>('all');
+  const [filter, setFilter] = useState<'all' | 'ok' | 'error' | 'missing'>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedImage, setSelectedImage] = useState<DetectedImage | null>(null);
   const [showReplaceModal, setShowReplaceModal] = useState(false);
@@ -552,6 +553,16 @@ export default function ImageDetectionPage() {
               >
                 Hatalı ({stats.error})
               </button>
+              <button
+                onClick={() => setFilter('missing')}
+                className={`rounded-lg px-4 py-2 text-sm font-medium ${
+                  filter === 'missing'
+                    ? 'bg-orange-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                Eksik ({stats.missing})
+              </button>
             </div>
 
             <div className="flex gap-2">
@@ -612,7 +623,9 @@ export default function ImageDetectionPage() {
               <div
                 key={img.id}
                 className={`relative overflow-hidden rounded-lg bg-white shadow transition-all hover:shadow-lg ${
-                  img.status === 'error' ? 'border-2 border-red-300' : 'border border-gray-200'
+                  img.status === 'error' ? 'border-2 border-red-300' : 
+                  img.status === 'missing' ? 'border-2 border-orange-300' : 
+                  'border border-gray-200'
                 } ${selectedImages.has(img.id) ? 'ring-4 ring-blue-500' : ''}`}
               >
                 {/* Checkbox */}
@@ -635,6 +648,11 @@ export default function ImageDetectionPage() {
                         e.currentTarget.style.display = 'none';
                       }}
                     />
+                  ) : img.status === 'missing' ? (
+                    <div className="flex h-full flex-col items-center justify-center gap-2">
+                      <AlertCircle className="h-12 w-12 text-orange-400" />
+                      <span className="text-xs text-orange-600">Görsel Yok</span>
+                    </div>
                   ) : (
                     <div className="flex h-full items-center justify-center">
                       <X className="h-12 w-12 text-red-400" />
@@ -646,6 +664,11 @@ export default function ImageDetectionPage() {
                       <span className="flex items-center gap-1 rounded-full bg-green-500 px-2 py-1 text-xs font-medium text-white">
                         <Check className="h-3 w-3" />
                         OK
+                      </span>
+                    ) : img.status === 'missing' ? (
+                      <span className="flex items-center gap-1 rounded-full bg-orange-500 px-2 py-1 text-xs font-medium text-white">
+                        <AlertCircle className="h-3 w-3" />
+                        Eksik
                       </span>
                     ) : (
                       <span className="flex items-center gap-1 rounded-full bg-red-500 px-2 py-1 text-xs font-medium text-white">
@@ -667,7 +690,7 @@ export default function ImageDetectionPage() {
                   </div>
 
                   <p className="mb-3 truncate text-xs text-gray-600" title={img.url}>
-                    {img.url}
+                    {img.url || 'Görsel URL yok'}
                   </p>
 
                   <button
@@ -676,12 +699,12 @@ export default function ImageDetectionPage() {
                       setShowReplaceModal(true);
                     }}
                     className={`w-full rounded-lg px-4 py-2 text-sm font-medium text-white ${
-                      img.status === 'error'
+                      img.status === 'error' || img.status === 'missing'
                         ? 'bg-red-600 hover:bg-red-700'
                         : 'bg-blue-600 hover:bg-blue-700'
                     }`}
                   >
-                    {img.status === 'error' ? 'Düzelt' : 'Değiştir'}
+                    {img.status === 'error' || img.status === 'missing' ? 'Ekle/Düzelt' : 'Değiştir'}
                   </button>
                 </div>
               </div>

@@ -9,7 +9,7 @@ export interface DetectedImage {
   id: string;
   url: string;
   alt: string;
-  status: 'ok' | 'error' | 'checking';
+  status: 'ok' | 'error' | 'checking' | 'missing';
   source: {
     type: 'blog' | 'country';
     id: number;
@@ -126,20 +126,23 @@ export async function GET(request: NextRequest) {
 
     // Extract images from countries
     for (const country of countriesResult.data || []) {
+      // ⚡ ENHANCEMENT: Show all countries, even without image_url
+      const img: DetectedImage = {
+        id: `country-${country.id}-main-${imageId++}`,
+        url: country.image_url || '',
+        alt: country.name,
+        status: country.image_url ? 'checking' : 'missing',
+        source: {
+          type: 'country',
+          id: country.id,
+          title: country.name,
+          field: 'image_url',
+        },
+      };
+      detectedImages.push(img);
+      
+      // Only check status if URL exists
       if (country.image_url) {
-        const img: DetectedImage = {
-          id: `country-${country.id}-main-${imageId++}`,
-          url: country.image_url,
-          alt: country.name,
-          status: 'checking',
-          source: {
-            type: 'country',
-            id: country.id,
-            title: country.name,
-            field: 'image_url',
-          },
-        };
-        detectedImages.push(img);
         imagesToCheck.push({ image: img, url: country.image_url });
       }
 
@@ -195,9 +198,10 @@ export async function GET(request: NextRequest) {
       total: detectedImages.length,
       ok: detectedImages.filter(img => img.status === 'ok').length,
       error: detectedImages.filter(img => img.status === 'error').length,
+      missing: detectedImages.filter(img => img.status === 'missing').length,
     };
 
-    console.log(`📊 Stats: ${stats.ok} OK, ${stats.error} errors, ${stats.total} total`);
+    console.log(`📊 Stats: ${stats.ok} OK, ${stats.error} errors, ${stats.missing} missing, ${stats.total} total`);
 
     return NextResponse.json({
       success: true,
