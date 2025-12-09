@@ -6,6 +6,88 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    
+    // Fetch menu
+    const { data: menu, error: menuError } = await supabase
+      .from("country_menus")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (menuError) {
+      return NextResponse.json({ error: menuError.message }, { status: 500 });
+    }
+
+    // Fetch country relation
+    const { data: relation } = await supabase
+      .from("country_to_menus")
+      .select("country_id")
+      .eq("country_menu_id", id)
+      .maybeSingle();
+
+    return NextResponse.json({
+      menu: {
+        ...menu,
+        country_id: relation?.country_id || null,
+      },
+    });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
+export async function PUT(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const body = await request.json();
+    const { country_id, ...menuData } = body;
+
+    // Update menu
+    const { error: menuError } = await supabase
+      .from("country_menus")
+      .update(menuData)
+      .eq("id", id);
+
+    if (menuError) {
+      return NextResponse.json({ error: menuError.message }, { status: 500 });
+    }
+
+    // Update country relation
+    if (country_id) {
+      // Delete old relation
+      await supabase
+        .from("country_to_menus")
+        .delete()
+        .eq("country_menu_id", id);
+
+      // Insert new relation
+      const { error: relError } = await supabase
+        .from("country_to_menus")
+        .insert({
+          country_id,
+          country_menu_id: Number(id),
+        });
+
+      if (relError) {
+        console.error("Error updating relation:", relError);
+      }
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -13,6 +95,13 @@ export async function DELETE(
   try {
     const { id } = await params;
     
+    // Delete relation first
+    await supabase
+      .from("country_to_menus")
+      .delete()
+      .eq("country_menu_id", id);
+    
+    // Delete menu
     const { error } = await supabase
       .from("country_menus")
       .delete()
