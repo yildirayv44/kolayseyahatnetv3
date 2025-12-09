@@ -117,24 +117,45 @@ export function Header() {
     if (searchQuery.trim()) {
       const query = searchQuery.toLocaleLowerCase('tr');
       const filtered = countries
-        .filter((c) => c.name.toLocaleLowerCase('tr').includes(query))
+        .filter((c) => 
+          c.name.toLocaleLowerCase('tr').includes(query) ||
+          (c.slug && c.slug.toLocaleLowerCase('tr').includes(query))
+        )
         .sort((a, b) => {
           const aName = a.name.toLocaleLowerCase('tr');
           const bName = b.name.toLocaleLowerCase('tr');
+          const aSlug = (a.slug || '').toLocaleLowerCase('tr');
+          const bSlug = (b.slug || '').toLocaleLowerCase('tr');
           
-          // Exact match first
+          // Exact match in name first
           if (aName === query) return -1;
           if (bName === query) return 1;
           
-          // Starts with query second
-          const aStarts = aName.startsWith(query);
-          const bStarts = bName.startsWith(query);
-          if (aStarts && !bStarts) return -1;
-          if (!aStarts && bStarts) return 1;
+          // Exact match in slug second
+          if (aSlug === query) return -1;
+          if (bSlug === query) return 1;
           
-          // Then by position of match
-          const aIndex = aName.indexOf(query);
-          const bIndex = bName.indexOf(query);
+          // Starts with query in name
+          const aNameStarts = aName.startsWith(query);
+          const bNameStarts = bName.startsWith(query);
+          if (aNameStarts && !bNameStarts) return -1;
+          if (!aNameStarts && bNameStarts) return 1;
+          
+          // Starts with query in slug
+          const aSlugStarts = aSlug.startsWith(query);
+          const bSlugStarts = bSlug.startsWith(query);
+          if (aSlugStarts && !bSlugStarts) return -1;
+          if (!aSlugStarts && bSlugStarts) return 1;
+          
+          // Position of match in name
+          const aNameIndex = aName.indexOf(query);
+          const bNameIndex = bName.indexOf(query);
+          const aSlugIndex = aSlug.indexOf(query);
+          const bSlugIndex = bSlug.indexOf(query);
+          
+          // Prefer name match over slug match
+          const aIndex = aNameIndex !== -1 ? aNameIndex : aSlugIndex + 1000;
+          const bIndex = bNameIndex !== -1 ? bNameIndex : bSlugIndex + 1000;
           if (aIndex !== bIndex) return aIndex - bIndex;
           
           // Finally alphabetically
