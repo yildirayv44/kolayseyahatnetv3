@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Share2, Loader2, Copy, ArrowLeft, Twitter, Linkedin, Instagram, Facebook, Mail, Youtube, Image as ImageIcon, Check, Hash, MessageCircle, Globe, FileText, Search } from "lucide-react";
+import { Share2, Loader2, Copy, ArrowLeft, Twitter, Linkedin, Instagram, Facebook, Mail, Youtube, Image as ImageIcon, Check, Hash, MessageCircle, Globe, FileText, Search, Sparkles } from "lucide-react";
 import Link from "next/link";
 
 type RepurposeFormat = 
@@ -122,7 +122,7 @@ export default function RepurposePage() {
     alert('Kopyalandı!');
   };
 
-  const handleGenerateImage = async () => {
+  const handleGenerateImage = async (useEnhanced: boolean = false) => {
     if (!title.trim()) {
       alert("Lütfen önce bir başlık girin!");
       return;
@@ -139,6 +139,8 @@ export default function RepurposePage() {
           topic: title,
           style: 'professional',
           size: '1024x1024',
+          provider: useEnhanced ? 'imagen' : 'dalle',
+          baseContent: useEnhanced ? content : '', // Send content for context
         }),
       });
 
@@ -552,26 +554,48 @@ export default function RepurposePage() {
               </h2>
               
               <p className="text-sm text-slate-600 mb-4">
-                Başlığa göre otomatik olarak AI ile görsel oluşturun
+                AI ile profesyonel görsel oluşturun
               </p>
 
-              <button
-                onClick={handleGenerateImage}
-                disabled={imageLoading || !title.trim()}
-                className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-6 py-3 rounded-lg font-bold hover:from-blue-700 hover:to-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg mb-4"
-              >
-                {imageLoading ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                    Görsel Oluşturuluyor...
-                  </span>
-                ) : (
-                  <span className="flex items-center justify-center gap-2">
-                    <ImageIcon className="h-5 w-5" />
-                    Görsel Oluştur
-                  </span>
-                )}
-              </button>
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <button
+                  onClick={() => handleGenerateImage(false)}
+                  disabled={imageLoading || !title.trim()}
+                  className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-4 py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg"
+                >
+                  {imageLoading ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    </span>
+                  ) : (
+                    <span className="flex flex-col items-center gap-1">
+                      <ImageIcon className="h-5 w-5" />
+                      <span className="text-xs">Hızlı</span>
+                    </span>
+                  )}
+                </button>
+                <button
+                  onClick={() => handleGenerateImage(true)}
+                  disabled={imageLoading || !title.trim() || !content.trim()}
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg"
+                >
+                  {imageLoading ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    </span>
+                  ) : (
+                    <span className="flex flex-col items-center gap-1">
+                      <Sparkles className="h-5 w-5" />
+                      <span className="text-xs">İçeriğe Göre</span>
+                    </span>
+                  )}
+                </button>
+              </div>
+              
+              <div className="text-xs text-slate-500 space-y-1 mb-4">
+                <p>• <strong>Hızlı:</strong> Sadece başlığa göre</p>
+                <p>• <strong>İçeriğe Göre:</strong> İçeriği analiz eder (daha iyi sonuç)</p>
+              </div>
 
               {generatedImage && (
                 <div className="space-y-3">
