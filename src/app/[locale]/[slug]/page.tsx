@@ -215,16 +215,26 @@ export default async function CountryPage({ params }: CountryPageParams) {
     comments: "Yorumlar ve Deneyimler",
   };
 
-  console.log("📄 CountryPage - Decoded slug:", decodedSlug);
 
-  // Önce custom page olarak dene (en yüksek öncelik)
-  const { data: customPageData } = await supabase
-    .from("custom_pages")
-    .select("*")
-    .eq("slug", decodedSlug)
-    .eq("is_published", true)
-    .maybeSingle();
+  // ⚡ OPTIMIZATION: Paralel sorgular - tüm olasılıkları aynı anda kontrol et
+  const [
+    { data: customPageData },
+    blog,
+    countryData,
+    menu
+  ] = await Promise.all([
+    supabase
+      .from("custom_pages")
+      .select("*")
+      .eq("slug", decodedSlug)
+      .eq("is_published", true)
+      .maybeSingle(),
+    getBlogBySlug(decodedSlug),
+    getCountryBySlug(decodedSlug),
+    getCountryMenuBySlug(decodedSlug)
+  ]);
 
+  // Custom page bulundu - render et
   if (customPageData) {
     const isEnglish = locale === "en";
     const title = isEnglish && customPageData.title_en ? customPageData.title_en : customPageData.title;
@@ -276,22 +286,13 @@ export default async function CountryPage({ params }: CountryPageParams) {
     );
   }
 
-  // Custom page değilse, blog olarak dene (önce blog kontrol et)
-  console.log("📄 CountryPage - Trying blog...");
-  const blog = await getBlogBySlug(decodedSlug);
-  console.log("📄 CountryPage - Blog result:", blog ? blog.title : "Not found");
-  
+  // Blog bulundu - redirect et
   if (blog) {
-    // Blog bulundu - blog detay sayfasına 301 redirect
     redirect(`/blog/${decodedSlug}`);
   }
 
-  // Blog değilse, ülke olarak dene
-  let country = await getCountryBySlug(decodedSlug);
-
-  console.log("📄 CountryPage - Country result:", country ? "Found" : "Not found");
-  
-  // Localize country content
+  // Ülke bulundu - işle ve localize et
+  let country = countryData;
   if (country) {
     country = getLocalizedFields(country, locale as 'tr' | 'en');
   }
@@ -299,9 +300,8 @@ export default async function CountryPage({ params }: CountryPageParams) {
   // Get comments if country found
   const comments = country ? await getCountryComments(country.id) : [];
 
-  // Blog değilse, duyuru olarak dene
+  // Ülke bulunamadı - duyuru olarak dene
   if (!country) {
-    console.log("📄 CountryPage - Trying announcement...");
     const { data: announcementTaxonomy } = await supabase
       .from("taxonomies")
       .select("model_id")
@@ -310,50 +310,36 @@ export default async function CountryPage({ params }: CountryPageParams) {
       .maybeSingle();
     
     if (announcementTaxonomy?.model_id) {
-      console.log("📄 CountryPage - Announcement found, redirecting...");
       redirect(`/duyuru/${decodedSlug}`);
     }
   }
 
-  // Duyuru değilse, alt sayfa olarak dene
-  if (!country) {
-    console.log("📄 CountryPage - Trying menu...");
-    const menu = await getCountryMenuBySlug(decodedSlug);
-    console.log("📄 CountryPage - Menu result:", menu ? menu.name : "Not found");
+  // Menu (alt sayfa) bulundu
+  if (!country && menu) {
+    // ⚡ OPTIMIZATION: Paralel country sorgularını tek seferde yap
+    const countrySlugFromMenu = decodedSlug.split('-')[0];
     
-    if (menu) {
-      // Alt sayfa bulundu - menu'nun parent_id'sinden ülkeyi bul
-      console.log("📄 CountryPage - Menu parent_id:", menu.parent_id);
-      let menuCountry = menu.parent_id ? await supabase
-        .from("countries")
-        .select("*")
-        .eq("id", menu.parent_id)
-        .eq("status", 1)
-        .maybeSingle()
-        .then(({ data }) => data) : null;
-      
-      console.log("📄 CountryPage - Menu country:", menuCountry ? menuCountry.name : "Not found");
-      
-      // Always try to find country from slug (more reliable than parent_id)
-      // Slug format: "amerika-f2m2-ogrenci-aile-vizesi" -> extract "amerika"
-      const countrySlugFromMenu = decodedSlug.split('-')[0];
-      console.log("📄 CountryPage - Extracting country slug from menu:", countrySlugFromMenu);
-      
-      const slugBasedCountry = await supabase
+    const [parentCountry, slugBasedCountry] = await Promise.all([
+      menu.parent_id 
+        ? supabase
+            .from("countries")
+            .select("*")
+            .eq("id", menu.parent_id)
+            .eq("status", 1)
+            .maybeSingle()
+            .then(({ data }) => data)
+        : Promise.resolve(null),
+      supabase
         .from("countries")
         .select("*")
         .eq("slug", countrySlugFromMenu)
         .eq("status", 1)
         .maybeSingle()
-        .then(({ data }) => data);
-      
-      // Prefer slug-based country over parent_id based country
-      if (slugBasedCountry) {
-        console.log("📄 CountryPage - Using slug-based country:", slugBasedCountry.name);
-        menuCountry = slugBasedCountry;
-      } else if (!menuCountry) {
-        console.log("📄 CountryPage - No country found for menu");
-      }
+        .then(({ data }) => data)
+    ]);
+    
+    // Prefer slug-based country over parent_id based country
+    const menuCountry = slugBasedCountry || parentCountry;
       
       // Fix image URLs in menu content
       const fixedMenuContents = menu.contents ? fixHtmlImageUrls(menu.contents, menuCountry?.name) : null;
