@@ -89,64 +89,58 @@ const COUNTRY_SLUG_FALLBACK: Record<string, number> = {
 export async function getCountryBySlug(slug: string) {
   console.log("🌍 getCountryBySlug - Slug:", slug);
   
-  // 1. Önce type filtresi ile dene
-  let { data: tax, error: taxError } = await supabase
-    .from("taxonomies")
-    .select("model_id, slug")
-    .eq("slug", slug)
-    .eq("type", "Country\\CountryController@detail")
-    .maybeSingle();
-  
-  console.log("🌍 getCountryBySlug - Taxonomy result:", tax);
-
-  // 2. Kayıt bulunamazsa type kontrolü YAPARAK tekrar dene (menu ve blog type'larını hariç tut)
-  if (!tax && !taxError) {
-    const fallback = await supabase
-      .from("taxonomies")
-      .select("model_id, slug, type")
-      .eq("slug", slug)
-      .not("type", "ilike", "%menuDetail%")
-      .not("type", "ilike", "%blog%")
-      .maybeSingle();
-
-    tax = fallback.data ?? null;
-    taxError = fallback.error ?? null;
-  }
-
-  if (taxError) {
-    console.error("getCountryBySlug taxonomy error", taxError.message ?? taxError);
-  }
-
-  let countryId: number | null = tax?.model_id ?? null;
-
-  // 3. Hâlâ countryId yoksa, sabit fallback haritasını kullan
-  if (!countryId && COUNTRY_SLUG_FALLBACK[slug]) {
-    countryId = COUNTRY_SLUG_FALLBACK[slug];
-  }
-
-  // 4. country-{id} pattern'ini destekle (fallback için)
-  if (!countryId && slug.startsWith('country-')) {
-    const idMatch = slug.match(/^country-(\d+)$/);
-    if (idMatch) {
-      countryId = parseInt(idMatch[1], 10);
-      console.log("🌍 getCountryBySlug - Using country-{id} pattern:", countryId);
-    }
-  }
-
-  if (!countryId) {
-    return null;
-  }
-
-  // First get country
-  const { data: country, error: countryError } = await supabase
+  // NEW: Direct lookup from countries.slug (primary method)
+  let { data: country, error: countryError } = await supabase
     .from("countries")
     .select("*")
-    .eq("id", countryId)
+    .eq("slug", slug)
     .eq("status", 1)
     .maybeSingle();
 
-  if (countryError) {
-    console.error("getCountryBySlug country error", countryError.message ?? countryError);
+  // If found, great! Return early
+  if (country) {
+    console.log("🌍 getCountryBySlug - Found via countries.slug:", country.id);
+  } else {
+    // FALLBACK 1: Try country_slugs table (multi-locale)
+    const { data: countrySlug } = await supabase
+      .from("country_slugs")
+      .select("country_id")
+      .eq("slug", slug)
+      .eq("locale", "tr")
+      .maybeSingle();
+
+    if (countrySlug) {
+      const { data: foundCountry } = await supabase
+        .from("countries")
+        .select("*")
+        .eq("id", countrySlug.country_id)
+        .eq("status", 1)
+        .maybeSingle();
+      
+      if (foundCountry) {
+        country = foundCountry;
+        console.log("🌍 getCountryBySlug - Found via country_slugs:", country.id);
+      }
+    }
+  }
+
+  // FALLBACK 2: country-{id} pattern (for backward compatibility)
+  if (!country && slug.startsWith('country-')) {
+    const idMatch = slug.match(/^country-(\d+)$/);
+    if (idMatch) {
+      const countryId = parseInt(idMatch[1], 10);
+      const { data: foundCountry } = await supabase
+        .from("countries")
+        .select("*")
+        .eq("id", countryId)
+        .eq("status", 1)
+        .maybeSingle();
+      
+      if (foundCountry) {
+        country = foundCountry;
+        console.log("🌍 getCountryBySlug - Found via country-{id} pattern:", country.id);
+      }
+    }
   }
 
   if (!country) {
