@@ -8,17 +8,48 @@ const supabase = createClient(
 
 export async function GET() {
   try {
-    const { data: menus, error } = await supabase
+    // Fetch all menus
+    const { data: menus, error: menusError } = await supabase
       .from("country_menus")
       .select("*")
-      .order("parent_id")
       .order("sorted");
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+    if (menusError) {
+      return NextResponse.json({ error: menusError.message }, { status: 500 });
     }
 
-    return NextResponse.json({ menus });
+    // Fetch country relations from pivot table
+    const { data: relations, error: relError } = await supabase
+      .from("country_to_menus")
+      .select("country_id, country_menu_id");
+
+    if (relError) {
+      console.error("Error fetching relations:", relError);
+    }
+
+    // Fetch all countries for mapping
+    const { data: countries, error: countriesError } = await supabase
+      .from("countries")
+      .select("id, name, slug")
+      .eq("status", 1);
+
+    if (countriesError) {
+      console.error("Error fetching countries:", countriesError);
+    }
+
+    // Map country_id to each menu using pivot table
+    const menusWithCountries = (menus || []).map(menu => {
+      const relation = relations?.find(r => r.country_menu_id === menu.id);
+      const country = relation ? countries?.find(c => c.id === relation.country_id) : null;
+      
+      return {
+        ...menu,
+        country_id: relation?.country_id || null,
+        country: country || null,
+      };
+    });
+
+    return NextResponse.json({ menus: menusWithCountries });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

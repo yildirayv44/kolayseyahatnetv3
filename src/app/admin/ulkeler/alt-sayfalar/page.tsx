@@ -19,6 +19,7 @@ interface CountryMenu {
   description: string | null;
   status: number;
   sorted: number;
+  country_id: number | null;
   country?: Country;
 }
 
@@ -76,22 +77,23 @@ export default function CountryMenusPage() {
   const filteredMenus = menus.filter(menu => {
     const matchesSearch = menu.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          menu.slug?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCountry = !selectedCountry || menu.parent_id === selectedCountry;
+    const matchesCountry = !selectedCountry || menu.country_id === selectedCountry;
     return matchesSearch && matchesCountry;
   });
 
   const getCountryName = (menu: CountryMenu) => {
-    // Extract country slug from menu slug
-    // Format: "amerika-calisma-vizesi" -> "amerika"
-    if (menu.slug) {
-      const countrySlug = menu.slug.split('-')[0];
-      const country = countries.find(c => c.slug === countrySlug);
+    // Use country from API (from pivot table)
+    if (menu.country) {
+      return menu.country.name;
+    }
+    
+    // Fallback: find by country_id
+    if (menu.country_id) {
+      const country = countries.find(c => c.id === menu.country_id);
       if (country) return country.name;
     }
     
-    // Fallback to parent_id (may be incorrect due to old Laravel IDs)
-    const country = countries.find(c => c.id === menu.parent_id);
-    return country?.name || "Bilinmiyor";
+    return "Bilinmiyor";
   };
 
   return (
