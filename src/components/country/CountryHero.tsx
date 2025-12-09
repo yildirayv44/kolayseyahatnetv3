@@ -145,7 +145,7 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
           <div>
             <div className="mb-3 flex items-center gap-3">
               <h1 className="text-3xl font-bold text-slate-900 md:text-4xl">
-                {country.title || `${country.name} Vizesi`}
+                {(country.title || `${country.name} Vizesi`).replace(/\s*-\s*Kolay Seyahat\s*$/i, '')}
               </h1>
               {country.visa_required === false && (
                 <span className="rounded-full bg-emerald-500 px-3 py-1 text-sm font-bold text-white">
