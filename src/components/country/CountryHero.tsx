@@ -490,7 +490,7 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
                 <span>0212 909 99 71</span>
               </div>
               <span className="text-xs font-normal text-slate-500 group-hover:text-white">
-                📞 Hemen arayın, ücretsiz danışmanlık alın
+                ☎️ Uzman ekibimiz sizi bekliyor
               </span>
             </a>
             <a
