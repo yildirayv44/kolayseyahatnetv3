@@ -51,150 +51,143 @@ async function checkImageStatus(url: string): Promise<'ok' | 'error'> {
 /**
  * GET /api/admin/images/detect
  * Detect all images in blog and country content
+ * ⚡ OPTIMIZED: Parallel image status checking
  */
 export async function GET(request: NextRequest) {
   try {
+    console.log('🔍 Starting image detection...');
     const detectedImages: DetectedImage[] = [];
     let imageId = 0;
 
-    // 1. Fetch all blogs
-    const { data: blogs, error: blogsError } = await supabase
-      .from('blogs')
-      .select('id, title, contents, image_url')
-      .eq('status', 1);
+    // ⚡ OPTIMIZATION: Fetch blogs and countries in parallel
+    const [blogsResult, countriesResult] = await Promise.all([
+      supabase
+        .from('blogs')
+        .select('id, title, contents, image_url')
+        .eq('status', 1),
+      supabase
+        .from('countries')
+        .select('id, name, contents, price_contents, req_document, image_url')
+        .eq('status', 1)
+    ]);
 
-    if (blogsError) {
-      return NextResponse.json({ error: blogsError.message }, { status: 500 });
+    if (blogsResult.error) {
+      return NextResponse.json({ error: blogsResult.error.message }, { status: 500 });
     }
 
+    if (countriesResult.error) {
+      return NextResponse.json({ error: countriesResult.error.message }, { status: 500 });
+    }
+
+    console.log(`📊 Found ${blogsResult.data?.length || 0} blogs, ${countriesResult.data?.length || 0} countries`);
+
+    // Collect all images WITHOUT checking status first
+    const imagesToCheck: Array<{ image: DetectedImage; url: string }> = [];
+
     // Extract images from blogs
-    for (const blog of blogs || []) {
-      // Main image
+    for (const blog of blogsResult.data || []) {
       if (blog.image_url) {
-        const status = await checkImageStatus(blog.image_url);
-        detectedImages.push({
+        const img: DetectedImage = {
           id: `blog-${blog.id}-main-${imageId++}`,
           url: blog.image_url,
           alt: blog.title,
-          status,
+          status: 'checking',
           source: {
             type: 'blog',
             id: blog.id,
             title: blog.title,
             field: 'image_url',
           },
-        });
+        };
+        detectedImages.push(img);
+        imagesToCheck.push({ image: img, url: blog.image_url });
       }
 
-      // Content images
       if (blog.contents) {
         const contentImages = extractImagesFromHTML(blog.contents);
-        for (const img of contentImages) {
-          const status = await checkImageStatus(img.url);
-          detectedImages.push({
+        for (const contentImg of contentImages) {
+          const img: DetectedImage = {
             id: `blog-${blog.id}-content-${imageId++}`,
-            url: img.url,
-            alt: img.alt || blog.title,
-            status,
+            url: contentImg.url,
+            alt: contentImg.alt || blog.title,
+            status: 'checking',
             source: {
               type: 'blog',
               id: blog.id,
               title: blog.title,
               field: 'contents',
             },
-          });
+          };
+          detectedImages.push(img);
+          imagesToCheck.push({ image: img, url: contentImg.url });
         }
       }
     }
 
-    // 2. Fetch all countries
-    const { data: countries, error: countriesError } = await supabase
-      .from('countries')
-      .select('id, name, contents, price_contents, req_document, image_url')
-      .eq('status', 1);
-
-    if (countriesError) {
-      return NextResponse.json({ error: countriesError.message }, { status: 500 });
-    }
-
     // Extract images from countries
-    for (const country of countries || []) {
-      // Main image
+    for (const country of countriesResult.data || []) {
       if (country.image_url) {
-        const status = await checkImageStatus(country.image_url);
-        detectedImages.push({
+        const img: DetectedImage = {
           id: `country-${country.id}-main-${imageId++}`,
           url: country.image_url,
           alt: country.name,
-          status,
+          status: 'checking',
           source: {
             type: 'country',
             id: country.id,
             title: country.name,
             field: 'image_url',
           },
-        });
+        };
+        detectedImages.push(img);
+        imagesToCheck.push({ image: img, url: country.image_url });
       }
 
-      // Contents
-      if (country.contents) {
-        const contentImages = extractImagesFromHTML(country.contents);
-        for (const img of contentImages) {
-          const status = await checkImageStatus(img.url);
-          detectedImages.push({
-            id: `country-${country.id}-contents-${imageId++}`,
-            url: img.url,
-            alt: img.alt || country.name,
-            status,
-            source: {
-              type: 'country',
-              id: country.id,
-              title: country.name,
-              field: 'contents',
-            },
-          });
-        }
-      }
+      const fields = [
+        { content: country.contents, field: 'contents', suffix: '' },
+        { content: country.price_contents, field: 'price_contents', suffix: ' vize ücretleri' },
+        { content: country.req_document, field: 'req_document', suffix: ' gerekli belgeler' },
+      ];
 
-      // Price contents
-      if (country.price_contents) {
-        const priceImages = extractImagesFromHTML(country.price_contents);
-        for (const img of priceImages) {
-          const status = await checkImageStatus(img.url);
-          detectedImages.push({
-            id: `country-${country.id}-price-${imageId++}`,
-            url: img.url,
-            alt: img.alt || `${country.name} vize ücretleri`,
-            status,
-            source: {
-              type: 'country',
-              id: country.id,
-              title: country.name,
-              field: 'price_contents',
-            },
-          });
+      for (const { content, field, suffix } of fields) {
+        if (content) {
+          const htmlImages = extractImagesFromHTML(content);
+          for (const htmlImg of htmlImages) {
+            const img: DetectedImage = {
+              id: `country-${country.id}-${field}-${imageId++}`,
+              url: htmlImg.url,
+              alt: htmlImg.alt || `${country.name}${suffix}`,
+              status: 'checking',
+              source: {
+                type: 'country',
+                id: country.id,
+                title: country.name,
+                field,
+              },
+            };
+            detectedImages.push(img);
+            imagesToCheck.push({ image: img, url: htmlImg.url });
+          }
         }
       }
+    }
 
-      // Required documents
-      if (country.req_document) {
-        const docImages = extractImagesFromHTML(country.req_document);
-        for (const img of docImages) {
-          const status = await checkImageStatus(img.url);
-          detectedImages.push({
-            id: `country-${country.id}-docs-${imageId++}`,
-            url: img.url,
-            alt: img.alt || `${country.name} gerekli belgeler`,
-            status,
-            source: {
-              type: 'country',
-              id: country.id,
-              title: country.name,
-              field: 'req_document',
-            },
-          });
-        }
-      }
+    console.log(`🖼️  Total images found: ${imagesToCheck.length}`);
+    console.log(`⚡ Checking status in parallel...`);
+
+    // ⚡ OPTIMIZATION: Check all image statuses in parallel (batched)
+    const BATCH_SIZE = 50; // Check 50 images at a time
+    for (let i = 0; i < imagesToCheck.length; i += BATCH_SIZE) {
+      const batch = imagesToCheck.slice(i, i + BATCH_SIZE);
+      const statuses = await Promise.all(
+        batch.map(({ url }) => checkImageStatus(url))
+      );
+      
+      batch.forEach(({ image }, index) => {
+        image.status = statuses[index];
+      });
+
+      console.log(`✅ Checked ${Math.min(i + BATCH_SIZE, imagesToCheck.length)}/${imagesToCheck.length} images`);
     }
 
     // Calculate statistics
@@ -203,6 +196,8 @@ export async function GET(request: NextRequest) {
       ok: detectedImages.filter(img => img.status === 'ok').length,
       error: detectedImages.filter(img => img.status === 'error').length,
     };
+
+    console.log(`📊 Stats: ${stats.ok} OK, ${stats.error} errors, ${stats.total} total`);
 
     return NextResponse.json({
       success: true,
