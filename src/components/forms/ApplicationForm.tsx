@@ -234,9 +234,34 @@ export function ApplicationForm({ locale = "tr" }: ApplicationFormProps) {
           </span>
         )}
       </button>
-      <p className="text-center text-xs text-slate-500">
-        {t(locale, "privacyAccept")} <a href="/gizlilik" className="underline hover:text-primary">{t(locale, "privacyPolicy")}</a> {t(locale, "privacyAcceptEnd")}
-      </p>
+      
+      {/* Privacy and KVKK Links */}
+      <div className="space-y-2 text-center text-xs text-slate-500">
+        <p>
+          Formu göndererek{" "}
+          <a 
+            href="https://www.kolayseyahat.net/bilgi-gizliligi" 
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-primary underline hover:text-primary/80"
+          >
+            Gizlilik Politikası
+          </a>
+          {" "}ve{" "}
+          <a 
+            href="https://www.kolayseyahat.net/kvkk" 
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-primary underline hover:text-primary/80"
+          >
+            KVKK
+          </a>
+          {" "}koşullarını kabul etmiş sayılırsınız.
+        </p>
+        <p className="text-slate-400">
+          Kişisel verileriniz güvenli bir şekilde saklanır ve üçüncü şahıslarla paylaşılmaz.
+        </p>
+      </div>
     </form>
   );
 }
