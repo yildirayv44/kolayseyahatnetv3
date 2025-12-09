@@ -239,6 +239,18 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
                     <div className="text-sm font-bold text-slate-900">{visaConfig.allowedStay}</div>
                   </div>
                 )}
+                {visaReq.application_method && (
+                  <div className="rounded-lg bg-white/80 backdrop-blur-sm border border-slate-200 px-4 py-3">
+                    <div className="text-xs text-slate-600 mb-1">Başvuru Yöntemi</div>
+                    <div className="text-sm font-bold text-slate-900">
+                      {visaReq.application_method === 'embassy' && '🏛️ Konsolosluk'}
+                      {visaReq.application_method === 'online' && '💻 Online'}
+                      {visaReq.application_method === 'on-arrival' && '✈️ Varışta'}
+                      {visaReq.application_method === 'evisa' && '📧 E-Vize'}
+                      {!['embassy', 'online', 'on-arrival', 'evisa'].includes(visaReq.application_method) && visaReq.application_method}
+                    </div>
+                  </div>
+                )}
                 {visaReq.notes && (
                   <div className="group relative rounded-lg bg-white/80 backdrop-blur-sm border border-slate-200 px-4 py-3">
                     <div className="flex items-center gap-1 text-xs text-slate-600 mb-1">
