@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Video, Loader2, ArrowLeft, Copy, Clock, Film, Music, Play, Image as ImageIcon, Download } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Video, Loader2, ArrowLeft, Copy, Clock, Film, Music, Play, Image as ImageIcon, Download, Mic, Sparkles, Zap } from "lucide-react";
 import Link from "next/link";
 
 interface VideoScript {
@@ -51,6 +51,12 @@ export default function VideoScriptPage() {
   const [storyboard, setStoryboard] = useState<VideoStoryboard | null>(null);
   const [generatingVideo, setGeneratingVideo] = useState(false);
   const [generatingScene, setGeneratingScene] = useState<number | null>(null);
+  const [voices, setVoices] = useState<any[]>([]);
+  const [selectedVoice, setSelectedVoice] = useState('alloy');
+  const [musicTracks, setMusicTracks] = useState<any[]>([]);
+  const [selectedMusic, setSelectedMusic] = useState<string | null>(null);
+  const [renderingVideo, setRenderingVideo] = useState(false);
+  const [renderJob, setRenderJob] = useState<any>(null);
 
   const videoTypes = [
     { id: 'youtube', name: 'YouTube', emoji: '📺', desc: 'Uzun format' },
@@ -186,6 +192,83 @@ export default function VideoScriptPage() {
       setGeneratingScene(null);
     }
   };
+
+  const fetchVoices = async () => {
+    try {
+      const response = await fetch('/api/admin/ai/text-to-speech');
+      const data = await response.json();
+      if (data.success) {
+        setVoices(data.voices);
+      }
+    } catch (error) {
+      console.error('Failed to fetch voices:', error);
+    }
+  };
+
+  const fetchMusicTracks = async () => {
+    try {
+      const response = await fetch('/api/admin/ai/music-library');
+      const data = await response.json();
+      if (data.success) {
+        setMusicTracks(data.tracks);
+      }
+    } catch (error) {
+      console.error('Failed to fetch music:', error);
+    }
+  };
+
+  const handleRenderVideo = async () => {
+    if (!storyboard) return;
+
+    // Check if all scenes have images
+    const missingImages = storyboard.scenes.filter(s => !s.generatedImage);
+    if (missingImages.length > 0) {
+      alert(`Lütfen önce tüm sahneler için görsel oluşturun! (${missingImages.length} sahne eksik)`);
+      return;
+    }
+
+    setRenderingVideo(true);
+    setRenderJob(null);
+
+    try {
+      const response = await fetch('/api/admin/ai/render-video', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          storyboard: {
+            ...storyboard,
+            scenes: storyboard.scenes.map(s => ({
+              ...s,
+              imageUrl: s.generatedImage,
+            })),
+          },
+          voiceId: selectedVoice,
+          musicTrackId: selectedMusic,
+          transitions: 'fade',
+          quality: 'hd',
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setRenderJob(data.renderJob);
+      } else {
+        alert('Video render başlatılamadı: ' + data.error);
+      }
+    } catch (error) {
+      console.error('Video render error:', error);
+      alert('Bir hata oluştu');
+    } finally {
+      setRenderingVideo(false);
+    }
+  };
+
+  // Load voices and music on mount
+  useEffect(() => {
+    fetchVoices();
+    fetchMusicTracks();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-8">
@@ -482,6 +565,54 @@ export default function VideoScriptPage() {
                       </div>
                     </div>
 
+                    {/* Voice & Music Selection */}
+                    <div className="grid grid-cols-2 gap-4">
+                      {/* Voice Selector */}
+                      <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
+                        <div className="flex items-center gap-2 mb-4">
+                          <Mic className="h-5 w-5 text-blue-600" />
+                          <h4 className="font-bold text-slate-900">Seslendirme</h4>
+                        </div>
+                        <select
+                          value={selectedVoice}
+                          onChange={(e) => setSelectedVoice(e.target.value)}
+                          className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        >
+                          {voices.map((voice) => (
+                            <option key={voice.id} value={voice.id}>
+                              {voice.name} - {voice.description}
+                            </option>
+                          ))}
+                        </select>
+                        <p className="text-xs text-slate-500 mt-2">
+                          OpenAI Text-to-Speech ile otomatik seslendirme
+                        </p>
+                      </div>
+
+                      {/* Music Selector */}
+                      <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
+                        <div className="flex items-center gap-2 mb-4">
+                          <Music className="h-5 w-5 text-purple-600" />
+                          <h4 className="font-bold text-slate-900">Fon Müziği</h4>
+                        </div>
+                        <select
+                          value={selectedMusic || ''}
+                          onChange={(e) => setSelectedMusic(e.target.value || null)}
+                          className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        >
+                          <option value="">Müzik Yok</option>
+                          {musicTracks.map((track) => (
+                            <option key={track.id} value={track.id}>
+                              {track.title} - {track.mood} ({Math.floor(track.duration / 60)}:{(track.duration % 60).toString().padStart(2, '0')})
+                            </option>
+                          ))}
+                        </select>
+                        <p className="text-xs text-slate-500 mt-2">
+                          Telif hakkı olmayan müzik kütüphanesi
+                        </p>
+                      </div>
+                    </div>
+
                     {/* Scenes */}
                     {storyboard.scenes.map((scene, idx) => (
                       <div key={idx} className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
@@ -570,6 +701,93 @@ export default function VideoScriptPage() {
                         </div>
                       </div>
                     </div>
+
+                    {/* Render Video Button */}
+                    <button
+                      onClick={handleRenderVideo}
+                      disabled={renderingVideo || storyboard.scenes.some(s => !s.generatedImage)}
+                      className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-4 rounded-lg font-bold hover:from-green-700 hover:to-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg flex items-center justify-center gap-3"
+                    >
+                      {renderingVideo ? (
+                        <>
+                          <Loader2 className="h-6 w-6 animate-spin" />
+                          Video Hazırlanıyor...
+                        </>
+                      ) : (
+                        <>
+                          <Zap className="h-6 w-6" />
+                          <div className="text-left">
+                            <div>Video Oluştur (Remotion)</div>
+                            <div className="text-xs font-normal opacity-90">
+                              Tüm sahneler + Seslendirme + Müzik + Geçişler
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </button>
+
+                    {/* Render Job Result */}
+                    {renderJob && (
+                      <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border-2 border-green-200">
+                        <div className="flex items-center gap-3 mb-4">
+                          <Sparkles className="h-6 w-6 text-green-600" />
+                          <h4 className="font-bold text-green-900 text-lg">Video Render İşlemi Başlatıldı!</h4>
+                        </div>
+                        
+                        <div className="space-y-3 mb-4">
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-green-700 font-semibold">Durum:</span>
+                            <span className="bg-green-600 text-white px-3 py-1 rounded-full text-xs font-bold">
+                              {renderJob.status.toUpperCase()}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-green-700 font-semibold">Sahne Sayısı:</span>
+                            <span className="text-green-900 font-bold">{renderJob.scenes}</span>
+                          </div>
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-green-700 font-semibold">Tahmini Süre:</span>
+                            <span className="text-green-900 font-bold">{Math.floor(renderJob.estimatedTime / 60)}:{(renderJob.estimatedTime % 60).toString().padStart(2, '0')}</span>
+                          </div>
+                        </div>
+
+                        <div className="bg-white rounded-lg p-4 mb-4">
+                          <h5 className="font-bold text-slate-900 mb-2 text-sm">✅ Tamamlanan Adımlar:</h5>
+                          <ul className="space-y-1">
+                            {renderJob.nextSteps.slice(0, 4).map((step: string, idx: number) => (
+                              <li key={idx} className="text-xs text-slate-700 flex items-start gap-2">
+                                <span className="text-green-600">✓</span>
+                                {step}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                          <h5 className="font-bold text-yellow-900 mb-2 text-sm flex items-center gap-2">
+                            <Sparkles className="h-4 w-4" />
+                            Prodüksiyon Notu
+                          </h5>
+                          <p className="text-xs text-yellow-800 mb-3">
+                            {renderJob.productionNote}
+                          </p>
+                          <div className="space-y-1">
+                            <p className="text-xs font-semibold text-yellow-900">Remotion Kurulumu:</p>
+                            {renderJob.remotionSetup.required.map((req: string, idx: number) => (
+                              <p key={idx} className="text-xs text-yellow-800 ml-2">• {req}</p>
+                            ))}
+                            <a 
+                              href={renderJob.remotionSetup.documentation}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-blue-600 hover:text-blue-800 underline block mt-2"
+                            >
+                              📚 Remotion Dokümantasyonu →
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </>
