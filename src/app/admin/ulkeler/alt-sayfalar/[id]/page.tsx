@@ -4,10 +4,7 @@ import { useState, useEffect } from "react";
 import { ArrowLeft, Save, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import dynamic from "next/dynamic";
-
-const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
-import "react-quill/dist/quill.snow.css";
+import { TiptapEditor } from "@/components/admin/TiptapEditor";
 
 interface Country {
   id: number;
@@ -270,23 +267,10 @@ export default function EditCountryMenuPage({ params }: { params: Promise<{ id: 
             <label className="mb-2 block text-sm font-medium text-slate-700">
               İçerik
             </label>
-            <div className="rounded-lg border border-slate-300">
-              <ReactQuill
-                value={menu.contents || ""}
-                onChange={(value) => setMenu({ ...menu, contents: value })}
-                theme="snow"
-                className="bg-white"
-                modules={{
-                  toolbar: [
-                    [{ header: [1, 2, 3, false] }],
-                    ["bold", "italic", "underline", "strike"],
-                    [{ list: "ordered" }, { list: "bullet" }],
-                    ["link", "image"],
-                    ["clean"],
-                  ],
-                }}
-              />
-            </div>
+            <TiptapEditor
+              value={menu.contents || ""}
+              onChange={(value: string) => setMenu({ ...menu, contents: value })}
+            />
           </div>
         </div>
 
