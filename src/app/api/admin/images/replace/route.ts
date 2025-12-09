@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { revalidatePath } from 'next/cache';
 import { downloadAndUploadImage, STORAGE_BUCKETS } from '@/lib/storage';
 import { searchPexelsPhotos } from '@/lib/pexels';
 
@@ -116,6 +117,28 @@ export async function POST(request: NextRequest) {
           { error: updateError.message },
           { status: 500 }
         );
+      }
+    }
+
+    // ⚡ OPTIMIZATION: Revalidate country page to clear cache
+    if (sourceType === 'country') {
+      try {
+        // Get country slug to revalidate
+        const { data: country } = await supabase
+          .from('countries')
+          .select('slug')
+          .eq('id', sourceId)
+          .single();
+
+        if (country?.slug) {
+          // Revalidate both Turkish and English pages
+          revalidatePath(`/${country.slug}`, 'page');
+          revalidatePath(`/en/${country.slug}`, 'page');
+          console.log(`✅ Revalidated country pages: /${country.slug}`);
+        }
+      } catch (revalidateError) {
+        console.error('Revalidation error:', revalidateError);
+        // Don't fail the request if revalidation fails
       }
     }
 
