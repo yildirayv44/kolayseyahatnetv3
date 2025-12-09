@@ -163,7 +163,7 @@ export default function ImageDetectionPage() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              url: photo.url,
+              url: photo.src.large, // ⚡ FIX: Use image URL, not Pexels page URL
               bucket: img.source.type === 'blog' ? 'blog-images' : 'country-images',
             }),
           });
@@ -252,7 +252,7 @@ export default function ImageDetectionPage() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              url: photo.url,
+              url: photo.src.large, // ⚡ FIX: Use image URL, not Pexels page URL
               bucket: img.source.type === 'blog' ? 'blog-images' : 'country-images',
             }),
           });
