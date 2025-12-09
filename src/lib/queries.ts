@@ -191,15 +191,16 @@ export async function getCountryMenuBySlug(slug: string) {
 
   console.log("🔍 getCountryMenuBySlug - Normalized slug:", normalizedSlug);
 
-  // Debug: Tüm Amerika menuDetail slug'larını listele
+  // Debug: Extract country slug for debugging
+  const debugCountrySlug = normalizedSlug.split('-')[0];
   const { data: allMenuDetailSlugs } = await supabase
     .from("taxonomies")
     .select("model_id, slug, type")
     .eq("type", "Country\\CountryController@menuDetail")
-    .ilike("slug", "amerika%")
+    .ilike("slug", `${debugCountrySlug}%`)
     .limit(20);
   
-  console.log("🔍 getCountryMenuBySlug - All Amerika menuDetail slugs:", 
+  console.log(`🔍 getCountryMenuBySlug - All ${debugCountrySlug} menuDetail slugs:`, 
     allMenuDetailSlugs?.map(s => s.slug));
 
   // DOĞRU YÖNTEM: Taxonomies'den model_id bul, sonra country_menus'den çek
@@ -231,22 +232,26 @@ export async function getCountryMenuBySlug(slug: string) {
   if (!tax && !taxError) {
     console.log("🔍 getCountryMenuBySlug - Trying LIKE search...");
     
-    // Slug'dan anahtar kelimeleri çıkar: "amerika-f2m2-ogrenci-aile-vizesi" -> ["f2", "m2", "ogrenci", "aile"]
+    // Extract country slug from the beginning: "ingiltere-calisma-vizesi" -> "ingiltere"
+    const countrySlug = normalizedSlug.split('-')[0];
+    console.log("🔍 getCountryMenuBySlug - Country slug:", countrySlug);
+    
+    // Slug'dan anahtar kelimeleri çıkar: "ingiltere-calisma-vizesi" -> ["calisma"]
     const keywords = normalizedSlug
       .split('-')
-      .filter(word => word.length > 2 && word !== 'amerika' && word !== 'vizesi' && word !== 'vize');
+      .filter(word => word.length > 2 && word !== countrySlug && word !== 'vizesi' && word !== 'vize');
     
     console.log("🔍 getCountryMenuBySlug - Keywords:", keywords);
     
-    // Tüm Amerika menuDetail'leri çek
+    // Tüm country menuDetail'leri çek (country slug ile filtrele)
     const { data: allMenus } = await supabase
       .from("taxonomies")
       .select("model_id, slug, type")
       .eq("type", "Country\\CountryController@menuDetail")
-      .ilike("slug", "amerika%")
+      .ilike("slug", `${countrySlug}%`)
       .limit(50);
     
-    console.log("🔍 getCountryMenuBySlug - All Amerika menus:", allMenus?.length);
+    console.log(`🔍 getCountryMenuBySlug - All ${countrySlug} menus:`, allMenus?.length);
     
     // Fuzzy matching: En çok keyword eşleşen slug'ı bul
     const scored = allMenus?.map(menu => {

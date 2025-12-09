@@ -19,6 +19,7 @@
     "openai": "^6.9.1",
     "react": "19.2.0",
     "react-dom": "19.2.0",
+    "react-quill": "^2.0.0",
     "server-only": "^0.0.1"
   },
   "devDependencies": {
