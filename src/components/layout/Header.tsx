@@ -40,6 +40,7 @@ export function Header() {
   const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
   
   const phrases = [
     "Ülke Ara...",
@@ -64,8 +65,8 @@ export function Header() {
 
   // Typewriter effect
   useEffect(() => {
-    // Don't run typewriter if user is typing or not mounted yet
-    if (searchQuery || !isMounted) return;
+    // Don't run typewriter if user is typing, focused, or not mounted yet
+    if (searchQuery || isFocused || !isMounted) return;
 
     const currentPhrase = phrases[currentPhraseIndex];
     const typingSpeed = isDeleting ? 50 : 100;
@@ -95,7 +96,7 @@ export function Header() {
     }, typingSpeed);
 
     return () => clearTimeout(timeout);
-  }, [placeholderText, isDeleting, currentPhraseIndex, searchQuery, phrases, isMounted]);
+  }, [placeholderText, isDeleting, currentPhraseIndex, searchQuery, isFocused, phrases, isMounted]);
 
   // Close search dropdown when clicking outside
   useEffect(() => {
@@ -221,13 +222,22 @@ export function Header() {
             <input
               type="text"
               placeholder={
-                isMounted && placeholderText
+                isFocused 
+                  ? t(locale as Locale, "searchCountry")
+                  : isMounted && placeholderText
                   ? `${placeholderText}${!searchQuery && !isDeleting ? '|' : ''}`
                   : t(locale as Locale, "searchCountry")
               }
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              onFocus={() => setSearchOpen(true)}
+              onFocus={() => {
+                setSearchOpen(true);
+                setIsFocused(true);
+              }}
+              onBlur={() => {
+                // Delay to allow click on results
+                setTimeout(() => setIsFocused(false), 200);
+              }}
               className="relative w-full rounded-lg border-2 border-primary/40 bg-white py-3 pl-11 pr-3 text-sm font-medium placeholder:text-slate-600 placeholder:font-semibold focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30 md:py-2 md:pl-14 md:pr-4 md:text-sm"
             />
             
