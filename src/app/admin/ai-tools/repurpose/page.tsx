@@ -42,6 +42,8 @@ export default function RepurposePage() {
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [copiedPlatform, setCopiedPlatform] = useState<string | null>(null);
   const [imageProvider, setImageProvider] = useState<'dalle' | 'imagen'>('dalle');
+  const [visualType, setVisualType] = useState<'photo' | 'collage' | 'infographic'>('photo');
+  const [layoutStyle, setLayoutStyle] = useState<'modern' | 'minimal' | 'colorful' | 'professional'>('modern');
 
   // Fetch content items when type changes
   useEffect(() => {
@@ -142,6 +144,8 @@ export default function RepurposePage() {
           size: '1024x1024',
           provider: useEnhanced ? 'imagen' : imageProvider,
           baseContent: useEnhanced ? content : '', // Send content for context
+          visualType: visualType,
+          layoutStyle: layoutStyle,
         }),
       });
 
@@ -194,6 +198,8 @@ export default function RepurposePage() {
           size: '1024x1024',
           provider: 'imagen', // Always use imagen for result-based generation
           baseContent: resultText, // Use converted content
+          visualType: visualType,
+          layoutStyle: layoutStyle,
         }),
       });
 
@@ -649,6 +655,96 @@ export default function RepurposePage() {
                     : '✨ Imagen: Gelişmiş prompt, HD kalite'}
                 </p>
               </div>
+
+              {/* Visual Type Selector */}
+              <div className="mb-4">
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  Görsel Tipi
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    onClick={() => setVisualType('photo')}
+                    className={`px-3 py-2 rounded-lg border-2 transition-all text-xs font-medium ${
+                      visualType === 'photo'
+                        ? 'border-green-500 bg-green-50 text-green-700'
+                        : 'border-slate-200 hover:border-green-300 text-slate-700'
+                    }`}
+                  >
+                    📸 Fotoğraf
+                  </button>
+                  <button
+                    onClick={() => setVisualType('collage')}
+                    className={`px-3 py-2 rounded-lg border-2 transition-all text-xs font-medium ${
+                      visualType === 'collage'
+                        ? 'border-orange-500 bg-orange-50 text-orange-700'
+                        : 'border-slate-200 hover:border-orange-300 text-slate-700'
+                    }`}
+                  >
+                    🖼️ Kolaj
+                  </button>
+                  <button
+                    onClick={() => setVisualType('infographic')}
+                    className={`px-3 py-2 rounded-lg border-2 transition-all text-xs font-medium ${
+                      visualType === 'infographic'
+                        ? 'border-pink-500 bg-pink-50 text-pink-700'
+                        : 'border-slate-200 hover:border-pink-300 text-slate-700'
+                    }`}
+                  >
+                    📊 İnfografik
+                  </button>
+                </div>
+              </div>
+
+              {/* Layout Style Selector (for collage/infographic) */}
+              {(visualType === 'collage' || visualType === 'infographic') && (
+                <div className="mb-4">
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    Layout Stili
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => setLayoutStyle('modern')}
+                      className={`px-3 py-2 rounded-lg border-2 transition-all text-xs font-medium ${
+                        layoutStyle === 'modern'
+                          ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
+                          : 'border-slate-200 hover:border-indigo-300 text-slate-700'
+                      }`}
+                    >
+                      ✨ Modern
+                    </button>
+                    <button
+                      onClick={() => setLayoutStyle('minimal')}
+                      className={`px-3 py-2 rounded-lg border-2 transition-all text-xs font-medium ${
+                        layoutStyle === 'minimal'
+                          ? 'border-gray-500 bg-gray-50 text-gray-700'
+                          : 'border-slate-200 hover:border-gray-300 text-slate-700'
+                      }`}
+                    >
+                      ⚪ Minimal
+                    </button>
+                    <button
+                      onClick={() => setLayoutStyle('colorful')}
+                      className={`px-3 py-2 rounded-lg border-2 transition-all text-xs font-medium ${
+                        layoutStyle === 'colorful'
+                          ? 'border-rose-500 bg-rose-50 text-rose-700'
+                          : 'border-slate-200 hover:border-rose-300 text-slate-700'
+                      }`}
+                    >
+                      🌈 Renkli
+                    </button>
+                    <button
+                      onClick={() => setLayoutStyle('professional')}
+                      className={`px-3 py-2 rounded-lg border-2 transition-all text-xs font-medium ${
+                        layoutStyle === 'professional'
+                          ? 'border-blue-500 bg-blue-50 text-blue-700'
+                          : 'border-slate-200 hover:border-blue-300 text-slate-700'
+                      }`}
+                    >
+                      💼 Profesyonel
+                    </button>
+                  </div>
+                </div>
+              )}
 
               <div className="space-y-3 mb-4">
                 <div className="grid grid-cols-2 gap-3">
