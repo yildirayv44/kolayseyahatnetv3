@@ -38,9 +38,13 @@ async function handleSEOFix(dryRun: boolean = true) {
       };
 
       // 1. Fix title - remove "- Kolay Seyahat" or "| Kolay Seyahat" if present
+      // Title should be clean without brand name (e.g., "Avusturya Vizesi")
       if (country.title && (country.title.includes("- Kolay Seyahat") || country.title.includes("| Kolay Seyahat"))) {
-        updates_data.title = country.title.replace(/\s*[-|]\s*Kolay Seyahat\s*$/i, "").trim();
-        needsUpdate = true;
+        const cleanTitle = country.title.replace(/\s*[-|]\s*Kolay Seyahat\s*$/i, "").trim();
+        if (cleanTitle !== country.title) {
+          updates_data.title = cleanTitle;
+          needsUpdate = true;
+        }
       }
 
       // 2. Fix meta_title - ensure it has "- Kolay Seyahat" at the end (not pipe)

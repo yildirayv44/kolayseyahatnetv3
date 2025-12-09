@@ -523,9 +523,11 @@ export default function SEODuzenlePage() {
                 </table>
               </div>
             </div>
+          </div>
           )}
         </div>
       )}
     </div>
   );
 }
+
