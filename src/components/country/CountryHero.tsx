@@ -227,66 +227,91 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
                 {visaConfig.description}
               </p>
 
-              {/* Multiple Methods - Prioritize eVisa */}
+              {/* Multiple Methods - Side by Side Cards */}
               {visaReq.available_methods && visaReq.available_methods.length > 1 && (
-                <div className="mb-4 space-y-3">
-                  {/* Recommended: eVisa (if available) */}
-                  {visaReq.available_methods.includes('evisa') && (
-                    <div className="rounded-lg bg-gradient-to-r from-emerald-50 to-cyan-50 border-2 border-emerald-300 p-4">
-                      <div className="flex items-start gap-3">
-                        <div className="flex-shrink-0">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500 text-white">
-                            <span className="text-xl">⭐</span>
+                <div className="mb-4">
+                  <div className="mb-2 text-xs font-semibold text-slate-700">
+                    Başvuru Yöntemlerini Seçin:
+                  </div>
+                  <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                    {visaReq.available_methods.map((method: string) => {
+                      const methodConfig = getVisaStatusConfig(
+                        method === 'visa-free' ? 'visa-free' :
+                        method === 'visa-on-arrival' ? 'visa-on-arrival' :
+                        method === 'evisa' ? 'eta' : 'visa-required'
+                      );
+                      
+                      const isRecommended = method === 'evisa';
+                      
+                      return (
+                        <div
+                          key={method}
+                          className={`relative rounded-lg border-2 p-4 transition-all hover:shadow-md ${
+                            isRecommended
+                              ? 'border-emerald-400 bg-gradient-to-br from-emerald-50 to-cyan-50'
+                              : 'border-slate-200 bg-white hover:border-slate-300'
+                          }`}
+                        >
+                          {isRecommended && (
+                            <div className="absolute -top-2 left-3 rounded-full bg-emerald-500 px-2 py-0.5 text-xs font-bold text-white">
+                              ÖNERİLEN
+                            </div>
+                          )}
+                          <div className="mb-2 flex items-center gap-2">
+                            <span className="text-2xl">{methodConfig.icon}</span>
+                            <span className={`font-bold ${methodConfig.color}`}>
+                              {methodConfig.label}
+                            </span>
+                          </div>
+                          <div className="space-y-1 text-xs text-slate-700">
+                            {method === 'evisa' && (
+                              <>
+                                <div className="flex items-center gap-1">
+                                  <span className="text-emerald-600">✓</span>
+                                  <span>Online başvuru</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <span className="text-emerald-600">✓</span>
+                                  <span>Hızlı işlem</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <span className="text-emerald-600">✓</span>
+                                  <span>Evden başvuru</span>
+                                </div>
+                              </>
+                            )}
+                            {method === 'visa-on-arrival' && (
+                              <>
+                                <div className="flex items-center gap-1">
+                                  <span className="text-blue-600">✓</span>
+                                  <span>Havaalanında alınır</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <span className="text-blue-600">✓</span>
+                                  <span>Ön başvuru gerekmez</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <span className="text-amber-600">!</span>
+                                  <span>Kuyruk olabilir</span>
+                                </div>
+                              </>
+                            )}
+                            {method === 'visa-free' && (
+                              <>
+                                <div className="flex items-center gap-1">
+                                  <span className="text-green-600">✓</span>
+                                  <span>Vize gerekmez</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <span className="text-green-600">✓</span>
+                                  <span>Direkt giriş</span>
+                                </div>
+                              </>
+                            )}
                           </div>
                         </div>
-                        <div className="flex-1">
-                          <div className="mb-1 flex items-center gap-2">
-                            <span className="text-sm font-bold text-emerald-900">ÖNERİLEN:</span>
-                            <span className="text-sm font-bold text-cyan-900">📧 E-Vize (Online Başvuru)</span>
-                          </div>
-                          <div className="mb-2 flex flex-wrap gap-2 text-xs text-emerald-800">
-                            <span className="inline-flex items-center gap-1">
-                              ✅ Hızlı onay
-                            </span>
-                            <span className="inline-flex items-center gap-1">
-                              ✅ Evden başvuru
-                            </span>
-                            <span className="inline-flex items-center gap-1">
-                              ✅ Güvenli ödeme
-                            </span>
-                          </div>
-                          <p className="text-xs text-slate-700">
-                            Online başvuru ile vizenizi kolayca alabilirsiniz. Profesyonel destek ile %98 onay garantisi!
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Alternative Methods */}
-                  <div className="rounded-lg bg-slate-50 border border-slate-200 p-3">
-                    <div className="mb-2 text-xs font-semibold text-slate-700">
-                      Alternatif Yöntemler:
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {visaReq.available_methods
-                        .filter((method: string) => method !== 'evisa')
-                        .map((method: string) => {
-                          const methodConfig = getVisaStatusConfig(
-                            method === 'visa-free' ? 'visa-free' :
-                            method === 'visa-on-arrival' ? 'visa-on-arrival' :
-                            method === 'evisa' ? 'eta' : 'visa-required'
-                          );
-                          return (
-                            <span
-                              key={method}
-                              className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium ${methodConfig.bgColor} ${methodConfig.color}`}
-                            >
-                              {methodConfig.icon} {methodConfig.label}
-                            </span>
-                          );
-                        })}
-                    </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
