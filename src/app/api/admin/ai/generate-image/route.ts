@@ -142,21 +142,24 @@ async function generateWithImagen(topic: string, style: string, baseContent: str
       enhancedPrompt = `${topic}. Visual elements: ${visualElements}`;
     }
 
+    // Imagen should be photorealistic, not illustration
     const stylePrompts: { [key: string]: string } = {
-      professional: 'professional, clean, modern, business-like, high quality, corporate aesthetic',
-      minimalist: 'minimalist, simple, clean lines, modern, elegant, zen-like',
-      colorful: 'vibrant colors, eye-catching, dynamic, energetic, bold palette',
-      illustration: 'flat illustration, vector style, modern design, geometric shapes',
-      realistic: 'photorealistic, detailed, high quality, professional photography, natural lighting',
+      professional: 'professional photograph, photorealistic, high-end photography, corporate style, natural lighting, sharp focus, 8K resolution',
+      minimalist: 'minimalist photography, clean composition, photorealistic, natural light, simple background, professional camera',
+      colorful: 'vibrant photography, photorealistic, colorful scene, professional lighting, high saturation, sharp details',
+      illustration: 'photorealistic image, professional photography style, natural scene, high quality camera',
+      realistic: 'ultra-realistic photograph, professional photography, natural lighting, high detail, 8K quality, DSLR camera',
     };
 
-    const finalPrompt = `Create a ${stylePrompts[style] || stylePrompts.professional} image about: ${enhancedPrompt}. 
-The image should be suitable for a travel and visa information website. 
-IMPORTANT: DO NOT include any text, letters, words, or writing in the image. 
+    const finalPrompt = `Professional photograph, photorealistic style: ${enhancedPrompt}. 
+This should look like a real photograph taken with a professional camera, NOT an illustration or drawing.
+The image should be suitable for a travel and visa information website.
+Photography style: natural lighting, sharp focus, high detail, realistic textures.
+IMPORTANT: DO NOT include any text, letters, words, or writing in the image.
 The image should be purely visual without any text overlay or captions.
-Clean, professional, and text-free design. High quality, sharp details.`;
+Photorealistic, professional photography, ${stylePrompts[style] || stylePrompts.realistic}`;
 
-    console.log(`🎨 Generating image with enhanced context: ${topic}`);
+    console.log(`📸 Generating photorealistic image with enhanced context: ${topic}`);
 
     const response = await openai.images.generate({
       model: 'dall-e-3',
@@ -164,7 +167,7 @@ Clean, professional, and text-free design. High quality, sharp details.`;
       n: 1,
       size: '1024x1024',
       quality: 'hd', // Use HD quality for better results
-      style: 'vivid',
+      style: 'natural', // Use natural style for photorealism
     });
 
     const tempImageUrl = response.data?.[0]?.url;

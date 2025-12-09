@@ -160,6 +160,58 @@ export default function RepurposePage() {
     }
   };
 
+  const handleGenerateFromResult = async () => {
+    if (!result) {
+      alert("Önce içeriği dönüştürün!");
+      return;
+    }
+
+    setImageLoading(true);
+    setGeneratedImage(null);
+
+    try {
+      // Extract text from result based on format
+      let resultText = '';
+      if (format === 'all-platforms') {
+        // Use all platform content
+        resultText = JSON.stringify(result);
+      } else if (result.tweets) {
+        resultText = result.tweets.join(' ');
+      } else if (result.post) {
+        resultText = result.post;
+      } else if (result.caption) {
+        resultText = result.caption;
+      } else if (result.description) {
+        resultText = result.description;
+      }
+
+      const response = await fetch('/api/admin/ai/generate-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          topic: title,
+          style: 'professional',
+          size: '1024x1024',
+          provider: 'imagen', // Always use imagen for result-based generation
+          baseContent: resultText, // Use converted content
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setGeneratedImage(data.imageUrl);
+      } else {
+        alert('Görsel oluşturulamadı: ' + data.error);
+      }
+    } catch (error) {
+      console.error('Image generation error:', error);
+      alert('Bir hata oluştu');
+    } finally {
+      setImageLoading(false);
+    }
+  };
+
   const renderResult = () => {
     if (!result) return null;
 
@@ -598,44 +650,67 @@ export default function RepurposePage() {
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 mb-4">
-                <button
-                  onClick={() => handleGenerateImage(false)}
-                  disabled={imageLoading || !title.trim()}
-                  className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-4 py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg"
-                >
-                  {imageLoading ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    </span>
-                  ) : (
-                    <span className="flex flex-col items-center gap-1">
-                      <ImageIcon className="h-5 w-5" />
-                      <span className="text-xs">Hızlı</span>
-                    </span>
-                  )}
-                </button>
-                <button
-                  onClick={() => handleGenerateImage(true)}
-                  disabled={imageLoading || !title.trim() || !content.trim()}
-                  className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg"
-                >
-                  {imageLoading ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    </span>
-                  ) : (
-                    <span className="flex flex-col items-center gap-1">
-                      <Sparkles className="h-5 w-5" />
-                      <span className="text-xs">İçeriğe Göre</span>
-                    </span>
-                  )}
-                </button>
+              <div className="space-y-3 mb-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => handleGenerateImage(false)}
+                    disabled={imageLoading || !title.trim()}
+                    className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-4 py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg"
+                  >
+                    {imageLoading ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      </span>
+                    ) : (
+                      <span className="flex flex-col items-center gap-1">
+                        <ImageIcon className="h-5 w-5" />
+                        <span className="text-xs">Hızlı</span>
+                      </span>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => handleGenerateImage(true)}
+                    disabled={imageLoading || !title.trim() || !content.trim()}
+                    className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg"
+                  >
+                    {imageLoading ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      </span>
+                    ) : (
+                      <span className="flex flex-col items-center gap-1">
+                        <Sparkles className="h-5 w-5" />
+                        <span className="text-xs">İçeriğe Göre</span>
+                      </span>
+                    )}
+                  </button>
+                </div>
+
+                {result && (
+                  <button
+                    onClick={handleGenerateFromResult}
+                    disabled={imageLoading}
+                    className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-3 rounded-lg font-semibold hover:from-green-700 hover:to-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg"
+                  >
+                    {imageLoading ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Görsel Oluşturuluyor...
+                      </span>
+                    ) : (
+                      <span className="flex items-center justify-center gap-2">
+                        <Check className="h-5 w-5" />
+                        Dönüştürülen İçeriğe Göre Görsel Üret
+                      </span>
+                    )}
+                  </button>
+                )}
               </div>
               
               <div className="text-xs text-slate-500 space-y-1 mb-4">
                 <p>• <strong>Hızlı:</strong> Sadece başlığa göre</p>
-                <p>• <strong>İçeriğe Göre:</strong> İçeriği analiz eder (daha iyi sonuç)</p>
+                <p>• <strong>İçeriğe Göre:</strong> Orijinal içeriği analiz eder</p>
+                {result && <p>• <strong>Dönüştürülen İçeriğe Göre:</strong> Sosyal medya içeriğine uygun görsel (en iyi sonuç) 📸</p>}
               </div>
 
               {generatedImage && (
