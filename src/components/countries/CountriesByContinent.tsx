@@ -160,7 +160,8 @@ export function CountriesByContinent({ countries, visaData }: Props) {
 
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {continentCountries.map((country) => {
-                    const imageUrl = getCountryDefaultImage(country.name);
+                    // ⚡ FIX: Use database image_url instead of hardcoded defaults
+                    const imageUrl = (country as any).image_url || getCountryDefaultImage(country.name);
                     
                     return (
                       <Link
@@ -237,7 +238,8 @@ export function CountriesByContinent({ countries, visaData }: Props) {
         // Show selected continent only
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {displayedCountries.map((country) => {
-            const imageUrl = getCountryDefaultImage(country.name);
+            // ⚡ FIX: Use database image_url instead of hardcoded defaults
+            const imageUrl = (country as any).image_url || getCountryDefaultImage(country.name);
             
             return (
               <Link

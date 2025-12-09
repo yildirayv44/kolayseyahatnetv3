@@ -252,7 +252,8 @@ export function CountriesListWithFilters({ initialCountries }: { initialCountrie
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filteredCountries.map((country) => {
-            const imageUrl = getCountryDefaultImage(country.name);
+            // ⚡ FIX: Use database image_url instead of hardcoded defaults
+            const imageUrl = (country as any).image_url || getCountryDefaultImage(country.name);
             
             return (
               <Link
