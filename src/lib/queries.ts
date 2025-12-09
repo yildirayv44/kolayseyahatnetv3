@@ -95,7 +95,30 @@ export async function getCountryBySlug(slug: string) {
     .eq("status", 1)
     .maybeSingle();
 
-  // FALLBACK: Try country_slugs table (multi-locale)
+  // FALLBACK 1: Try taxonomies table (canonical slugs)
+  if (!country) {
+    const { data: taxonomy } = await supabase
+      .from("taxonomies")
+      .select("model_id")
+      .eq("slug", slug)
+      .eq("type", "Country\\CountryController@detail")
+      .maybeSingle();
+
+    if (taxonomy) {
+      const { data: foundCountry } = await supabase
+        .from("countries")
+        .select("*")
+        .eq("id", taxonomy.model_id)
+        .eq("status", 1)
+        .maybeSingle();
+      
+      if (foundCountry) {
+        country = foundCountry;
+      }
+    }
+  }
+
+  // FALLBACK 2: Try country_slugs table (multi-locale)
   if (!country) {
     const { data: countrySlug } = await supabase
       .from("country_slugs")
