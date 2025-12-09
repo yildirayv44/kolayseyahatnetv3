@@ -115,12 +115,12 @@ export function Header() {
 
   useEffect(() => {
     if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
+      const query = searchQuery.toLocaleLowerCase('tr');
       const filtered = countries
-        .filter((c) => c.name.toLowerCase().includes(query))
+        .filter((c) => c.name.toLocaleLowerCase('tr').includes(query))
         .sort((a, b) => {
-          const aName = a.name.toLowerCase();
-          const bName = b.name.toLowerCase();
+          const aName = a.name.toLocaleLowerCase('tr');
+          const bName = b.name.toLocaleLowerCase('tr');
           
           // Exact match first
           if (aName === query) return -1;
