@@ -320,59 +320,65 @@ export default function EditCountryMenuPage({ params }: { params: Promise<{ id: 
             />
           </div>
 
-          {/* Slug */}
-          <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700">
-              Slug <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={menu.slug}
-              onChange={(e) => setMenu({ ...menu, slug: e.target.value })}
-              className="w-full rounded-lg border border-slate-300 px-4 py-2"
-              placeholder="Örn: amerika-calisma-vizesi"
-              required
-            />
-            <p className="mt-1 text-xs text-slate-500">
-              URL: /{menu.slug}
-            </p>
-          </div>
+          {/* Slug - Only for sub-pages */}
+          {menu.parent_id !== 0 && (
+            <div>
+              <label className="mb-2 block text-sm font-medium text-slate-700">
+                Slug <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={menu.slug}
+                onChange={(e) => setMenu({ ...menu, slug: e.target.value })}
+                className="w-full rounded-lg border border-slate-300 px-4 py-2"
+                placeholder="Örn: amerika-calisma-vizesi"
+                required={menu.parent_id !== 0}
+              />
+              <p className="mt-1 text-xs text-slate-500">
+                URL: /{menu.slug}
+              </p>
+            </div>
+          )}
 
-          {/* Meta Title */}
-          <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700">
-              SEO Başlık (Meta Title)
-            </label>
-            <input
-              type="text"
-              value={menu.meta_title || ""}
-              onChange={(e) => setMenu({ ...menu, meta_title: e.target.value })}
-              className="w-full rounded-lg border border-slate-300 px-4 py-2"
-              placeholder="Örn: Amerika Çalışma Vizesi - Kolay Seyahat"
-              maxLength={60}
-            />
-            <p className="mt-1 text-xs text-slate-500">
-              {menu.meta_title?.length || 0}/60 karakter (Google'da gösterilecek başlık)
-            </p>
-          </div>
+          {/* Meta Title - Only for sub-pages */}
+          {menu.parent_id !== 0 && (
+            <div>
+              <label className="mb-2 block text-sm font-medium text-slate-700">
+                SEO Başlık (Meta Title)
+              </label>
+              <input
+                type="text"
+                value={menu.meta_title || ""}
+                onChange={(e) => setMenu({ ...menu, meta_title: e.target.value })}
+                className="w-full rounded-lg border border-slate-300 px-4 py-2"
+                placeholder="Örn: Amerika Çalışma Vizesi - Kolay Seyahat"
+                maxLength={60}
+              />
+              <p className="mt-1 text-xs text-slate-500">
+                {menu.meta_title?.length || 0}/60 karakter (Google'da gösterilecek başlık)
+              </p>
+            </div>
+          )}
 
-          {/* Meta Description */}
-          <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700">
-              SEO Açıklama (Meta Description)
-            </label>
-            <textarea
-              value={menu.meta_description || ""}
-              onChange={(e) => setMenu({ ...menu, meta_description: e.target.value })}
-              className="w-full rounded-lg border border-slate-300 px-4 py-2"
-              rows={3}
-              placeholder="Örn: Amerika çalışma vizesi başvurusu için gerekli belgeler, süreç ve detaylı bilgiler..."
-              maxLength={160}
-            />
-            <p className="mt-1 text-xs text-slate-500">
-              {menu.meta_description?.length || 0}/160 karakter (Google'da gösterilecek açıklama)
-            </p>
-          </div>
+          {/* Meta Description - Only for sub-pages */}
+          {menu.parent_id !== 0 && (
+            <div>
+              <label className="mb-2 block text-sm font-medium text-slate-700">
+                SEO Açıklama (Meta Description)
+              </label>
+              <textarea
+                value={menu.meta_description || ""}
+                onChange={(e) => setMenu({ ...menu, meta_description: e.target.value })}
+                className="w-full rounded-lg border border-slate-300 px-4 py-2"
+                rows={3}
+                placeholder="Örn: Amerika çalışma vizesi başvurusu için gerekli belgeler, süreç ve detaylı bilgiler..."
+                maxLength={160}
+              />
+              <p className="mt-1 text-xs text-slate-500">
+                {menu.meta_description?.length || 0}/160 karakter (Google'da gösterilecek açıklama)
+              </p>
+            </div>
+          )}
 
           {/* Description */}
           <div>

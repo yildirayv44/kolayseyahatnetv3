@@ -11,6 +11,9 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { country_id, slug, meta_title, meta_description, ...menuData } = body;
 
+    // Check if this is a category (parent_id = 0 or null)
+    const isCategory = !menuData.parent_id || menuData.parent_id === 0;
+
     // Insert menu
     const { data: menu, error: menuError } = await supabase
       .from("country_menus")
@@ -36,8 +39,8 @@ export async function POST(request: Request) {
       }
     }
 
-    // Insert slug in taxonomies
-    if (slug && menu) {
+    // Only create taxonomy for sub-pages (not categories)
+    if (!isCategory && slug && menu) {
       const { error: taxError } = await supabase
         .from("taxonomies")
         .insert({
