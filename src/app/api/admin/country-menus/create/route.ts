@@ -9,7 +9,15 @@ const supabase = createClient(
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { country_id, slug, meta_title, meta_description, ...menuData } = body;
+    const { 
+      country_id, 
+      slug, 
+      meta_title, 
+      meta_description,
+      meta_title_en,
+      meta_description_en,
+      ...menuData 
+    } = body;
 
     // Check if this is a category (parent_id = 0 or null)
     const isCategory = !menuData.parent_id || menuData.parent_id === 0;
@@ -49,6 +57,8 @@ export async function POST(request: Request) {
           type: "Country\\CountryController@menuDetail",
           title: meta_title || menuData.name,
           description: meta_description || menuData.description,
+          title_en: meta_title_en || null,
+          description_en: meta_description_en || null,
         });
 
       if (taxError) {

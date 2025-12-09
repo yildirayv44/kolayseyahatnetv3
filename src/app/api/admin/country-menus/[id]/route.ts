@@ -34,7 +34,7 @@ export async function GET(
     // Fetch slug and meta from taxonomies
     const { data: taxonomy } = await supabase
       .from("taxonomies")
-      .select("slug, title, description")
+      .select("slug, title, description, title_en, description_en")
       .eq("model_id", id)
       .eq("type", "Country\\CountryController@menuDetail")
       .maybeSingle();
@@ -45,6 +45,8 @@ export async function GET(
         slug: taxonomy?.slug || menu.slug || null,
         meta_title: taxonomy?.title || null,
         meta_description: taxonomy?.description || null,
+        meta_title_en: taxonomy?.title_en || null,
+        meta_description_en: taxonomy?.description_en || null,
         country_id: relation?.country_id || null,
       },
     });
@@ -60,7 +62,15 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { country_id, slug, meta_title, meta_description, ...menuData } = body;
+    const { 
+      country_id, 
+      slug, 
+      meta_title, 
+      meta_description,
+      meta_title_en,
+      meta_description_en,
+      ...menuData 
+    } = body;
 
     // Update menu (without slug and meta, they're stored in taxonomies)
     const { error: menuError } = await supabase
@@ -73,11 +83,13 @@ export async function PUT(
     }
 
     // Update slug and meta in taxonomies
-    if (slug || meta_title || meta_description) {
+    if (slug || meta_title || meta_description || meta_title_en || meta_description_en) {
       const updateData: any = {};
       if (slug) updateData.slug = slug;
       if (meta_title !== undefined) updateData.title = meta_title;
       if (meta_description !== undefined) updateData.description = meta_description;
+      if (meta_title_en !== undefined) updateData.title_en = meta_title_en;
+      if (meta_description_en !== undefined) updateData.description_en = meta_description_en;
 
       const { error: taxError } = await supabase
         .from("taxonomies")
