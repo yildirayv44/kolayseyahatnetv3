@@ -45,6 +45,8 @@ export const COUNTRY_ID_TO_SLUG: Record<number, string> = {
   25: "tayland-vizesi",
   26: "kanada-vizesi",
   3: "kuveyt",
+  80: "bosna-hersek",
+  188: "bosna-hersek-2", // Duplicate name, different ID
 };
 
 export function getCountrySlug(countryId: number): string {
