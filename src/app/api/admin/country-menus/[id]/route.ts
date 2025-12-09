@@ -31,9 +31,18 @@ export async function GET(
       .eq("country_menu_id", id)
       .maybeSingle();
 
+    // Fetch slug from taxonomies
+    const { data: taxonomy } = await supabase
+      .from("taxonomies")
+      .select("slug")
+      .eq("model_id", id)
+      .eq("type", "Country\\CountryController@menuDetail")
+      .maybeSingle();
+
     return NextResponse.json({
       menu: {
         ...menu,
+        slug: taxonomy?.slug || menu.slug || null,
         country_id: relation?.country_id || null,
       },
     });
@@ -49,9 +58,9 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { country_id, ...menuData } = body;
+    const { country_id, slug, ...menuData } = body;
 
-    // Update menu
+    // Update menu (without slug, it's stored in taxonomies)
     const { error: menuError } = await supabase
       .from("country_menus")
       .update(menuData)
@@ -59,6 +68,19 @@ export async function PUT(
 
     if (menuError) {
       return NextResponse.json({ error: menuError.message }, { status: 500 });
+    }
+
+    // Update slug in taxonomies
+    if (slug) {
+      const { error: taxError } = await supabase
+        .from("taxonomies")
+        .update({ slug })
+        .eq("model_id", id)
+        .eq("type", "Country\\CountryController@menuDetail");
+
+      if (taxError) {
+        console.error("Error updating taxonomy slug:", taxError);
+      }
     }
 
     // Update country relation

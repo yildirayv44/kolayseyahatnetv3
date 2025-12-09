@@ -37,13 +37,23 @@ export async function GET() {
       console.error("Error fetching countries:", countriesError);
     }
 
-    // Map country_id to each menu using pivot table
+    // Fetch slugs from taxonomies
+    const menuIds = (menus || []).map(m => m.id);
+    const { data: taxonomies } = await supabase
+      .from("taxonomies")
+      .select("model_id, slug")
+      .eq("type", "Country\\CountryController@menuDetail")
+      .in("model_id", menuIds);
+
+    // Map country_id and slug to each menu
     const menusWithCountries = (menus || []).map(menu => {
       const relation = relations?.find(r => r.country_menu_id === menu.id);
       const country = relation ? countries?.find(c => c.id === relation.country_id) : null;
+      const taxonomy = taxonomies?.find(t => t.model_id === menu.id);
       
       return {
         ...menu,
+        slug: taxonomy?.slug || menu.slug || null,
         country_id: relation?.country_id || null,
         country: country || null,
       };
