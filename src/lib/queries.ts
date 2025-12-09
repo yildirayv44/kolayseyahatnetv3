@@ -87,15 +87,44 @@ const COUNTRY_SLUG_FALLBACK: Record<string, number> = {
 };
 
 export async function getCountryBySlug(slug: string) {
-  // ⚡ OPTIMIZATION: Direct lookup from countries.slug (primary method)
-  let { data: country } = await supabase
-    .from("countries")
-    .select("*")
+  // ⚡ OPTIMIZATION: Try country_slugs first (multi-locale, most specific)
+  let { data: countrySlug } = await supabase
+    .from("country_slugs")
+    .select("country_id")
     .eq("slug", slug)
-    .eq("status", 1)
+    .eq("locale", "tr")
     .maybeSingle();
 
-  // FALLBACK 1: Try taxonomies table (canonical slugs)
+  let country = null;
+
+  if (countrySlug) {
+    const { data: foundCountry } = await supabase
+      .from("countries")
+      .select("*")
+      .eq("id", countrySlug.country_id)
+      .eq("status", 1)
+      .maybeSingle();
+    
+    if (foundCountry) {
+      country = foundCountry;
+    }
+  }
+
+  // FALLBACK 1: Try countries.slug (direct match)
+  if (!country) {
+    const { data: directCountry } = await supabase
+      .from("countries")
+      .select("*")
+      .eq("slug", slug)
+      .eq("status", 1)
+      .maybeSingle();
+    
+    if (directCountry) {
+      country = directCountry;
+    }
+  }
+
+  // FALLBACK 2: Try taxonomies table (canonical slugs)
   if (!country) {
     const { data: taxonomy } = await supabase
       .from("taxonomies")
@@ -109,29 +138,6 @@ export async function getCountryBySlug(slug: string) {
         .from("countries")
         .select("*")
         .eq("id", taxonomy.model_id)
-        .eq("status", 1)
-        .maybeSingle();
-      
-      if (foundCountry) {
-        country = foundCountry;
-      }
-    }
-  }
-
-  // FALLBACK 2: Try country_slugs table (multi-locale)
-  if (!country) {
-    const { data: countrySlug } = await supabase
-      .from("country_slugs")
-      .select("country_id")
-      .eq("slug", slug)
-      .eq("locale", "tr")
-      .maybeSingle();
-
-    if (countrySlug) {
-      const { data: foundCountry } = await supabase
-        .from("countries")
-        .select("*")
-        .eq("id", countrySlug.country_id)
         .eq("status", 1)
         .maybeSingle();
       
