@@ -399,10 +399,21 @@ export default function ImageDetectionPage() {
       <div className="mx-auto max-w-7xl">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Görsel Tespiti</h1>
-          <p className="mt-2 text-gray-600">
-            Blog ve ülke içeriklerindeki tüm görselleri kontrol edin
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Görsel Tespiti</h1>
+              <p className="mt-2 text-gray-600">
+                Blog ve ülke içeriklerindeki tüm görselleri kontrol edin
+              </p>
+            </div>
+            <a
+              href="/admin/images/kapak-fotograflari"
+              className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-3 font-semibold text-white shadow-lg transition-all hover:shadow-xl"
+            >
+              <Upload className="h-5 w-5" />
+              <span>Kapak Fotoğrafları</span>
+            </a>
+          </div>
         </div>
 
         {/* Stats */}
