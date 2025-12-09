@@ -42,9 +42,16 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
   const visaReq = country.visa_requirement?.[0];
   
   // Selected visa method state (for multi-method countries)
-  const [selectedMethod, setSelectedMethod] = useState<string>(
-    visaReq?.available_methods?.[0] || visaReq?.visa_status || 'visa-required'
-  );
+  // Default to evisa if available (recommended), otherwise first method
+  const [selectedMethod, setSelectedMethod] = useState<string>(() => {
+    if (visaReq?.available_methods && visaReq.available_methods.length > 1) {
+      // Prioritize evisa as default
+      return visaReq.available_methods.includes('evisa') 
+        ? 'evisa' 
+        : visaReq.available_methods[0];
+    }
+    return visaReq?.visa_status || 'visa-required';
+  });
 
   // Auto-select first package
   useEffect(() => {
@@ -384,10 +391,13 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
           {/* Visa Packages - Compact */}
           {products.length > 0 && (
             <div className="rounded-xl border-2 border-primary/20 bg-gradient-to-r from-primary/5 to-blue-50 p-4">
-              <div className="mb-3 flex items-center gap-2">
+              <div className="mb-2 flex items-center gap-2">
                 <Package className="h-5 w-5 text-primary" />
                 <h3 className="font-bold text-slate-900">Vize Paketleri</h3>
               </div>
+              <p className="mb-3 text-xs text-slate-600">
+                💻 Online başvuru formu ile hemen işleme başlayabilirsiniz
+              </p>
               <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
                 {products.slice(0, 3).map((product, index) => (
                   <button
