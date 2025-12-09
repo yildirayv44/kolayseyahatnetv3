@@ -114,9 +114,31 @@ export function Header() {
 
   useEffect(() => {
     if (searchQuery.trim()) {
-      const filtered = countries.filter((c) =>
-        c.name.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+      const query = searchQuery.toLowerCase();
+      const filtered = countries
+        .filter((c) => c.name.toLowerCase().includes(query))
+        .sort((a, b) => {
+          const aName = a.name.toLowerCase();
+          const bName = b.name.toLowerCase();
+          
+          // Exact match first
+          if (aName === query) return -1;
+          if (bName === query) return 1;
+          
+          // Starts with query second
+          const aStarts = aName.startsWith(query);
+          const bStarts = bName.startsWith(query);
+          if (aStarts && !bStarts) return -1;
+          if (!aStarts && bStarts) return 1;
+          
+          // Then by position of match
+          const aIndex = aName.indexOf(query);
+          const bIndex = bName.indexOf(query);
+          if (aIndex !== bIndex) return aIndex - bIndex;
+          
+          // Finally alphabetically
+          return aName.localeCompare(bName, 'tr');
+        });
       setFilteredCountries(filtered.slice(0, 5));
     } else {
       setFilteredCountries([]);
