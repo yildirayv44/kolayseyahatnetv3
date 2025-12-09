@@ -31,10 +31,10 @@ export async function GET(
       .eq("country_menu_id", id)
       .maybeSingle();
 
-    // Fetch slug from taxonomies
+    // Fetch slug and meta from taxonomies
     const { data: taxonomy } = await supabase
       .from("taxonomies")
-      .select("slug")
+      .select("slug, title, description")
       .eq("model_id", id)
       .eq("type", "Country\\CountryController@menuDetail")
       .maybeSingle();
@@ -43,6 +43,8 @@ export async function GET(
       menu: {
         ...menu,
         slug: taxonomy?.slug || menu.slug || null,
+        meta_title: taxonomy?.title || null,
+        meta_description: taxonomy?.description || null,
         country_id: relation?.country_id || null,
       },
     });
@@ -58,9 +60,9 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { country_id, slug, ...menuData } = body;
+    const { country_id, slug, meta_title, meta_description, ...menuData } = body;
 
-    // Update menu (without slug, it's stored in taxonomies)
+    // Update menu (without slug and meta, they're stored in taxonomies)
     const { error: menuError } = await supabase
       .from("country_menus")
       .update(menuData)
@@ -70,16 +72,21 @@ export async function PUT(
       return NextResponse.json({ error: menuError.message }, { status: 500 });
     }
 
-    // Update slug in taxonomies
-    if (slug) {
+    // Update slug and meta in taxonomies
+    if (slug || meta_title || meta_description) {
+      const updateData: any = {};
+      if (slug) updateData.slug = slug;
+      if (meta_title !== undefined) updateData.title = meta_title;
+      if (meta_description !== undefined) updateData.description = meta_description;
+
       const { error: taxError } = await supabase
         .from("taxonomies")
-        .update({ slug })
+        .update(updateData)
         .eq("model_id", id)
         .eq("type", "Country\\CountryController@menuDetail");
 
       if (taxError) {
-        console.error("Error updating taxonomy slug:", taxError);
+        console.error("Error updating taxonomy:", taxError);
       }
     }
 

@@ -26,23 +26,30 @@ interface CountryMenu {
   meta_description?: string | null;
 }
 
-export default function EditCountryMenuPage({ params }: { params: Promise<{ id: string }> }) {
+export default function NewCountryMenuPage() {
   const router = useRouter();
-  const [id, setId] = useState<string>("");
-  const [menu, setMenu] = useState<CountryMenu | null>(null);
   const [countries, setCountries] = useState<Country[]>([]);
   const [categories, setCategories] = useState<CountryMenu[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [menu, setMenu] = useState({
+    name: "",
+    slug: "",
+    parent_id: 0,
+    contents: "",
+    description: "",
+    status: 1,
+    sorted: 0,
+    country_id: null as number | null,
+    meta_title: "",
+    meta_description: "",
+  });
 
   useEffect(() => {
-    params.then((p) => {
-      setId(p.id);
-      fetchData(p.id);
-    });
+    fetchData();
   }, []);
 
-  const fetchData = async (menuId: string) => {
+  const fetchData = async () => {
     try {
       setLoading(true);
 
@@ -55,20 +62,8 @@ export default function EditCountryMenuPage({ params }: { params: Promise<{ id: 
       const categoriesRes = await fetch("/api/admin/country-menus/list");
       const categoriesData = await categoriesRes.json();
       const allMenus = categoriesData.menus || [];
-      // Filter only categories (parent_id = 0 or null)
       const cats = allMenus.filter((m: CountryMenu) => !m.parent_id || m.parent_id === 0);
       setCategories(cats);
-
-      // Fetch menu
-      const menuRes = await fetch(`/api/admin/country-menus/${menuId}`);
-      const menuData = await menuRes.json();
-      
-      if (menuData.menu) {
-        setMenu(menuData.menu);
-      } else {
-        alert("Alt sayfa bulunamadı!");
-        router.push("/admin/ulkeler/alt-sayfalar");
-      }
     } catch (error) {
       console.error("Error fetching data:", error);
       alert("Hata oluştu!");
@@ -79,19 +74,18 @@ export default function EditCountryMenuPage({ params }: { params: Promise<{ id: 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!menu) return;
 
     try {
       setSaving(true);
 
-      const res = await fetch(`/api/admin/country-menus/${id}`, {
-        method: "PUT",
+      const res = await fetch("/api/admin/country-menus/create", {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(menu),
       });
 
       if (res.ok) {
-        alert("Alt sayfa güncellendi!");
+        alert("Alt sayfa oluşturuldu!");
         router.push("/admin/ulkeler/alt-sayfalar");
       } else {
         const data = await res.json();
@@ -133,10 +127,6 @@ export default function EditCountryMenuPage({ params }: { params: Promise<{ id: 
     );
   }
 
-  if (!menu) {
-    return null;
-  }
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -149,8 +139,8 @@ export default function EditCountryMenuPage({ params }: { params: Promise<{ id: 
             <ArrowLeft className="h-5 w-5" />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">Alt Sayfa Düzenle</h1>
-            <p className="text-sm text-slate-600">{menu.name}</p>
+            <h1 className="text-2xl font-bold text-slate-900">Yeni Alt Sayfa</h1>
+            <p className="text-sm text-slate-600">Ülke alt sayfası veya kategori oluştur</p>
           </div>
         </div>
       </div>
@@ -196,7 +186,7 @@ export default function EditCountryMenuPage({ params }: { params: Promise<{ id: 
                 onChange={(e) => setMenu({ ...menu, parent_id: e.target.value ? Number(e.target.value) : 0 })}
                 className="w-full rounded-lg border border-slate-300 px-4 py-2"
               >
-                <option value="">Kategori Yok (Ana Sayfa)</option>
+                <option value="">Kategori Yok (Ana Kategori Oluştur)</option>
                 {categories
                   .filter(c => c.country_id === menu.country_id)
                   .map((category) => (
@@ -206,7 +196,7 @@ export default function EditCountryMenuPage({ params }: { params: Promise<{ id: 
                   ))}
               </select>
               <p className="mt-1 text-xs text-slate-500">
-                Kategori seçilmezse bu sayfa ana kategori olur
+                Boş bırakılırsa ana kategori oluşturulur
               </p>
             </div>
 
@@ -243,7 +233,7 @@ export default function EditCountryMenuPage({ params }: { params: Promise<{ id: 
                 });
               }}
               className="w-full rounded-lg border border-slate-300 px-4 py-2"
-              placeholder="Örn: Çalışma Vizesi"
+              placeholder="Örn: Çalışma Vizesi veya Vize İşlemleri (kategori)"
               required
             />
           </div>
@@ -361,12 +351,12 @@ export default function EditCountryMenuPage({ params }: { params: Promise<{ id: 
             {saving ? (
               <>
                 <Loader2 className="h-5 w-5 animate-spin" />
-                Kaydediliyor...
+                Oluşturuluyor...
               </>
             ) : (
               <>
                 <Save className="h-5 w-5" />
-                Kaydet
+                Oluştur
               </>
             )}
           </button>
