@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ArrowLeft, Save, Loader2 } from "lucide-react";
+import { ArrowLeft, Save, Loader2, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { TiptapEditor } from "@/components/admin/TiptapEditor";
@@ -32,6 +32,7 @@ export default function NewCountryMenuPage() {
   const [categories, setCategories] = useState<CountryMenu[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [generating, setGenerating] = useState(false);
   const [menu, setMenu] = useState({
     name: "",
     slug: "",
@@ -116,6 +117,59 @@ export default function NewCountryMenuPage() {
     return countrySlug ? `${countrySlug}-${nameSlug}` : nameSlug;
   };
 
+  const handleGenerateContent = async () => {
+    if (!menu.country_id || !menu.name) {
+      alert("Lütfen önce ülke ve sayfa adı seçin!");
+      return;
+    }
+
+    if (!confirm("AI ile içerik oluşturulsun mu? Mevcut içerik değiştirilecek.")) {
+      return;
+    }
+
+    try {
+      setGenerating(true);
+
+      const country = countries.find(c => c.id === menu.country_id);
+      const parentCategory = menu.parent_id ? categories.find(c => c.id === menu.parent_id) : null;
+
+      const res = await fetch("/api/admin/ai/generate-country-menu", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          countryName: country?.name || "",
+          menuName: menu.name,
+          menuType: menu.parent_id ? "page" : "category",
+          parentCategory: parentCategory?.name || "",
+          keywords: [],
+          tone: "professional",
+          length: "medium",
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error("İçerik oluşturulamadı");
+      }
+
+      const data = await res.json();
+
+      setMenu({
+        ...menu,
+        contents: data.content,
+        meta_title: data.metadata.meta_title,
+        meta_description: data.metadata.meta_description,
+        description: data.metadata.short_description,
+      });
+
+      alert("✨ AI içerik başarıyla oluşturuldu!");
+    } catch (error) {
+      console.error("Error generating content:", error);
+      alert("Hata: İçerik oluşturulamadı");
+    } finally {
+      setGenerating(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -143,6 +197,24 @@ export default function NewCountryMenuPage() {
             <p className="text-sm text-slate-600">Ülke alt sayfası veya kategori oluştur</p>
           </div>
         </div>
+        <button
+          type="button"
+          onClick={handleGenerateContent}
+          disabled={generating}
+          className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 px-4 py-2 text-white hover:from-purple-700 hover:to-blue-700 disabled:opacity-50"
+        >
+          {generating ? (
+            <>
+              <Loader2 className="h-5 w-5 animate-spin" />
+              AI Oluşturuyor...
+            </>
+          ) : (
+            <>
+              <Sparkles className="h-5 w-5" />
+              AI ile Oluştur
+            </>
+          )}
+        </button>
       </div>
 
       {/* Form */}
