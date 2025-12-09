@@ -80,8 +80,17 @@ export default function CountryMenusPage() {
     return matchesSearch && matchesCountry;
   });
 
-  const getCountryName = (parentId: number) => {
-    const country = countries.find(c => c.id === parentId);
+  const getCountryName = (menu: CountryMenu) => {
+    // Extract country slug from menu slug
+    // Format: "amerika-calisma-vizesi" -> "amerika"
+    if (menu.slug) {
+      const countrySlug = menu.slug.split('-')[0];
+      const country = countries.find(c => c.slug === countrySlug);
+      if (country) return country.name;
+    }
+    
+    // Fallback to parent_id (may be incorrect due to old Laravel IDs)
+    const country = countries.find(c => c.id === menu.parent_id);
     return country?.name || "Bilinmiyor";
   };
 
@@ -242,7 +251,7 @@ export default function CountryMenusPage() {
                       )}
                     </td>
                     <td className="px-6 py-4 text-sm text-slate-600">
-                      {getCountryName(menu.parent_id)}
+                      {getCountryName(menu)}
                     </td>
                     <td className="px-6 py-4">
                       <code className="rounded bg-slate-100 px-2 py-1 text-xs text-slate-700">
