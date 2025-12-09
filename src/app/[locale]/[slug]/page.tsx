@@ -657,7 +657,14 @@ export default async function CountryPage({ params }: CountryPageParams) {
       )}
 
       {/* EXTENDED COUNTRY INFO - AI Generated Fields */}
-      <ExtendedCountryInfo country={country} locale={locale as 'tr' | 'en'} />
+      <ExtendedCountryInfo 
+        country={{
+          ...country,
+          // Clean currency to prevent hydration mismatch
+          currency: country.currency ? country.currency.split('(')[0].trim() : country.currency
+        }} 
+        locale={locale as 'tr' | 'en'} 
+      />
 
       {/* SSS - New Improved Version */}
       {faqParents.length > 0 && (
