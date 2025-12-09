@@ -6,12 +6,15 @@ const openai = new OpenAI({
 });
 
 export type RepurposeFormat = 
+  | 'all-platforms'
   | 'twitter-thread'
   | 'linkedin-post'
   | 'instagram-carousel'
   | 'facebook-post'
   | 'email-newsletter'
-  | 'youtube-description';
+  | 'youtube-description'
+  | 'threads'
+  | 'whatsapp';
 
 /**
  * Repurpose content for different social media platforms
@@ -19,7 +22,7 @@ export type RepurposeFormat =
  */
 export async function POST(request: NextRequest) {
   try {
-    const { content, title, format } = await request.json();
+    const { content, title, format, url } = await request.json();
 
     if (!content || !format) {
       return NextResponse.json(
@@ -28,7 +31,36 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const formatPrompts: { [key in RepurposeFormat]: string } = {
+    // If "all-platforms" is selected, use the social-media-converter API
+    if (format === 'all-platforms') {
+      const converterResponse = await fetch(`${request.nextUrl.origin}/api/admin/content/social-media-converter`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content,
+          title,
+          contentType: 'blog',
+          url,
+        }),
+      });
+
+      const converterData = await converterResponse.json();
+      
+      if (converterData.success) {
+        return NextResponse.json({
+          success: true,
+          result: converterData.content,
+          format: 'all-platforms',
+        });
+      } else {
+        throw new Error(converterData.error || 'Converter failed');
+      }
+    }
+
+    const formatPrompts: Partial<{ [key in RepurposeFormat]: string }> = {
+      'all-platforms': '', // Not used, handled above
+      'threads': '', // Not used yet
+      'whatsapp': '', // Not used yet
       'twitter-thread': `Sen bir sosyal medya uzmanısın. Görevin blog içeriğini Twitter thread'ine dönüştürmek.
 
 Kurallar:
@@ -145,6 +177,14 @@ JSON formatında döndür:
     };
 
     const systemPrompt = formatPrompts[format as RepurposeFormat];
+    
+    if (!systemPrompt) {
+      return NextResponse.json(
+        { success: false, error: `Format "${format}" is not supported yet` },
+        { status: 400 }
+      );
+    }
+
     const userPrompt = `Başlık: ${title}\n\nİçerik:\n${content.substring(0, 2000)}\n\nBu içeriği ${format} formatına dönüştür.`;
 
     console.log(`♻️ Repurposing content to ${format}...`);

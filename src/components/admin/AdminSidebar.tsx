@@ -28,7 +28,7 @@ import { useRouter } from "next/navigation";
 const menuItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/ai-tools", label: "AI Araçlar", icon: Sparkles, highlight: true },
-  { href: "/admin/icerik-donusturucu", label: "İçerik Dönüştürücü", icon: Share2, highlight: true },
+  { href: "/admin/ai-tools/repurpose", label: "İçerik Dönüştürücü", icon: Share2, highlight: true },
   { href: "/admin/ulkeler", label: "Ülkeler", icon: Globe2 },
   { href: "/admin/ulkeler/seo-duzenle", label: "SEO Düzenle", icon: Search },
   { href: "/admin/ulkeler/vize-gereklilikleri", label: "Vize Gereklilikleri", icon: FileText },

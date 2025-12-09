@@ -1,29 +1,40 @@
 "use client";
 
 import { useState } from "react";
-import { Share2, Loader2, Copy, ArrowLeft, Twitter, Linkedin, Instagram, Facebook, Mail, Youtube } from "lucide-react";
+import { Share2, Loader2, Copy, ArrowLeft, Twitter, Linkedin, Instagram, Facebook, Mail, Youtube, Image as ImageIcon, Check, Hash, MessageCircle } from "lucide-react";
 import Link from "next/link";
 
 type RepurposeFormat = 
+  | 'all-platforms'
   | 'twitter-thread'
   | 'linkedin-post'
   | 'instagram-carousel'
   | 'facebook-post'
   | 'email-newsletter'
-  | 'youtube-description';
+  | 'youtube-description'
+  | 'threads'
+  | 'whatsapp';
 
 export default function RepurposePage() {
   const [content, setContent] = useState("");
   const [title, setTitle] = useState("");
-  const [format, setFormat] = useState<RepurposeFormat>('twitter-thread');
+  const [url, setUrl] = useState("");
+  const [format, setFormat] = useState<RepurposeFormat>('all-platforms');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
+  const [generateImage, setGenerateImage] = useState(false);
+  const [imageLoading, setImageLoading] = useState(false);
+  const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+  const [copiedPlatform, setCopiedPlatform] = useState<string | null>(null);
 
   const formats = [
-    { id: 'twitter-thread', name: 'Twitter Thread', icon: Twitter, color: 'blue', desc: '8-12 tweet' },
+    { id: 'all-platforms', name: 'Tüm Platformlar', icon: Share2, color: 'purple', desc: '6 platform birden' },
+    { id: 'twitter-thread', name: 'Twitter Thread', icon: Twitter, color: 'black', desc: '8-12 tweet' },
     { id: 'linkedin-post', name: 'LinkedIn Post', icon: Linkedin, color: 'blue', desc: 'Profesyonel' },
     { id: 'instagram-carousel', name: 'Instagram Carousel', icon: Instagram, color: 'pink', desc: '8-10 slide' },
     { id: 'facebook-post', name: 'Facebook Post', icon: Facebook, color: 'blue', desc: 'Engaging' },
+    { id: 'threads', name: 'Threads', icon: Hash, color: 'gray', desc: '5 parça' },
+    { id: 'whatsapp', name: 'WhatsApp', icon: MessageCircle, color: 'green', desc: 'Kısa mesaj' },
     { id: 'email-newsletter', name: 'Email Newsletter', icon: Mail, color: 'green', desc: 'HTML email' },
     { id: 'youtube-description', name: 'YouTube Description', icon: Youtube, color: 'red', desc: 'Timestamps' },
   ];
