@@ -17,6 +17,13 @@ interface CountryHeroProps {
     visa_type?: string;
     price_range?: string;
     country_code?: string;
+    visa_requirement?: Array<{
+      visa_required: boolean;
+      visa_free_days: number | null;
+      visa_on_arrival: boolean;
+      evisa_available: boolean;
+      notes: string | null;
+    }>;
   };
   locale?: Locale;
   products?: Array<{
@@ -28,24 +35,10 @@ interface CountryHeroProps {
 }
 
 export function CountryHero({ country, locale = "tr", products = [] }: CountryHeroProps) {
-  const [visaData, setVisaData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
   const [selectedPackage, setSelectedPackage] = useState<any>(products[0] || null);
 
-  useEffect(() => {
-    if (country.country_code) {
-      fetch('/api/admin/visa-requirements/fetch-passportindex')
-        .then(res => res.json())
-        .then(data => {
-          const visa = data.data?.find((v: any) => v.countryCode === country.country_code);
-          setVisaData(visa);
-          setLoading(false);
-        })
-        .catch(() => setLoading(false));
-    } else {
-      setLoading(false);
-    }
-  }, [country.country_code]);
+  // Get visa requirement from database (for Turkish citizens)
+  const visaReq = country.visa_requirement?.[0];
 
   // Auto-select first package
   useEffect(() => {
@@ -86,15 +79,30 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
     return condition; // Return original if no match
   };
 
+  const getVisaStatus = () => {
+    if (!visaReq) return 'visa-required';
+    
+    if (!visaReq.visa_required) {
+      return 'visa-free';
+    } else if (visaReq.visa_on_arrival) {
+      return 'visa-on-arrival';
+    } else if (visaReq.evisa_available) {
+      return 'eta';
+    } else {
+      return 'visa-required';
+    }
+  };
+
   const getVisaStatusConfig = (status: string) => {
-    const configs: Record<string, { label: string; color: string; bgColor: string; icon: string; description: string; cta: string }> = {
+    const configs: Record<string, any> = {
       'visa-free': { 
         label: 'Vizesiz Giriş', 
         color: 'text-green-700', 
         bgColor: 'bg-green-50 border-green-200', 
         icon: '✅',
         description: 'Pasaportunuzla doğrudan seyahat edebilirsiniz. Ancak seyahat planlaması, otel rezervasyonu ve sigorta konularında uzman desteğimizden faydalanabilirsiniz.',
-        cta: 'Seyahat danışmanlığı almak ister misiniz?'
+        cta: 'Seyahat danışmanlığı almak ister misiniz?',
+        allowedStay: visaReq?.visa_free_days ? `${visaReq.visa_free_days} gün` : null
       },
       'visa-on-arrival': { 
         label: 'Varışta Vize', 
@@ -102,15 +110,17 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
         bgColor: 'bg-blue-50 border-blue-200', 
         icon: '🛬',
         description: 'Vizenizi havaalanında alabilirsiniz. Ancak doğru evraklar ve ön hazırlık için profesyonel destek almanızı öneririz. Reddedilme riskini sıfırlayın!',
-        cta: 'Garantili geçiş için danışmanlık alın'
+        cta: 'Garantili geçiş için danışmanlık alın',
+        allowedStay: visaReq?.visa_free_days ? `${visaReq.visa_free_days} gün` : null
       },
       'eta': { 
-        label: 'eTA Gerekli', 
+        label: 'eVisa / eTA', 
         color: 'text-cyan-700', 
         bgColor: 'bg-cyan-50 border-cyan-200', 
         icon: '📧',
         description: 'Online başvuru hızlı görünse de hata yapma riski yüksektir. Uzman desteğimizle ilk seferde onay alın, zaman ve para kaybetmeyin!',
-        cta: 'Hatasız başvuru için destek alın'
+        cta: 'Hatasız başvuru için destek alın',
+        allowedStay: visaReq?.visa_free_days ? `${visaReq.visa_free_days} gün` : null
       },
       'visa-required': { 
         label: 'Vize Gerekli', 
@@ -118,11 +128,15 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
         bgColor: 'bg-orange-50 border-orange-200', 
         icon: '🏛️',
         description: 'Vize başvurusu karmaşık ve zaman alıcıdır. Evrak eksikliği veya hata reddedilme sebebidir. %98 başarı oranımızla vizenizi garantiye alın!',
-        cta: 'Garantili vize için hemen başlayın'
+        cta: 'Garantili vize için hemen başlayın',
+        allowedStay: null
       },
     };
     return configs[status] || configs['visa-required'];
   };
+
+  const visaStatus = getVisaStatus();
+  const visaConfig = getVisaStatusConfig(visaStatus);
 
   return (
     <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/5 via-blue-50 to-white p-6 md:p-10">
@@ -149,7 +163,7 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
                   .replace(/\s*[-|]\s*Kolay Seyahat\s*$/i, '')
                   .trim()}
               </h1>
-              {country.visa_required === false && (
+              {visaReq && !visaReq.visa_required && (
                 <span className="rounded-full bg-emerald-500 px-3 py-1 text-sm font-bold text-white">
                   Vizesiz Giriş
                 </span>
@@ -206,8 +220,8 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
             </div>
           </div>
 
-          {/* Visa Requirements from PassportIndex */}
-          {visaData && (
+          {/* Visa Requirements from Database (Turkish Citizens) */}
+          {visaReq && (
             <div className="rounded-xl border-2 bg-white p-4">
               <div className="mb-3 flex items-center gap-2">
                 <Globe className="h-5 w-5 text-primary" />
@@ -216,35 +230,35 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
               
               {/* User-friendly description */}
               <p className="mb-3 text-sm text-slate-600">
-                {getVisaStatusConfig(visaData.visaStatus).description}
+                {visaConfig.description}
               </p>
 
               <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-                <div className={`rounded-lg border-2 px-4 py-3 ${getVisaStatusConfig(visaData.visaStatus).bgColor}`}>
+                <div className={`rounded-lg border-2 px-4 py-3 ${visaConfig.bgColor}`}>
                   <div className="text-xs text-slate-600 mb-1">Vize Durumu</div>
-                  <div className={`text-sm font-bold ${getVisaStatusConfig(visaData.visaStatus).color}`}>
-                    {getVisaStatusConfig(visaData.visaStatus).icon} {getVisaStatusConfig(visaData.visaStatus).label}
+                  <div className={`text-sm font-bold ${visaConfig.color}`}>
+                    {visaConfig.icon} {visaConfig.label}
                   </div>
                 </div>
-                {visaData.allowedStay && (
+                {visaConfig.allowedStay && (
                   <div className="rounded-lg bg-white/80 backdrop-blur-sm border border-slate-200 px-4 py-3">
                     <div className="text-xs text-slate-600 mb-1">Kalış Süresi</div>
-                    <div className="text-sm font-bold text-slate-900">{visaData.allowedStay}</div>
+                    <div className="text-sm font-bold text-slate-900">{visaConfig.allowedStay}</div>
                   </div>
                 )}
-                {visaData.conditions && (
+                {visaReq.notes && (
                   <div className="group relative rounded-lg bg-white/80 backdrop-blur-sm border border-slate-200 px-4 py-3">
                     <div className="flex items-center gap-1 text-xs text-slate-600 mb-1">
-                      <span>Koşullar</span>
+                      <span>Notlar</span>
                       <div className="relative">
                         <Info className="h-3 w-3 text-slate-400 cursor-help" />
                         <div className="invisible group-hover:visible absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 rounded-lg bg-slate-900 px-3 py-2 text-xs text-white shadow-lg z-10">
-                          {getConditionTooltip(visaData.conditions)}
+                          {visaReq.notes}
                           <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900"></div>
                         </div>
                       </div>
                     </div>
-                    <div className="text-sm font-bold text-slate-900">{visaData.conditions}</div>
+                    <div className="text-sm font-bold text-slate-900 line-clamp-1">{visaReq.notes}</div>
                   </div>
                 )}
               </div>

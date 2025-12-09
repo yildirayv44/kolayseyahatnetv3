@@ -130,7 +130,16 @@ export async function getCountryBySlug(slug: string) {
 
   const { data: country, error: countryError } = await supabase
     .from("countries")
-    .select("*")
+    .select(`
+      *,
+      visa_requirement:country_visa_requirements!country_visa_requirements_country_id_fkey(
+        visa_required,
+        visa_free_days,
+        visa_on_arrival,
+        evisa_available,
+        notes
+      )
+    `)
     .eq("id", countryId)
     .eq("status", 1)
     .maybeSingle();
