@@ -385,6 +385,19 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
                   </div>
                 )}
               </div>
+              
+              {/* Disclaimer */}
+              <div className="mt-3 flex items-start gap-2 rounded-lg bg-amber-50 border border-amber-200 p-3">
+                <Info className="h-4 w-4 flex-shrink-0 text-amber-600 mt-0.5" />
+                <p className="text-xs text-amber-800 leading-relaxed">
+                  <strong>Önemli:</strong> Vize gereklilikleri değişebilir ve burada verilen bilgiler kesin değildir. 
+                  Güncel ve detaylı bilgi için lütfen{' '}
+                  <a href="tel:02129099971" className="font-semibold underline hover:text-amber-900">
+                    0212 909 99 71
+                  </a>
+                  {' '}numaralı telefondan bizimle iletişime geçin.
+                </p>
+              </div>
             </div>
           )}
 
