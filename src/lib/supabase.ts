@@ -11,4 +11,18 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     storage: typeof window !== 'undefined' ? window.localStorage : undefined,
     storageKey: 'sb-auth-token',
   },
+  db: {
+    schema: 'public',
+  },
+  global: {
+    headers: {
+      'x-connection-pooling': 'true',
+    },
+  },
+  // ⚡ PERFORMANCE: Connection pooling and keep-alive
+  realtime: {
+    params: {
+      eventsPerSecond: 10,
+    },
+  },
 });

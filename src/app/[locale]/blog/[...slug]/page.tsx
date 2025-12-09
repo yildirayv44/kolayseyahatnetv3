@@ -16,8 +16,8 @@ interface BlogPageProps {
   params: Promise<{ slug: string[]; locale: string }>;
 }
 
-// Force revalidation - no cache
-export const revalidate = 0;
+// ⚡ PERFORMANCE: Revalidate every 1 hour (3600 seconds)
+export const revalidate = 3600;
 
 export async function generateMetadata({ params }: BlogPageProps): Promise<Metadata> {
   const { slug, locale } = await params;

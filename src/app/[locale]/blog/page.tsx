@@ -12,8 +12,8 @@ export const metadata: Metadata = {
     "Vize başvuruları, gerekli belgeler, süreçler ve ipuçları hakkında uzman görüşleri ve rehberler.",
 };
 
-// Force revalidation - no cache
-export const revalidate = 0;
+// ⚡ PERFORMANCE: Revalidate every 30 minutes (1800 seconds)
+export const revalidate = 1800;
 
 export default async function BlogPage() {
   const blogs = await getBlogs();
