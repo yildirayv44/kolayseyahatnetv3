@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
 
         return {
           ...country,
-          slug: taxonomy?.slug || `country-${country.id}`,
+          slug: country.slug || taxonomy?.slug || "",
         };
       })
     );

@@ -49,7 +49,9 @@ export const COUNTRY_ID_TO_SLUG: Record<number, string> = {
 };
 
 export function getCountrySlug(countryId: number): string {
-  return COUNTRY_ID_TO_SLUG[countryId] || `country-${countryId}`;
+  // This function is deprecated - use country.slug directly from database
+  // Kept only for backward compatibility with existing code
+  return COUNTRY_ID_TO_SLUG[countryId] || "";
 }
 
 // Consultant slug helper - taxonomies'den slug kullan

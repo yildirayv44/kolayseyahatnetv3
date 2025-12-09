@@ -179,7 +179,7 @@ export default async function Home({ params }: HomePageProps) {
                       <p className="text-[10px] text-slate-500">Başlangıç fiyatı</p>
                     </div>
                     <Link
-                      href={getLocalizedUrl(country.slug || `/country-${country.id}`, locale)}
+                      href={getLocalizedUrl(country.slug || "", locale)}
                       className="rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-primary-dark"
                     >
                       Başvur
@@ -196,7 +196,7 @@ export default async function Home({ params }: HomePageProps) {
                     {country.visa_required === false ? t.popular.visaFreeEntry : t.popular.secureApplication}
                   </span>
                   <Link
-                    href={getLocalizedUrl(country.slug || `/country-${country.id}`, locale)}
+                    href={getLocalizedUrl(country.slug || "", locale)}
                     className="inline-flex items-center text-xs font-semibold text-primary hover:text-primary-dark"
                   >
                     {t.popular.details}

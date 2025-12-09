@@ -124,25 +124,6 @@ export async function getCountryBySlug(slug: string) {
     }
   }
 
-  // FALLBACK 2: country-{id} pattern (for backward compatibility)
-  if (!country && slug.startsWith('country-')) {
-    const idMatch = slug.match(/^country-(\d+)$/);
-    if (idMatch) {
-      const countryId = parseInt(idMatch[1], 10);
-      const { data: foundCountry } = await supabase
-        .from("countries")
-        .select("*")
-        .eq("id", countryId)
-        .eq("status", 1)
-        .maybeSingle();
-      
-      if (foundCountry) {
-        country = foundCountry;
-        console.log("🌍 getCountryBySlug - Found via country-{id} pattern:", country.id);
-      }
-    }
-  }
-
   if (!country) {
     return null;
   }
