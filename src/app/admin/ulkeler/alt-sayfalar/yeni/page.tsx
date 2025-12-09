@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ArrowLeft, Save, Loader2, Sparkles } from "lucide-react";
+import { ArrowLeft, Save, Loader2, Sparkles, Languages } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { TiptapEditor } from "@/components/admin/TiptapEditor";
@@ -24,6 +24,11 @@ interface CountryMenu {
   country_id: number | null;
   meta_title?: string | null;
   meta_description?: string | null;
+  name_en?: string | null;
+  contents_en?: string | null;
+  description_en?: string | null;
+  meta_title_en?: string | null;
+  meta_description_en?: string | null;
 }
 
 export default function NewCountryMenuPage() {
@@ -33,6 +38,7 @@ export default function NewCountryMenuPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [translating, setTranslating] = useState(false);
   const [menu, setMenu] = useState({
     name: "",
     slug: "",
@@ -44,6 +50,11 @@ export default function NewCountryMenuPage() {
     country_id: null as number | null,
     meta_title: "",
     meta_description: "",
+    name_en: "",
+    contents_en: "",
+    description_en: "",
+    meta_title_en: "",
+    meta_description_en: "",
   });
 
   useEffect(() => {
@@ -115,6 +126,55 @@ export default function NewCountryMenuPage() {
       .replace(/^-+|-+$/g, "");
     
     return countrySlug ? `${countrySlug}-${nameSlug}` : nameSlug;
+  };
+
+  const handleTranslate = async () => {
+    if (!menu.name) {
+      alert("Lütfen önce Türkçe içeriği doldurun!");
+      return;
+    }
+
+    if (!confirm("AI ile İngilizce çeviri yapılsın mı? Mevcut İngilizce içerik değiştirilecek.")) {
+      return;
+    }
+
+    try {
+      setTranslating(true);
+
+      const res = await fetch("/api/admin/ai/translate-country-menu", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: menu.name,
+          description: menu.description,
+          contents: menu.contents,
+          meta_title: menu.meta_title,
+          meta_description: menu.meta_description,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Çeviri yapılamadı");
+      }
+
+      const data = await res.json();
+
+      setMenu({
+        ...menu,
+        name_en: data.name_en,
+        description_en: data.description_en,
+        contents_en: data.contents_en,
+        meta_title_en: data.meta_title_en,
+        meta_description_en: data.meta_description_en,
+      });
+
+      alert("✨ İngilizce çeviri başarıyla oluşturuldu!");
+    } catch (error) {
+      console.error("Error translating:", error);
+      alert("Hata: Çeviri yapılamadı");
+    } finally {
+      setTranslating(false);
+    }
   };
 
   const handleGenerateContent = async () => {
@@ -197,24 +257,44 @@ export default function NewCountryMenuPage() {
             <p className="text-sm text-slate-600">Ülke alt sayfası veya kategori oluştur</p>
           </div>
         </div>
-        <button
-          type="button"
-          onClick={handleGenerateContent}
-          disabled={generating}
-          className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 px-4 py-2 text-white hover:from-purple-700 hover:to-blue-700 disabled:opacity-50"
-        >
-          {generating ? (
-            <>
-              <Loader2 className="h-5 w-5 animate-spin" />
-              AI Oluşturuyor...
-            </>
-          ) : (
-            <>
-              <Sparkles className="h-5 w-5" />
-              AI ile Oluştur
-            </>
-          )}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleTranslate}
+            disabled={translating}
+            className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 px-4 py-2 text-white hover:from-green-700 hover:to-emerald-700 disabled:opacity-50"
+          >
+            {translating ? (
+              <>
+                <Loader2 className="h-5 w-5 animate-spin" />
+                Çevriliyor...
+              </>
+            ) : (
+              <>
+                <Languages className="h-5 w-5" />
+                İngilizce Çevir
+              </>
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={handleGenerateContent}
+            disabled={generating}
+            className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 px-4 py-2 text-white hover:from-purple-700 hover:to-blue-700 disabled:opacity-50"
+          >
+            {generating ? (
+              <>
+                <Loader2 className="h-5 w-5 animate-spin" />
+                AI Oluşturuyor...
+              </>
+            ) : (
+              <>
+                <Sparkles className="h-5 w-5" />
+                AI ile Oluştur
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Form */}
@@ -404,11 +484,101 @@ export default function NewCountryMenuPage() {
           {/* Contents */}
           <div>
             <label className="mb-2 block text-sm font-medium text-slate-700">
-              İçerik
+              İçerik (Türkçe)
             </label>
             <TiptapEditor
               value={menu.contents || ""}
               onChange={(value: string) => setMenu({ ...menu, contents: value })}
+            />
+          </div>
+
+          {/* English Section */}
+          <div className="col-span-full border-t-2 border-slate-200 pt-6">
+            <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-slate-900">
+              <Languages className="h-5 w-5" />
+              İngilizce Çeviri
+            </h3>
+            <p className="mb-4 text-sm text-slate-600">
+              İngilizce alanları manuel doldurabilir veya "İngilizce Çevir" butonuyla AI ile otomatik çevirebilirsiniz.
+            </p>
+          </div>
+
+          {/* Name EN */}
+          <div>
+            <label className="mb-2 block text-sm font-medium text-slate-700">
+              Sayfa Adı (English)
+            </label>
+            <input
+              type="text"
+              value={menu.name_en || ""}
+              onChange={(e) => setMenu({ ...menu, name_en: e.target.value })}
+              className="w-full rounded-lg border border-slate-300 px-4 py-2"
+              placeholder="E.g: Work Visa"
+            />
+          </div>
+
+          {/* Meta Title EN - Only for sub-pages */}
+          {menu.parent_id !== 0 && (
+            <div>
+              <label className="mb-2 block text-sm font-medium text-slate-700">
+                SEO Title (English)
+              </label>
+              <input
+                type="text"
+                value={menu.meta_title_en || ""}
+                onChange={(e) => setMenu({ ...menu, meta_title_en: e.target.value })}
+                className="w-full rounded-lg border border-slate-300 px-4 py-2"
+                placeholder="E.g: USA Work Visa - Kolay Seyahat"
+                maxLength={60}
+              />
+              <p className="mt-1 text-xs text-slate-500">
+                {menu.meta_title_en?.length || 0}/60 characters
+              </p>
+            </div>
+          )}
+
+          {/* Meta Description EN - Only for sub-pages */}
+          {menu.parent_id !== 0 && (
+            <div>
+              <label className="mb-2 block text-sm font-medium text-slate-700">
+                SEO Description (English)
+              </label>
+              <textarea
+                value={menu.meta_description_en || ""}
+                onChange={(e) => setMenu({ ...menu, meta_description_en: e.target.value })}
+                className="w-full rounded-lg border border-slate-300 px-4 py-2"
+                rows={3}
+                placeholder="E.g: USA work visa application requirements, process and detailed information..."
+                maxLength={160}
+              />
+              <p className="mt-1 text-xs text-slate-500">
+                {menu.meta_description_en?.length || 0}/160 characters
+              </p>
+            </div>
+          )}
+
+          {/* Description EN */}
+          <div>
+            <label className="mb-2 block text-sm font-medium text-slate-700">
+              Short Description (English)
+            </label>
+            <textarea
+              value={menu.description_en || ""}
+              onChange={(e) => setMenu({ ...menu, description_en: e.target.value })}
+              className="w-full rounded-lg border border-slate-300 px-4 py-2"
+              rows={3}
+              placeholder="Brief description about the page..."
+            />
+          </div>
+
+          {/* Contents EN */}
+          <div>
+            <label className="mb-2 block text-sm font-medium text-slate-700">
+              Content (English)
+            </label>
+            <TiptapEditor
+              value={menu.contents_en || ""}
+              onChange={(value: string) => setMenu({ ...menu, contents_en: value })}
             />
           </div>
         </div>
