@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { cache } from "react";
 import { ArrowRight, ArrowLeft, PhoneCall, CheckCircle2, MessageSquare } from "lucide-react";
 import {
   getCountryBySlug,
@@ -33,26 +34,74 @@ import { fixHtmlImageUrls } from "@/lib/image-helpers";
 // Revalidate every 1 hour (3600 seconds)
 export const revalidate = 3600;
 
-interface CountryPageParams {
-  params: Promise<{ slug: string; locale: string }>;
-}
-
-export async function generateMetadata({ params }: CountryPageParams): Promise<Metadata> {
-  const { slug, locale } = await params;
-  const decodedSlug = decodeURIComponent(slug);
-
+// ⚡ OPTIMIZATION: Static generation for popular countries
+export async function generateStaticParams() {
   const supabaseClient = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 
-  // Önce custom page olarak kontrol et (en yüksek öncelik)
-  const { data: customPageMeta } = await supabaseClient
-    .from("custom_pages")
-    .select("*")
-    .eq("slug", decodedSlug)
-    .eq("is_published", true)
-    .maybeSingle();
+  // Fetch popular countries (top 20 by views)
+  const { data: countries } = await supabaseClient
+    .from("countries")
+    .select("slug")
+    .eq("status", 1)
+    .order("views", { ascending: false })
+    .limit(20);
+
+  if (!countries) return [];
+
+  // Generate params for both TR and EN locales
+  const params = countries.flatMap(country => [
+    { locale: "tr", slug: country.slug },
+    { locale: "en", slug: country.slug }
+  ]);
+
+  return params;
+}
+
+interface CountryPageParams {
+  params: Promise<{ slug: string; locale: string }>;
+}
+
+// ⚡ OPTIMIZATION: Cached data fetchers - shared between generateMetadata and page()
+const getCachedPageData = cache(async (slug: string) => {
+  const supabaseClient = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+
+  const [
+    { data: customPageData },
+    blog,
+    country,
+    menu
+  ] = await Promise.all([
+    supabaseClient
+      .from("custom_pages")
+      .select("*")
+      .eq("slug", slug)
+      .eq("is_published", true)
+      .maybeSingle(),
+    getBlogBySlug(slug),
+    getCountryBySlug(slug),
+    getCountryMenuBySlug(slug)
+  ]);
+
+  return { customPageData, blog, country, menu };
+});
+
+export async function generateMetadata({ params }: CountryPageParams): Promise<Metadata> {
+  const { slug, locale } = await params;
+  const decodedSlug = decodeURIComponent(slug);
+
+  // ⚡ OPTIMIZATION: Use cached data
+  const { customPageData: customPageMeta, country: countryData } = await getCachedPageData(decodedSlug);
+
+  const supabaseClient = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
 
   if (customPageMeta) {
     const isEnglish = locale === "en";
@@ -90,16 +139,14 @@ export async function generateMetadata({ params }: CountryPageParams): Promise<M
     };
   }
 
-  // Custom page değilse, ülke olarak dene
-  const [{ data: countryTax }, country] = await Promise.all([
-    supabaseClient
-      .from("taxonomies")
-      .select("title, description")
-      .eq("slug", decodedSlug)
-      .eq("type", "Country\\CountryController@detail")
-      .maybeSingle(),
-    getCountryBySlug(decodedSlug),
-  ]);
+  // Custom page değilse, ülke olarak dene (cache'den al)
+  const country = countryData;
+  const { data: countryTax } = await supabaseClient
+    .from("taxonomies")
+    .select("title, description")
+    .eq("slug", decodedSlug)
+    .eq("type", "Country\\CountryController@detail")
+    .maybeSingle();
 
   if (country) {
     const title = country.meta_title || countryTax?.title || country.title || `${country.name} Vizesi - Kolay Seyahat`;
@@ -216,23 +263,8 @@ export default async function CountryPage({ params }: CountryPageParams) {
   };
 
 
-  // ⚡ OPTIMIZATION: Paralel sorgular - tüm olasılıkları aynı anda kontrol et
-  const [
-    { data: customPageData },
-    blog,
-    countryData,
-    menu
-  ] = await Promise.all([
-    supabase
-      .from("custom_pages")
-      .select("*")
-      .eq("slug", decodedSlug)
-      .eq("is_published", true)
-      .maybeSingle(),
-    getBlogBySlug(decodedSlug),
-    getCountryBySlug(decodedSlug),
-    getCountryMenuBySlug(decodedSlug)
-  ]);
+  // ⚡ OPTIMIZATION: Use cached data (shared with generateMetadata)
+  const { customPageData, blog, country: countryData, menu } = await getCachedPageData(decodedSlug);
 
   // Initialize country variable in function scope
   let country = countryData;
