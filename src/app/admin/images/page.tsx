@@ -150,7 +150,7 @@ export default function ImageDetectionPage() {
         
         console.log(`🔍 Auto-fix all [${i + 1}/${errorImages.length}]: "${rawQuery}" → "${searchQuery}"`);
         
-        const response = await fetch(`/api/images/generate?prompt=${encodeURIComponent(searchQuery)}&perPage=15`);
+        const response = await fetch(`/api/admin/pexels/search?query=${encodeURIComponent(searchQuery)}&perPage=15`);
         const data = await response.json();
 
         if (data.success && data.photos.length > 0) {
@@ -239,7 +239,7 @@ export default function ImageDetectionPage() {
         
         console.log(`🔍 Auto-fix selected [${i + 1}/${selectedImgs.length}]: "${rawQuery}" → "${searchQuery}"`);
         
-        const response = await fetch(`/api/images/generate?prompt=${encodeURIComponent(searchQuery)}&perPage=15`);
+        const response = await fetch(`/api/admin/pexels/search?query=${encodeURIComponent(searchQuery)}&perPage=15`);
         const data = await response.json();
 
         if (data.success && data.photos.length > 0) {

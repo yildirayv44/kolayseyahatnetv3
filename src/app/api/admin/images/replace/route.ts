@@ -24,9 +24,10 @@ export async function POST(request: NextRequest) {
       searchQuery 
     } = body;
 
-    if (!sourceType || !sourceId || !field || !oldUrl) {
+    // ⚡ FIX: oldUrl can be empty for missing images
+    if (!sourceType || !sourceId || !field) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Missing required fields: sourceType, sourceId, field' },
         { status: 400 }
       );
     }
@@ -102,10 +103,13 @@ export async function POST(request: NextRequest) {
       }
 
       const oldContent = record[field] || '';
-      const newContent = oldContent.replace(
-        new RegExp(`src="${oldUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"`, 'g'),
-        `src="${newUrl}"`
-      );
+      // ⚡ FIX: If oldUrl is empty (missing image), don't do replacement
+      const newContent = oldUrl 
+        ? oldContent.replace(
+            new RegExp(`src="${oldUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"`, 'g'),
+            `src="${newUrl}"`
+          )
+        : oldContent; // Keep content as-is if no old URL to replace
 
       const { error: updateError } = await supabase
         .from(tableName)
