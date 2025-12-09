@@ -40,6 +40,11 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
 
   // Get visa requirement from database (for Turkish citizens)
   const visaReq = country.visa_requirement?.[0];
+  
+  // Selected visa method state (for multi-method countries)
+  const [selectedMethod, setSelectedMethod] = useState<string>(
+    visaReq?.available_methods?.[0] || visaReq?.visa_status || 'visa-required'
+  );
 
   // Auto-select first package
   useEffect(() => {
@@ -82,6 +87,13 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
 
   const getVisaStatus = () => {
     if (!visaReq) return 'visa-required';
+    
+    // If multi-method, use selected method
+    if (visaReq.available_methods && visaReq.available_methods.length > 1) {
+      return selectedMethod === 'visa-free' ? 'visa-free' :
+             selectedMethod === 'visa-on-arrival' ? 'visa-on-arrival' :
+             selectedMethod === 'evisa' ? 'eta' : 'visa-required';
+    }
     
     // visa_status from PassportIndex: 'visa-free', 'visa-on-arrival', 'eta', 'visa-required'
     return visaReq.visa_status || 'visa-required';
@@ -242,12 +254,16 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
                       );
                       
                       const isRecommended = method === 'evisa';
+                      const isSelected = selectedMethod === method;
                       
                       return (
-                        <div
+                        <button
                           key={method}
-                          className={`relative rounded-lg border-2 p-4 transition-all hover:shadow-md ${
-                            isRecommended
+                          onClick={() => setSelectedMethod(method)}
+                          className={`relative rounded-lg border-2 p-4 text-left transition-all hover:shadow-md ${
+                            isSelected
+                              ? 'border-primary bg-primary/5 shadow-md'
+                              : isRecommended
                               ? 'border-emerald-400 bg-gradient-to-br from-emerald-50 to-cyan-50'
                               : 'border-slate-200 bg-white hover:border-slate-300'
                           }`}
@@ -309,7 +325,7 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
                               </>
                             )}
                           </div>
-                        </div>
+                        </button>
                       );
                     })}
                   </div>
@@ -329,18 +345,23 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
                     <div className="text-sm font-bold text-slate-900">{visaConfig.allowedStay}</div>
                   </div>
                 )}
-                {visaReq.application_method && (
-                  <div className="rounded-lg bg-white/80 backdrop-blur-sm border border-slate-200 px-4 py-3">
-                    <div className="text-xs text-slate-600 mb-1">Başvuru Yöntemi</div>
-                    <div className="text-sm font-bold text-slate-900">
-                      {visaReq.application_method === 'embassy' && '🏛️ Konsolosluk'}
-                      {visaReq.application_method === 'online' && '💻 Online'}
-                      {visaReq.application_method === 'on-arrival' && '✈️ Varışta'}
-                      {visaReq.application_method === 'evisa' && '📧 E-Vize'}
-                      {!['embassy', 'online', 'on-arrival', 'evisa'].includes(visaReq.application_method) && visaReq.application_method}
-                    </div>
+                <div className="rounded-lg bg-white/80 backdrop-blur-sm border border-slate-200 px-4 py-3">
+                  <div className="text-xs text-slate-600 mb-1">Başvuru Yöntemi</div>
+                  <div className="text-sm font-bold text-slate-900">
+                    {(() => {
+                      // Use selected method if multi-method country
+                      const method = (visaReq.available_methods && visaReq.available_methods.length > 1)
+                        ? selectedMethod
+                        : visaReq.application_method;
+                      
+                      if (method === 'embassy') return '🏛️ Konsolosluk';
+                      if (method === 'online') return '💻 Online';
+                      if (method === 'on-arrival' || method === 'visa-on-arrival') return '✈️ Varışta';
+                      if (method === 'evisa') return '📧 E-Vize';
+                      return method || '✈️ Varışta';
+                    })()}
                   </div>
-                )}
+                </div>
                 {visaReq.notes && (
                   <div className="group relative rounded-lg bg-white/80 backdrop-blur-sm border border-slate-200 px-4 py-3">
                     <div className="flex items-center gap-1 text-xs text-slate-600 mb-1">
