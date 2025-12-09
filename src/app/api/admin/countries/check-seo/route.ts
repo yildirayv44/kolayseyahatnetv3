@@ -21,10 +21,13 @@ export async function GET() {
     countries?.forEach((country) => {
       const hasKolayInTitle = country.title && country.title.includes("- Kolay Seyahat");
       const hasKolayInMeta = country.meta_title && country.meta_title.includes("Kolay Seyahat");
-      const noMetaDesc = !country.meta_description || country.meta_description.length < 50;
+      const noMetaDesc = !country.meta_description || country.meta_description.length < 120;
       const noMetaTitle = !country.meta_title;
 
-      if (hasKolayInTitle || !hasKolayInMeta || noMetaDesc || noMetaTitle) {
+      // Only flag as issue if there's actually a problem
+      const hasIssue = hasKolayInTitle || !hasKolayInMeta || noMetaDesc || noMetaTitle;
+
+      if (hasIssue) {
         issues.push({
           id: country.id,
           name: country.name,

@@ -226,7 +226,7 @@ export default function SEODuzenlePage() {
                     <div className="mb-1 text-xs font-semibold text-slate-500">SAYFA BAŞLIĞI (H1)</div>
                     <div className="rounded-lg bg-red-50 p-3">
                       <div className="text-xs text-red-600">Öncesi:</div>
-                      <div className="text-sm text-red-900">{result.before.title || "Boş"}</div>
+                      <div className="text-sm text-red-900">{result.before.title || <span className="italic text-red-400">Boş</span>}</div>
                     </div>
                     <div className="my-2 text-center text-xs text-slate-400">↓</div>
                     <div className="rounded-lg bg-green-50 p-3">
@@ -242,12 +242,14 @@ export default function SEODuzenlePage() {
                     <div className="mb-1 text-xs font-semibold text-slate-500">SEO META TITLE</div>
                     <div className="rounded-lg bg-red-50 p-3">
                       <div className="text-xs text-red-600">Öncesi:</div>
-                      <div className="text-sm text-red-900">{result.before.meta_title || "Boş"}</div>
+                      <div className="text-sm text-red-900 break-words">
+                        {result.before.meta_title || <span className="italic text-red-400">Boş</span>}
+                      </div>
                     </div>
                     <div className="my-2 text-center text-xs text-slate-400">↓</div>
                     <div className="rounded-lg bg-green-50 p-3">
                       <div className="text-xs text-green-600">Sonrası:</div>
-                      <div className="text-sm font-semibold text-green-900">{result.after.meta_title}</div>
+                      <div className="text-sm font-semibold text-green-900 break-words">{result.after.meta_title}</div>
                     </div>
                   </div>
                 )}
@@ -258,14 +260,23 @@ export default function SEODuzenlePage() {
                     <div className="mb-1 text-xs font-semibold text-slate-500">SEO META DESCRIPTION</div>
                     <div className="rounded-lg bg-red-50 p-3">
                       <div className="text-xs text-red-600">Öncesi:</div>
-                      <div className="text-sm text-red-900">
-                        {result.before.meta_description || "Boş"}
+                      <div className="text-sm text-red-900 break-words">
+                        {result.before.meta_description ? (
+                          <>
+                            {result.before.meta_description}
+                            <div className="mt-1 text-xs text-red-600">
+                              {result.before.meta_description.length} karakter
+                            </div>
+                          </>
+                        ) : (
+                          <span className="italic text-red-400">Boş</span>
+                        )}
                       </div>
                     </div>
                     <div className="my-2 text-center text-xs text-slate-400">↓</div>
                     <div className="rounded-lg bg-green-50 p-3">
                       <div className="text-xs text-green-600">Sonrası:</div>
-                      <div className="text-sm font-semibold text-green-900">
+                      <div className="text-sm font-semibold text-green-900 break-words">
                         {result.after.meta_description}
                       </div>
                       <div className="mt-1 text-xs text-green-600">
