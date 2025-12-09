@@ -23,6 +23,7 @@ interface CountryHeroProps {
       conditions: string | null;
       notes: string | null;
       application_method: string | null;
+      available_methods?: string[];
     }>;
   };
   locale?: Locale;
@@ -225,6 +226,32 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
               <p className="mb-3 text-sm text-slate-600">
                 {visaConfig.description}
               </p>
+
+              {/* Multiple Methods */}
+              {visaReq.available_methods && visaReq.available_methods.length > 1 && (
+                <div className="mb-3 rounded-lg bg-blue-50 border border-blue-200 p-3">
+                  <div className="text-xs font-semibold text-blue-900 mb-2">
+                    Bu ülkeye {visaReq.available_methods.length} farklı yöntemle giriş yapabilirsiniz:
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {visaReq.available_methods.map((method: string) => {
+                      const methodConfig = getVisaStatusConfig(
+                        method === 'visa-free' ? 'visa-free' :
+                        method === 'visa-on-arrival' ? 'visa-on-arrival' :
+                        method === 'evisa' ? 'eta' : 'visa-required'
+                      );
+                      return (
+                        <span
+                          key={method}
+                          className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${methodConfig.bgColor} ${methodConfig.color}`}
+                        >
+                          {methodConfig.icon} {methodConfig.label}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
                 <div className={`rounded-lg border-2 px-4 py-3 ${visaConfig.bgColor}`}>

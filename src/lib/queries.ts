@@ -132,7 +132,7 @@ export async function getCountryBySlug(slug: string) {
   if (country.country_code) {
     const { data: visaReqs } = await supabase
       .from("visa_requirements")
-      .select("visa_status, allowed_stay, conditions, notes, application_method")
+      .select("visa_status, allowed_stay, conditions, notes, application_method, available_methods")
       .eq("country_code", country.country_code)
       .limit(1);
 
