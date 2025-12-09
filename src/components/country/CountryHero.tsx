@@ -492,10 +492,15 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
               href="https://www.kolayseyahat.tr/vize-degerlendirme.html"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-6 py-4 text-base font-bold text-white shadow-xl transition-all hover:from-emerald-600 hover:to-emerald-700 hover:shadow-2xl hover:scale-105"
+              className="group inline-flex flex-col items-center justify-center gap-1 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-6 py-4 text-base font-bold text-white shadow-xl transition-all hover:from-emerald-600 hover:to-emerald-700 hover:shadow-2xl hover:scale-105"
             >
-              <CheckCircle2 className="h-5 w-5" />
-              <span>{t(locale, "freeEvaluation")}</span>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-5 w-5" />
+                <span>{t(locale, "freeEvaluation")}</span>
+              </div>
+              <span className="text-xs font-normal text-emerald-100 opacity-90 group-hover:opacity-100">
+                📝 Formu doldurun, uzmanlarımız sizi arasın
+              </span>
             </a>
           </div>
 
