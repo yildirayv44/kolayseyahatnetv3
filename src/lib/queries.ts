@@ -128,18 +128,10 @@ export async function getCountryBySlug(slug: string) {
     return null;
   }
 
+  // First get country
   const { data: country, error: countryError } = await supabase
     .from("countries")
-    .select(`
-      *,
-      visa_requirement:country_visa_requirements!country_visa_requirements_country_id_fkey(
-        visa_required,
-        visa_free_days,
-        visa_on_arrival,
-        evisa_available,
-        notes
-      )
-    `)
+    .select("*")
     .eq("id", countryId)
     .eq("status", 1)
     .maybeSingle();
@@ -150,6 +142,18 @@ export async function getCountryBySlug(slug: string) {
 
   if (!country) {
     return null;
+  }
+
+  // Then get visa requirements separately
+  const { data: visaReqs } = await supabase
+    .from("country_visa_requirements")
+    .select("visa_required, visa_free_days, visa_on_arrival, evisa_available, notes")
+    .eq("country_id", countryId)
+    .limit(1);
+
+  // Attach visa requirement to country
+  if (visaReqs && visaReqs.length > 0) {
+    (country as any).visa_requirement = visaReqs;
   }
 
   return country;
