@@ -234,6 +234,9 @@ export default async function CountryPage({ params }: CountryPageParams) {
     getCountryMenuBySlug(decodedSlug)
   ]);
 
+  // Initialize country variable in function scope
+  let country = countryData;
+
   // Custom page bulundu - render et
   if (customPageData) {
     const isEnglish = locale === "en";
@@ -292,7 +295,6 @@ export default async function CountryPage({ params }: CountryPageParams) {
   }
 
   // Ülke bulundu - işle ve localize et
-  let country = countryData;
   if (country) {
     country = getLocalizedFields(country, locale as 'tr' | 'en');
   }
@@ -428,8 +430,6 @@ export default async function CountryPage({ params }: CountryPageParams) {
     { id: 2, name: "USD", symbol: "$" },
     { id: 3, name: "EUR", symbol: "€" },
   ];
-
-  console.log(`📦 ${country.name} (ID: ${country.id}) için ${products.length} adet vize paketi bulundu`);
 
   // Currency helper
   const getCurrencySymbol = (currencyId: number | null | undefined) => {
