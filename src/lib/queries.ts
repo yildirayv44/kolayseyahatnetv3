@@ -147,8 +147,8 @@ export async function getCountryBySlug(slug: string) {
   // Then get visa requirements by country_code (for Turkish citizens)
   if (country.country_code) {
     const { data: visaReqs } = await supabase
-      .from("country_visa_requirements")
-      .select("visa_required, visa_free_days, visa_on_arrival, evisa_available, notes")
+      .from("visa_requirements")
+      .select("visa_status, allowed_stay, conditions, notes, application_method")
       .eq("country_code", country.country_code)
       .limit(1);
 

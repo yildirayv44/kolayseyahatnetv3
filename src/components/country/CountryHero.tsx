@@ -18,11 +18,11 @@ interface CountryHeroProps {
     price_range?: string;
     country_code?: string;
     visa_requirement?: Array<{
-      visa_required: boolean;
-      visa_free_days: number | null;
-      visa_on_arrival: boolean;
-      evisa_available: boolean;
+      visa_status: string;
+      allowed_stay: string | null;
+      conditions: string | null;
       notes: string | null;
+      application_method: string | null;
     }>;
   };
   locale?: Locale;
@@ -76,21 +76,14 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
       }
     }
     
-    return condition; // Return original if no match
+    return condition;  // Determine visa status from database
   };
 
   const getVisaStatus = () => {
     if (!visaReq) return 'visa-required';
     
-    if (!visaReq.visa_required) {
-      return 'visa-free';
-    } else if (visaReq.visa_on_arrival) {
-      return 'visa-on-arrival';
-    } else if (visaReq.evisa_available) {
-      return 'eta';
-    } else {
-      return 'visa-required';
-    }
+    // visa_status from PassportIndex: 'visa-free', 'visa-on-arrival', 'eta', 'visa-required'
+    return visaReq.visa_status || 'visa-required';
   };
 
   const getVisaStatusConfig = (status: string) => {
@@ -102,7 +95,7 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
         icon: '✅',
         description: 'Pasaportunuzla doğrudan seyahat edebilirsiniz. Ancak seyahat planlaması, otel rezervasyonu ve sigorta konularında uzman desteğimizden faydalanabilirsiniz.',
         cta: 'Seyahat danışmanlığı almak ister misiniz?',
-        allowedStay: visaReq?.visa_free_days ? `${visaReq.visa_free_days} gün` : null
+        allowedStay: visaReq?.allowed_stay || null
       },
       'visa-on-arrival': { 
         label: 'Varışta Vize', 
@@ -111,7 +104,7 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
         icon: '🛬',
         description: 'Vizenizi havaalanında alabilirsiniz. Ancak doğru evraklar ve ön hazırlık için profesyonel destek almanızı öneririz. Reddedilme riskini sıfırlayın!',
         cta: 'Garantili geçiş için danışmanlık alın',
-        allowedStay: visaReq?.visa_free_days ? `${visaReq.visa_free_days} gün` : null
+        allowedStay: visaReq?.allowed_stay || null
       },
       'eta': { 
         label: 'eVisa / eTA', 
@@ -120,7 +113,7 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
         icon: '📧',
         description: 'Online başvuru hızlı görünse de hata yapma riski yüksektir. Uzman desteğimizle ilk seferde onay alın, zaman ve para kaybetmeyin!',
         cta: 'Hatasız başvuru için destek alın',
-        allowedStay: visaReq?.visa_free_days ? `${visaReq.visa_free_days} gün` : null
+        allowedStay: visaReq?.allowed_stay || null
       },
       'visa-required': { 
         label: 'Vize Gerekli', 
@@ -163,7 +156,7 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
                   .replace(/\s*[-|]\s*Kolay Seyahat\s*$/i, '')
                   .trim()}
               </h1>
-              {visaReq && !visaReq.visa_required && (
+              {visaReq && visaReq.visa_status === 'visa-free' && (
                 <span className="rounded-full bg-emerald-500 px-3 py-1 text-sm font-bold text-white">
                   Vizesiz Giriş
                 </span>
