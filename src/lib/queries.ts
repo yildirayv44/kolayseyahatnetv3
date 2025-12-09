@@ -124,6 +124,15 @@ export async function getCountryBySlug(slug: string) {
     countryId = COUNTRY_SLUG_FALLBACK[slug];
   }
 
+  // 4. country-{id} pattern'ini destekle (fallback için)
+  if (!countryId && slug.startsWith('country-')) {
+    const idMatch = slug.match(/^country-(\d+)$/);
+    if (idMatch) {
+      countryId = parseInt(idMatch[1], 10);
+      console.log("🌍 getCountryBySlug - Using country-{id} pattern:", countryId);
+    }
+  }
+
   if (!countryId) {
     return null;
   }
