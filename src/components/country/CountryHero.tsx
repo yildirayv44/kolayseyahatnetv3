@@ -483,10 +483,15 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
             </Link>
             <a
               href="tel:02129099971"
-              className="inline-flex items-center justify-center gap-2 rounded-xl border-2 border-primary bg-white px-6 py-4 text-base font-bold text-primary transition-all hover:bg-primary hover:text-white"
+              className="group inline-flex flex-col items-center justify-center gap-1 rounded-xl border-2 border-primary bg-white px-6 py-4 text-base font-bold text-primary transition-all hover:bg-primary hover:text-white"
             >
-              <PhoneCall className="h-5 w-5" />
-              <span>0212 909 99 71</span>
+              <div className="flex items-center gap-2">
+                <PhoneCall className="h-5 w-5" />
+                <span>0212 909 99 71</span>
+              </div>
+              <span className="text-xs font-normal text-slate-500 group-hover:text-white">
+                📞 Hemen arayın, ücretsiz danışmanlık alın
+              </span>
             </a>
             <a
               href="https://www.kolayseyahat.tr/vize-degerlendirme.html"
