@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { CheckCircle2, AlertCircle, Loader2, RefreshCw, Eye, Save } from "lucide-react";
+import { CheckCircle2, AlertCircle, Loader2, RefreshCw, Eye, Save, Sparkles } from "lucide-react";
 
 interface SEOIssue {
   id: number;
@@ -42,6 +42,8 @@ export default function SEODuzenlePage() {
   const [fixResults, setFixResults] = useState<FixResult[]>([]);
   const [allCountries, setAllCountries] = useState<any[]>([]);
   const [showAllCountries, setShowAllCountries] = useState(false);
+  const [selectedCountries, setSelectedCountries] = useState<Set<number>>(new Set());
+  const [aiUpdating, setAiUpdating] = useState(false);
   const [stats, setStats] = useState({
     total: 0,
     issues_count: 0,
@@ -110,6 +112,61 @@ export default function SEODuzenlePage() {
   useEffect(() => {
     checkSEO();
   }, []);
+
+  const toggleCountry = (id: number) => {
+    const newSelected = new Set(selectedCountries);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedCountries(newSelected);
+  };
+
+  const toggleAll = () => {
+    if (selectedCountries.size === allCountries.length) {
+      setSelectedCountries(new Set());
+    } else {
+      setSelectedCountries(new Set(allCountries.map(c => c.id)));
+    }
+  };
+
+  const updateWithAI = async () => {
+    if (selectedCountries.size === 0) {
+      alert("Lütfen en az bir ülke seçin");
+      return;
+    }
+
+    if (!confirm(`${selectedCountries.size} ülkenin SEO bilgileri AI ile güncellenecek. Onaylıyor musunuz?`)) {
+      return;
+    }
+
+    setAiUpdating(true);
+    try {
+      const response = await fetch("/api/admin/countries/ai-update-seo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          country_ids: Array.from(selectedCountries),
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        alert(`✅ ${data.updated_count} ülkenin SEO bilgileri AI ile güncellendi!`);
+        setSelectedCountries(new Set());
+        await checkSEO();
+      } else {
+        alert(`❌ Hata: ${data.error}`);
+      }
+    } catch (error) {
+      console.error("Error updating with AI:", error);
+      alert("AI güncelleme sırasında hata oluştu");
+    } finally {
+      setAiUpdating(false);
+    }
+  };
 
   const getProblemBadge = (problem: string) => {
     const badges: Record<string, { label: string; color: string }> = {
@@ -364,31 +421,79 @@ export default function SEODuzenlePage() {
 
           {/* All Countries Table */}
           {showAllCountries && (
-            <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-slate-50 border-b border-slate-200">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                        #
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                        Ülke
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                        SEO Meta Title
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                        SEO Meta Description
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-200">
-                    {allCountries.map((country, index) => (
-                      <tr key={country.id} className="hover:bg-slate-50 transition-colors">
-                        <td className="px-6 py-4 text-sm text-slate-500">
-                          {index + 1}
-                        </td>
+            <div className="space-y-4">
+              {/* AI Update Controls */}
+              {selectedCountries.size > 0 && (
+                <div className="flex items-center justify-between rounded-lg bg-purple-50 p-4 border border-purple-200">
+                  <div>
+                    <div className="font-semibold text-purple-900">
+                      {selectedCountries.size} ülke seçildi
+                    </div>
+                    <div className="text-sm text-purple-700">
+                      Seçili ülkelerin SEO bilgileri AI ile güncellenecek
+                    </div>
+                  </div>
+                  <button
+                    onClick={updateWithAI}
+                    disabled={aiUpdating}
+                    className="inline-flex items-center gap-2 rounded-lg bg-purple-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-purple-700 disabled:opacity-50"
+                  >
+                    {aiUpdating ? (
+                      <>
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                        AI Güncelliyor...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-5 w-5" />
+                        AI ile Güncelle
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
+
+              <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-slate-50 border-b border-slate-200">
+                      <tr>
+                        <th className="px-6 py-3 text-left">
+                          <input
+                            type="checkbox"
+                            checked={selectedCountries.size === allCountries.length && allCountries.length > 0}
+                            onChange={toggleAll}
+                            className="h-4 w-4 rounded border-slate-300 text-purple-600 focus:ring-purple-500"
+                          />
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                          #
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                          Ülke
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                          SEO Meta Title
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                          SEO Meta Description
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200">
+                      {allCountries.map((country, index) => (
+                        <tr key={country.id} className="hover:bg-slate-50 transition-colors">
+                          <td className="px-6 py-4">
+                            <input
+                              type="checkbox"
+                              checked={selectedCountries.has(country.id)}
+                              onChange={() => toggleCountry(country.id)}
+                              className="h-4 w-4 rounded border-slate-300 text-purple-600 focus:ring-purple-500"
+                            />
+                          </td>
+                          <td className="px-6 py-4 text-sm text-slate-500">
+                            {index + 1}
+                          </td>
                         <td className="px-6 py-4">
                           <div className="font-semibold text-slate-900">{country.name}</div>
                           <div className="text-xs text-slate-500">ID: {country.id}</div>

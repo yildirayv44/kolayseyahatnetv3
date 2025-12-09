@@ -37,18 +37,22 @@ async function handleSEOFix(dryRun: boolean = true) {
         meta_description: country.meta_description,
       };
 
-      // 1. Fix title - remove "- Kolay Seyahat" if present
-      if (country.title && country.title.includes("- Kolay Seyahat")) {
-        updates_data.title = country.title.replace(/\s*-\s*Kolay Seyahat\s*$/i, "").trim();
+      // 1. Fix title - remove "- Kolay Seyahat" or "| Kolay Seyahat" if present
+      if (country.title && (country.title.includes("- Kolay Seyahat") || country.title.includes("| Kolay Seyahat"))) {
+        updates_data.title = country.title.replace(/\s*[-|]\s*Kolay Seyahat\s*$/i, "").trim();
         needsUpdate = true;
       }
 
-      // 2. Fix meta_title - ensure it has "| Kolay Seyahat" at the end
-      if (!country.meta_title || !country.meta_title.includes("Kolay Seyahat")) {
+      // 2. Fix meta_title - ensure it has "- Kolay Seyahat" at the end (not pipe)
+      const hasCorrectFormat = country.meta_title && 
+                              country.meta_title.includes("- Kolay Seyahat") &&
+                              !country.meta_title.includes("| Kolay Seyahat");
+      
+      if (!country.meta_title || !hasCorrectFormat) {
         // Create meta title from title or name
         const baseTitle = country.title || `${country.name} Vizesi`;
-        const cleanTitle = baseTitle.replace(/\s*-\s*Kolay Seyahat\s*$/i, "").trim();
-        updates_data.meta_title = `${cleanTitle} | Kolay Seyahat`;
+        const cleanTitle = baseTitle.replace(/\s*[-|]\s*Kolay Seyahat\s*$/i, "").trim();
+        updates_data.meta_title = `${cleanTitle} - Kolay Seyahat`;
         needsUpdate = true;
       }
 
