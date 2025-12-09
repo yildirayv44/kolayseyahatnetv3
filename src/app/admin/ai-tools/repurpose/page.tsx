@@ -122,6 +122,41 @@ export default function RepurposePage() {
     alert('Kopyalandı!');
   };
 
+  const handleGenerateImage = async () => {
+    if (!title.trim()) {
+      alert("Lütfen önce bir başlık girin!");
+      return;
+    }
+
+    setImageLoading(true);
+    setGeneratedImage(null);
+
+    try {
+      const response = await fetch('/api/admin/ai/generate-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          topic: title,
+          style: 'professional',
+          size: '1024x1024',
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setGeneratedImage(data.imageUrl);
+      } else {
+        alert('Görsel oluşturulamadı: ' + data.error);
+      }
+    } catch (error) {
+      console.error('Image generation error:', error);
+      alert('Bir hata oluştu');
+    } finally {
+      setImageLoading(false);
+    }
+  };
+
   const renderResult = () => {
     if (!result) return null;
 
@@ -507,6 +542,69 @@ export default function RepurposePage() {
                   )}
                 </button>
               </div>
+            </div>
+
+            {/* Image Generation Section */}
+            <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
+              <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+                <ImageIcon className="h-6 w-6 text-primary" />
+                Görsel Üret (DALL-E 3)
+              </h2>
+              
+              <p className="text-sm text-slate-600 mb-4">
+                Başlığa göre otomatik olarak AI ile görsel oluşturun
+              </p>
+
+              <button
+                onClick={handleGenerateImage}
+                disabled={imageLoading || !title.trim()}
+                className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-6 py-3 rounded-lg font-bold hover:from-blue-700 hover:to-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg mb-4"
+              >
+                {imageLoading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    Görsel Oluşturuluyor...
+                  </span>
+                ) : (
+                  <span className="flex items-center justify-center gap-2">
+                    <ImageIcon className="h-5 w-5" />
+                    Görsel Oluştur
+                  </span>
+                )}
+              </button>
+
+              {generatedImage && (
+                <div className="space-y-3">
+                  <div className="relative rounded-lg overflow-hidden border-2 border-primary">
+                    <img
+                      src={generatedImage}
+                      alt="Generated"
+                      className="w-full h-auto"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => window.open(generatedImage, '_blank')}
+                      className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg font-semibold transition-colors"
+                    >
+                      Tam Boyut
+                    </button>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(generatedImage);
+                        alert('URL kopyalandı!');
+                      }}
+                      className="flex-1 bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
+                    >
+                      <Copy className="h-4 w-4" />
+                      URL Kopyala
+                    </button>
+                  </div>
+                  <p className="text-xs text-slate-500 break-all">
+                    {generatedImage}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
