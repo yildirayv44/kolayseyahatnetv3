@@ -87,21 +87,16 @@ const COUNTRY_SLUG_FALLBACK: Record<string, number> = {
 };
 
 export async function getCountryBySlug(slug: string) {
-  console.log("🌍 getCountryBySlug - Slug:", slug);
-  
-  // NEW: Direct lookup from countries.slug (primary method)
-  let { data: country, error: countryError } = await supabase
+  // ⚡ OPTIMIZATION: Direct lookup from countries.slug (primary method)
+  let { data: country } = await supabase
     .from("countries")
     .select("*")
     .eq("slug", slug)
     .eq("status", 1)
     .maybeSingle();
 
-  // If found, great! Return early
-  if (country) {
-    console.log("🌍 getCountryBySlug - Found via countries.slug:", country.id);
-  } else {
-    // FALLBACK 1: Try country_slugs table (multi-locale)
+  // FALLBACK: Try country_slugs table (multi-locale)
+  if (!country) {
     const { data: countrySlug } = await supabase
       .from("country_slugs")
       .select("country_id")
@@ -119,7 +114,6 @@ export async function getCountryBySlug(slug: string) {
       
       if (foundCountry) {
         country = foundCountry;
-        console.log("🌍 getCountryBySlug - Found via country_slugs:", country.id);
       }
     }
   }
@@ -171,9 +165,7 @@ export async function getCountryMenus(countryId: number) {
 }
 
 export async function getCountryMenuBySlug(slug: string) {
-  console.log("🔍 getCountryMenuBySlug - Original slug:", slug);
-  
-  // Slug'ı normalize et (Türkçe karakterleri düzelt)
+  // ⚡ OPTIMIZATION: Normalize slug (Turkish characters)
   const normalizedSlug = slug
     .toLowerCase()
     .replace(/ğ/g, 'g')
@@ -189,33 +181,16 @@ export async function getCountryMenuBySlug(slug: string) {
     .replace(/Ö/g, 'o')
     .replace(/Ç/g, 'c');
 
-  console.log("🔍 getCountryMenuBySlug - Normalized slug:", normalizedSlug);
-
-  // Debug: Extract country slug for debugging
-  const debugCountrySlug = normalizedSlug.split('-')[0];
-  const { data: allMenuDetailSlugs } = await supabase
-    .from("taxonomies")
-    .select("model_id, slug, type")
-    .eq("type", "Country\\CountryController@menuDetail")
-    .ilike("slug", `${debugCountrySlug}%`)
-    .limit(20);
-  
-  console.log(`🔍 getCountryMenuBySlug - All ${debugCountrySlug} menuDetail slugs:`, 
-    allMenuDetailSlugs?.map(s => s.slug));
-
-  // DOĞRU YÖNTEM: Taxonomies'den model_id bul, sonra country_menus'den çek
-  let { data: tax, error: taxError } = await supabase
+  // Get taxonomy by slug
+  let { data: tax } = await supabase
     .from("taxonomies")
     .select("model_id, slug, type")
     .eq("slug", normalizedSlug)
     .eq("type", "Country\\CountryController@menuDetail")
     .maybeSingle();
 
-  console.log("🔍 getCountryMenuBySlug - Taxonomy result:", tax);
-
-  // Bulunamazsa orijinal slug ile dene
-  if (!tax && !taxError) {
-    console.log("🔍 getCountryMenuBySlug - Trying original slug...");
+  // Fallback: Try original slug
+  if (!tax) {
     const result = await supabase
       .from("taxonomies")
       .select("model_id, slug, type")
@@ -224,65 +199,16 @@ export async function getCountryMenuBySlug(slug: string) {
       .maybeSingle();
     
     tax = result.data;
-    taxError = result.error;
-    console.log("🔍 getCountryMenuBySlug - Original result:", tax);
   }
 
-  // Bulunamazsa LIKE ile ara (kısmi eşleşme)
-  if (!tax && !taxError) {
-    console.log("🔍 getCountryMenuBySlug - Trying LIKE search...");
-    
-    // Extract country slug from the beginning: "ingiltere-calisma-vizesi" -> "ingiltere"
-    const countrySlug = normalizedSlug.split('-')[0];
-    console.log("🔍 getCountryMenuBySlug - Country slug:", countrySlug);
-    
-    // Slug'dan anahtar kelimeleri çıkar: "ingiltere-calisma-vizesi" -> ["calisma"]
-    const keywords = normalizedSlug
-      .split('-')
-      .filter(word => word.length > 2 && word !== countrySlug && word !== 'vizesi' && word !== 'vize');
-    
-    console.log("🔍 getCountryMenuBySlug - Keywords:", keywords);
-    
-    // Tüm country menuDetail'leri çek (country slug ile filtrele)
-    const { data: allMenus } = await supabase
-      .from("taxonomies")
-      .select("model_id, slug, type")
-      .eq("type", "Country\\CountryController@menuDetail")
-      .ilike("slug", `${countrySlug}%`)
-      .limit(50);
-    
-    console.log(`🔍 getCountryMenuBySlug - All ${countrySlug} menus:`, allMenus?.length);
-    
-    // Fuzzy matching: En çok keyword eşleşen slug'ı bul
-    const scored = allMenus?.map(menu => {
-      const matchCount = keywords.filter(kw => menu.slug.includes(kw)).length;
-      return { menu, score: matchCount };
-    }).filter(item => item.score > 0)
-      .sort((a, b) => b.score - a.score);
-    
-    console.log("🔍 getCountryMenuBySlug - Top matches:", 
-      scored?.slice(0, 3).map(s => ({ slug: s.menu.slug, score: s.score })));
-    
-    // En yüksek skorlu sonucu kullan
-    if (scored && scored.length > 0) {
-      tax = scored[0].menu;
-      console.log("✅ getCountryMenuBySlug - Using best match:", tax.slug, "score:", scored[0].score);
-    }
-  }
-
-  if (taxError) {
-    console.error("getCountryMenuBySlug taxonomy error", taxError);
-  }
-
-  const menuId = tax?.model_id;
-  if (!menuId) {
-    console.log("❌ getCountryMenuBySlug - No menu found");
+  // Not found
+  if (!tax) {
     return null;
   }
 
-  console.log("✅ getCountryMenuBySlug - Found menu ID:", menuId);
+  const menuId = tax.model_id;
 
-  // Menu'yu getir
+  // Get menu data
   const { data: menu, error: menuError } = await supabase
     .from("country_menus")
     .select("*")
