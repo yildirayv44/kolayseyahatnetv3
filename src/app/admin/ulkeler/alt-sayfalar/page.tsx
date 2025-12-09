@@ -74,12 +74,41 @@ export default function CountryMenusPage() {
     }
   };
 
+  // Separate categories (parent_id = 0 or null) and sub-pages
+  const categories = menus.filter(m => !m.parent_id || m.parent_id === 0);
+  const subPages = menus.filter(m => m.parent_id && m.parent_id !== 0);
+
   const filteredMenus = menus.filter(menu => {
     const matchesSearch = menu.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          menu.slug?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCountry = !selectedCountry || menu.country_id === selectedCountry;
     return matchesSearch && matchesCountry;
   });
+
+  // Group sub-pages by category
+  const groupedMenus = filteredMenus.reduce((acc, menu) => {
+    if (!menu.parent_id || menu.parent_id === 0) {
+      // This is a category
+      if (!acc[menu.id]) {
+        acc[menu.id] = { category: menu, children: [] };
+      }
+    } else {
+      // This is a sub-page
+      if (!acc[menu.parent_id]) {
+        const parentCategory = categories.find(c => c.id === menu.parent_id);
+        acc[menu.parent_id] = { 
+          category: parentCategory || { id: menu.parent_id, name: 'Bilinmeyen Kategori' }, 
+          children: [] 
+        };
+      }
+      acc[menu.parent_id].children.push(menu);
+    }
+    return acc;
+  }, {} as Record<number, { category: CountryMenu | any; children: CountryMenu[] }>);
+
+  const groupedArray = Object.values(groupedMenus).sort((a, b) => 
+    (a.category?.sorted || 0) - (b.category?.sorted || 0)
+  );
 
   const getCountryName = (menu: CountryMenu) => {
     // Use country from API (from pivot table)
@@ -242,55 +271,90 @@ export default function CountryMenusPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200 bg-white">
-                {filteredMenus.map((menu) => (
-                  <tr key={menu.id} className="hover:bg-slate-50">
-                    <td className="px-6 py-4">
-                      <div className="font-medium text-slate-900">{menu.name}</div>
-                      {menu.description && (
-                        <div className="text-sm text-slate-500 line-clamp-1">
-                          {menu.description}
+                {groupedArray.map(({ category, children }) => (
+                  <>
+                    {/* Category Row */}
+                    <tr key={`cat-${category.id}`} className="bg-slate-50">
+                      <td className="px-6 py-4" colSpan={6}>
+                        <div className="flex items-center gap-3">
+                          <div className="rounded-lg bg-primary/10 p-2">
+                            <FileText className="h-5 w-5 text-primary" />
+                          </div>
+                          <div>
+                            <div className="font-bold text-slate-900">{category.name}</div>
+                            <div className="text-xs text-slate-600">
+                              {getCountryName(category)} • {children.length} alt sayfa
+                            </div>
+                          </div>
                         </div>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-slate-600">
-                      {getCountryName(menu)}
-                    </td>
-                    <td className="px-6 py-4">
-                      <code className="rounded bg-slate-100 px-2 py-1 text-xs text-slate-700">
-                        {menu.slug || "-"}
-                      </code>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
-                          menu.status === 1
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
-                      >
-                        {menu.status === 1 ? "Aktif" : "Pasif"}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-slate-600">
-                      {menu.sorted || 0}
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Link
-                          href={`/admin/ulkeler/alt-sayfalar/${menu.id}`}
-                          className="rounded-lg border border-slate-300 p-2 hover:bg-slate-50"
-                        >
-                          <Edit className="h-4 w-4 text-slate-600" />
-                        </Link>
-                        <button
-                          onClick={() => handleDelete(menu.id)}
-                          className="rounded-lg border border-red-300 p-2 hover:bg-red-50"
-                        >
-                          <Trash2 className="h-4 w-4 text-red-600" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
+                      </td>
+                    </tr>
+                    
+                    {/* Sub-pages */}
+                    {children.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="px-6 py-4 text-center text-sm text-slate-500">
+                          Bu kategoride alt sayfa yok
+                        </td>
+                      </tr>
+                    ) : (
+                      children.map((menu) => (
+                        <tr key={menu.id} className="hover:bg-slate-50">
+                          <td className="px-6 py-4 pl-16">
+                            <div className="flex items-center gap-2">
+                              <div className="h-px w-4 bg-slate-300"></div>
+                              <div>
+                                <div className="font-medium text-slate-900">{menu.name}</div>
+                                {menu.description && (
+                                  <div className="text-sm text-slate-500 line-clamp-1">
+                                    {menu.description}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-slate-600">
+                            {getCountryName(menu)}
+                          </td>
+                          <td className="px-6 py-4">
+                            <code className="rounded bg-slate-100 px-2 py-1 text-xs text-slate-700">
+                              {menu.slug || "-"}
+                            </code>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span
+                              className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
+                                menu.status === 1
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-red-100 text-red-800"
+                              }`}
+                            >
+                              {menu.status === 1 ? "Aktif" : "Pasif"}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-slate-600">
+                            {menu.sorted || 0}
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <Link
+                                href={`/admin/ulkeler/alt-sayfalar/${menu.id}`}
+                                className="rounded-lg border border-slate-300 p-2 hover:bg-slate-50"
+                              >
+                                <Edit className="h-4 w-4 text-slate-600" />
+                              </Link>
+                              <button
+                                onClick={() => handleDelete(menu.id)}
+                                className="rounded-lg border border-red-300 p-2 hover:bg-red-50"
+                              >
+                                <Trash2 className="h-4 w-4 text-red-600" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </>
                 ))}
               </tbody>
             </table>

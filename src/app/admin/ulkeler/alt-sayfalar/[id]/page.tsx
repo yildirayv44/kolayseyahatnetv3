@@ -29,6 +29,7 @@ export default function EditCountryMenuPage({ params }: { params: Promise<{ id: 
   const [id, setId] = useState<string>("");
   const [menu, setMenu] = useState<CountryMenu | null>(null);
   const [countries, setCountries] = useState<Country[]>([]);
+  const [categories, setCategories] = useState<CountryMenu[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -47,6 +48,14 @@ export default function EditCountryMenuPage({ params }: { params: Promise<{ id: 
       const countriesRes = await fetch("/api/admin/countries/list");
       const countriesData = await countriesRes.json();
       setCountries(countriesData.countries || []);
+
+      // Fetch categories (parent menus)
+      const categoriesRes = await fetch("/api/admin/country-menus/list");
+      const categoriesData = await categoriesRes.json();
+      const allMenus = categoriesData.menus || [];
+      // Filter only categories (parent_id = 0 or null)
+      const cats = allMenus.filter((m: CountryMenu) => !m.parent_id || m.parent_id === 0);
+      setCategories(cats);
 
       // Fetch menu
       const menuRes = await fetch(`/api/admin/country-menus/${menuId}`);
@@ -147,7 +156,7 @@ export default function EditCountryMenuPage({ params }: { params: Promise<{ id: 
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="card space-y-6">
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
             {/* Country */}
             <div>
               <label className="mb-2 block text-sm font-medium text-slate-700">
@@ -173,6 +182,30 @@ export default function EditCountryMenuPage({ params }: { params: Promise<{ id: 
                   </option>
                 ))}
               </select>
+            </div>
+
+            {/* Category */}
+            <div>
+              <label className="mb-2 block text-sm font-medium text-slate-700">
+                Kategori
+              </label>
+              <select
+                value={menu.parent_id || ""}
+                onChange={(e) => setMenu({ ...menu, parent_id: e.target.value ? Number(e.target.value) : 0 })}
+                className="w-full rounded-lg border border-slate-300 px-4 py-2"
+              >
+                <option value="">Kategori Yok (Ana Sayfa)</option>
+                {categories
+                  .filter(c => c.country_id === menu.country_id)
+                  .map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+              </select>
+              <p className="mt-1 text-xs text-slate-500">
+                Kategori seçilmezse bu sayfa ana kategori olur
+              </p>
             </div>
 
             {/* Status */}
