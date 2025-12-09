@@ -30,6 +30,7 @@ const menuItems = [
   { href: "/admin/ulkeler", label: "Ülkeler", icon: Globe2 },
   { href: "/admin/ulkeler/seo-duzenle", label: "SEO Düzenle", icon: Search },
   { href: "/admin/ulkeler/vize-gereklilikleri", label: "Vize Gereklilikleri", icon: FileText },
+  { href: "/admin/ulkeler/alt-sayfalar", label: "Alt Sayfalar", icon: FileText },
   { href: "/admin/vize-paketleri", label: "Vize Paketleri", icon: Package },
   { href: "/admin/bloglar", label: "Bloglar", icon: FileText },
   { href: "/admin/images", label: "Görsel Tespiti", icon: Image },
