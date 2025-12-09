@@ -41,6 +41,7 @@ export default function RepurposePage() {
   const [imageLoading, setImageLoading] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [copiedPlatform, setCopiedPlatform] = useState<string | null>(null);
+  const [imageProvider, setImageProvider] = useState<'dalle' | 'imagen'>('dalle');
 
   // Fetch content items when type changes
   useEffect(() => {
@@ -139,7 +140,7 @@ export default function RepurposePage() {
           topic: title,
           style: 'professional',
           size: '1024x1024',
-          provider: useEnhanced ? 'imagen' : 'dalle',
+          provider: useEnhanced ? 'imagen' : imageProvider,
           baseContent: useEnhanced ? content : '', // Send content for context
         }),
       });
@@ -550,12 +551,52 @@ export default function RepurposePage() {
             <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
               <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
                 <ImageIcon className="h-6 w-6 text-primary" />
-                Görsel Üret (DALL-E 3)
+                Görsel Üret (AI)
               </h2>
               
-              <p className="text-sm text-slate-600 mb-4">
+              <p className="text-sm text-slate-600 mb-3">
                 AI ile profesyonel görsel oluşturun
               </p>
+
+              {/* Model Selector */}
+              <div className="mb-4">
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  AI Modeli
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => setImageProvider('dalle')}
+                    className={`px-4 py-2 rounded-lg border-2 transition-all text-sm font-medium ${
+                      imageProvider === 'dalle'
+                        ? 'border-blue-500 bg-blue-50 text-blue-700'
+                        : 'border-slate-200 hover:border-blue-300 text-slate-700'
+                    }`}
+                  >
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="font-bold">DALL-E 3</span>
+                      <span className="text-xs opacity-75">OpenAI</span>
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => setImageProvider('imagen')}
+                    className={`px-4 py-2 rounded-lg border-2 transition-all text-sm font-medium ${
+                      imageProvider === 'imagen'
+                        ? 'border-purple-500 bg-purple-50 text-purple-700'
+                        : 'border-slate-200 hover:border-purple-300 text-slate-700'
+                    }`}
+                  >
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="font-bold">Imagen</span>
+                      <span className="text-xs opacity-75">Enhanced</span>
+                    </div>
+                  </button>
+                </div>
+                <p className="text-xs text-slate-500 mt-2">
+                  {imageProvider === 'dalle' 
+                    ? '🎨 DALL-E 3: Hızlı ve güvenilir' 
+                    : '✨ Imagen: Gelişmiş prompt, HD kalite'}
+                </p>
+              </div>
 
               <div className="grid grid-cols-2 gap-3 mb-4">
                 <button
