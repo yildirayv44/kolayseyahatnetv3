@@ -54,6 +54,19 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url, 301); // Permanent redirect for SEO
   }
 
+  // Handle legacy blog URLs (e.g., /ingiltere-calisma-vizesi)
+  // Rewrite to /tr/blog/[slug] internally without changing the URL
+  if (pathWithoutLocale && !pathWithoutLocale.includes('/') && pathWithoutLocale !== '' && !pathWithoutLocale.startsWith('_')) {
+    // Check if it's not a known route (ulkeler, blog, danismanlar, etc.)
+    const knownRoutes = ['ulkeler', 'blog', 'danismanlar', 'iletisim', 'hakkimizda', 'vize-basvuru-formu', 'giris', 'kayit'];
+    if (!knownRoutes.includes(pathWithoutLocale)) {
+      // Rewrite to blog route internally
+      const url = request.nextUrl.clone();
+      url.pathname = `/tr/blog/${pathWithoutLocale}`;
+      return NextResponse.rewrite(url);
+    }
+  }
+
   // If pathname has /tr/ prefix, redirect to remove it (tr is default)
   if (pathname.startsWith("/tr/") || pathname === "/tr") {
     const url = request.nextUrl.clone();
