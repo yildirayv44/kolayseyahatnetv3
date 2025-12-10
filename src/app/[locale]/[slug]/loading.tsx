@@ -9,14 +9,9 @@ export default function Loading() {
         <div className="absolute inset-0 h-12 w-12 animate-ping rounded-full bg-primary/20" />
       </div>
       
-      {/* Loading text */}
-      <div className="text-center space-y-2">
-        <h2 className="text-xl font-semibold text-slate-900">
-          Sayfa Yükleniyor
-        </h2>
-        <p className="text-sm text-slate-600">
-          Lütfen bekleyiniz...
-        </p>
+      {/* Loading text - NO "Sayfa bulunamadı" text for SEO crawlers */}
+      <div className="text-center space-y-2" aria-live="polite" aria-busy="true">
+        <span className="sr-only">İçerik yükleniyor</span>
       </div>
 
       {/* Skeleton content preview */}

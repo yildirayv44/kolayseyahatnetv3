@@ -51,7 +51,10 @@ export async function middleware(request: NextRequest) {
     const url = request.nextUrl.clone();
     const locale = pathname.startsWith("/en") ? "/en" : "";
     url.pathname = `${locale}${redirects[pathWithoutLocale]}`;
-    return NextResponse.redirect(url, 301); // Permanent redirect for SEO
+    const response = NextResponse.redirect(url, 301); // Permanent redirect for SEO
+    // Add headers to prevent crawlers from indexing redirect pages
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+    return response;
   }
 
   // Handle old blog category URLs
@@ -69,13 +72,17 @@ export async function middleware(request: NextRequest) {
     const url = request.nextUrl.clone();
     const locale = pathname.startsWith("/en") ? "/en" : "";
     url.pathname = `${locale}/blog/${slug}`;
-    return NextResponse.redirect(url, 301); // Permanent redirect for SEO
+    const response = NextResponse.redirect(url, 301); // Permanent redirect for SEO
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+    return response;
   } else if (blogCategoryMatch) {
     // /blog/category -> /blog
     const url = request.nextUrl.clone();
     const locale = pathname.startsWith("/en") ? "/en" : "";
     url.pathname = `${locale}/blog`;
-    return NextResponse.redirect(url, 301); // Permanent redirect for SEO
+    const response = NextResponse.redirect(url, 301); // Permanent redirect for SEO
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+    return response;
   }
 
   // If pathname has /tr/ prefix, redirect to remove it (tr is default)
