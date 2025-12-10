@@ -328,6 +328,15 @@ export default function SlugManagerPage() {
                         <RefreshCw className="h-3 w-3" />
                       </button>
                       <a
+                        href={`https://www.google.com/search?q=site:${encodeURIComponent(slug.url)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-semibold text-purple-600 hover:bg-purple-50"
+                        title="Google'da manuel kontrol et"
+                      >
+                        <Search className="h-3 w-3" />
+                      </a>
+                      <a
                         href={slug.url}
                         target="_blank"
                         rel="noopener noreferrer"
