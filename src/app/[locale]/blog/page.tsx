@@ -7,9 +7,9 @@ import { getBlogSlug } from "@/lib/helpers";
 import { getCleanImageUrl, getBlogCategoryImage } from "@/lib/image-helpers";
 
 export const metadata: Metadata = {
-  title: "Vize Rehberi - Blog | Kolay Seyahat",
+  title: "Seyahat ve Vize Blogu | Kolay Seyahat",
   description:
-    "Vize başvuruları, gerekli belgeler, süreçler ve ipuçları hakkında uzman görüşleri ve rehberler.",
+    "Seyahat ipuçları, vize başvuru süreçleri, ülke rehberleri ve gezginler için pratik bilgiler. Dünya'yı keşfetmek için ihtiyacınız olan her şey.",
 };
 
 // ⚡ PERFORMANCE: Revalidate every 30 minutes (1800 seconds)
@@ -22,11 +22,11 @@ export default async function BlogPage() {
     <div className="space-y-8">
       <section className="space-y-3 border-b border-slate-200 pb-6">
         <h1 className="text-2xl font-semibold text-slate-900 md:text-3xl">
-          Vize Rehberi
+          Seyahat ve Vize Blogu
         </h1>
         <p className="max-w-2xl text-sm text-slate-600">
-          Vize başvuru süreçleri, gerekli belgeler, ülke bazlı özel bilgiler ve uzman
-          tavsiyeleri ile vize işlemlerinizi kolaylaştırın.
+          Seyahat ipuçları, vize başvuru süreçleri, ülke rehberleri ve gezginler için pratik bilgiler. 
+          Dünya'yı keşfetmek için ihtiyacınız olan her şey burada.
         </p>
       </section>
 

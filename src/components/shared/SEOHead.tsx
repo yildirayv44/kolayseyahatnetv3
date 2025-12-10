@@ -184,3 +184,52 @@ export function generateFAQSchema(faqs: { question: string; answer: string }[]) 
     })),
   };
 }
+
+export function generateHowToSchema({
+  name,
+  description,
+  image,
+  totalTime,
+  estimatedCost,
+  steps,
+}: {
+  name: string;
+  description: string;
+  image?: string;
+  totalTime?: string;
+  estimatedCost?: { currency: string; value: string };
+  steps: Array<{
+    name: string;
+    text: string;
+    image?: string;
+    url?: string;
+  }>;
+}) {
+  if (!steps || steps.length === 0) {
+    return null;
+  }
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    name,
+    description,
+    ...(image && { image }),
+    ...(totalTime && { totalTime }),
+    ...(estimatedCost && {
+      estimatedCost: {
+        "@type": "MonetaryAmount",
+        currency: estimatedCost.currency,
+        value: estimatedCost.value,
+      },
+    }),
+    step: steps.map((step, index) => ({
+      "@type": "HowToStep",
+      position: index + 1,
+      name: step.name,
+      text: step.text,
+      ...(step.image && { image: step.image }),
+      ...(step.url && { url: step.url }),
+    })),
+  };
+}

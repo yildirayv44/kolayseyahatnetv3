@@ -57,32 +57,35 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
-  // Handle old blog category URLs
+  // Handle old blog category URLs ONLY if they start with /blog/
   // 1. Category pages: /blog/category -> /blog
   // 2. Category posts: /blog/category/slug -> /blog/slug
-  const blogCategoryWithSlugPattern = /^\/blog\/[^\/]+\/(.+)$/;
-  const blogCategoryOnlyPattern = /^\/blog\/[^\/]+$/;
-  
-  const blogSlugMatch = pathWithoutLocale.match(blogCategoryWithSlugPattern);
-  const blogCategoryMatch = pathWithoutLocale.match(blogCategoryOnlyPattern);
-  
-  if (blogSlugMatch) {
-    // /blog/category/slug -> /blog/slug
-    const slug = blogSlugMatch[1];
-    const url = request.nextUrl.clone();
-    const locale = pathname.startsWith("/en") ? "/en" : "";
-    url.pathname = `${locale}/blog/${slug}`;
-    const response = NextResponse.redirect(url, 301); // Permanent redirect for SEO
-    response.headers.set('X-Robots-Tag', 'noindex, nofollow');
-    return response;
-  } else if (blogCategoryMatch) {
-    // /blog/category -> /blog
-    const url = request.nextUrl.clone();
-    const locale = pathname.startsWith("/en") ? "/en" : "";
-    url.pathname = `${locale}/blog`;
-    const response = NextResponse.redirect(url, 301); // Permanent redirect for SEO
-    response.headers.set('X-Robots-Tag', 'noindex, nofollow');
-    return response;
+  // IMPORTANT: Only match URLs that start with /blog/ to avoid catching regular blog posts
+  if (pathWithoutLocale.startsWith('/blog/')) {
+    const blogCategoryWithSlugPattern = /^\/blog\/[^\/]+\/(.+)$/;
+    const blogCategoryOnlyPattern = /^\/blog\/(vize-rehberi|seyahat-ipuclari|ulke-rehberleri)$/;
+    
+    const blogSlugMatch = pathWithoutLocale.match(blogCategoryWithSlugPattern);
+    const blogCategoryMatch = pathWithoutLocale.match(blogCategoryOnlyPattern);
+    
+    if (blogSlugMatch) {
+      // /blog/category/slug -> /blog/slug
+      const slug = blogSlugMatch[1];
+      const url = request.nextUrl.clone();
+      const locale = pathname.startsWith("/en") ? "/en" : "";
+      url.pathname = `${locale}/blog/${slug}`;
+      const response = NextResponse.redirect(url, 301);
+      response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+      return response;
+    } else if (blogCategoryMatch) {
+      // /blog/category -> /blog (only for known categories)
+      const url = request.nextUrl.clone();
+      const locale = pathname.startsWith("/en") ? "/en" : "";
+      url.pathname = `${locale}/blog`;
+      const response = NextResponse.redirect(url, 301);
+      response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+      return response;
+    }
   }
 
   // If pathname has /tr/ prefix, redirect to remove it (tr is default)
