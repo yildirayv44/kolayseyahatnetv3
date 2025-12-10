@@ -10,7 +10,9 @@
     "translate": "tsx scripts/translate-all-content.ts",
     "restore-slugs": "tsx scripts/restore-old-slugs.ts",
     "check-blog-slugs": "tsx scripts/check-blog-slugs.ts",
-    "restore-blog-slugs": "tsx scripts/restore-blog-slugs.ts"
+    "restore-blog-slugs": "tsx scripts/restore-blog-slugs.ts",
+    "check-slug": "tsx scripts/check-specific-slug.ts",
+    "list-slugs": "tsx scripts/list-all-slugs.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
