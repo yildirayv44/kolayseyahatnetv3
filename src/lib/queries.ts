@@ -178,7 +178,7 @@ export async function getCountryMenus(countryId: number) {
 
   const ids = relations.map((r: { country_menu_id: number }) => r.country_menu_id);
 
-  const { data, error } = await supabase
+  const { data: menus, error } = await supabase
     .from("country_menus")
     .select("*")
     .in("id", ids)
@@ -190,7 +190,26 @@ export async function getCountryMenus(countryId: number) {
     return [];
   }
 
-  return data || [];
+  if (!menus) return [];
+
+  // Get taxonomy slugs for each menu
+  const menusWithSlugs = await Promise.all(
+    menus.map(async (menu) => {
+      const { data: taxonomy } = await supabase
+        .from("taxonomies")
+        .select("slug")
+        .eq("model_id", menu.id)
+        .eq("type", "Country\\CountryController@menuDetail")
+        .maybeSingle();
+
+      return {
+        ...menu,
+        taxonomy_slug: taxonomy?.slug || null,
+      };
+    })
+  );
+
+  return menusWithSlugs;
 }
 
 export async function getCountryMenuBySlug(slug: string) {

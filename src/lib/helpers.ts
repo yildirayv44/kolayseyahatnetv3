@@ -131,19 +131,25 @@ function normalizeSlug(text: string): string {
 
 // Menu slug helper
 export function getMenuSlug(menu: any): string {
-  // Önce slug varsa kullan (normalize ETME - DB'deki gibi kullan)
+  // Öncelik 1: Taxonomy slug (DB'den gelen doğru slug)
+  if (menu.taxonomy_slug) {
+    const slug = menu.taxonomy_slug.trim();
+    return slug.startsWith('/') ? slug : `/${slug}`;
+  }
+  
+  // Öncelik 2: Menu'nun kendi slug'ı
   if (menu.slug) {
     const slug = menu.slug.trim();
     return slug.startsWith('/') ? slug : `/${slug}`;
   }
   
-  // URL varsa kullan (normalize ETME)
+  // Öncelik 3: URL varsa kullan
   if (menu.url) {
     const url = menu.url.trim();
     return url.startsWith('/') ? url : `/${url}`;
   }
   
-  // Hiçbiri yoksa name'den slug oluştur (normalize et)
+  // Öncelik 4: Name'den slug oluştur (son çare)
   if (menu.name) {
     const slug = normalizeSlug(menu.name)
       .replace(/[^a-z0-9\s-]/g, '')
