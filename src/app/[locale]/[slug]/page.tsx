@@ -11,7 +11,7 @@ import {
   getCountryQuestions,
   getCountryBlogs,
   getCountryComments,
-  getBlogBySlug,
+  getBlogBySlug
 } from "@/lib/queries";
 import { createClient } from "@supabase/supabase-js";
 import { Breadcrumb } from "@/components/shared/Breadcrumb";
@@ -30,6 +30,7 @@ import { getLocalizedUrl } from "@/lib/locale-link";
 import { supabase } from "@/lib/supabase";
 import { generateFAQSchema, generateBreadcrumbSchema } from "@/components/shared/SEOHead";
 import { fixHtmlImageUrls } from "@/lib/image-helpers";
+import { generateCountryMetaDescription, generateMenuMetaDescription, truncateAtWord } from "@/lib/meta-helpers";
 
 // ⚡ PERFORMANCE: Revalidate every 2 hours (7200 seconds) to reduce database load
 export const revalidate = 7200;
@@ -149,8 +150,24 @@ export async function generateMetadata({ params }: CountryPageParams): Promise<M
     .maybeSingle();
 
   if (country) {
+    // Get visa requirements for better meta description
+    let visaRequirement;
+    if (country.country_code) {
+      const { data: visaReqs } = await supabaseClient
+        .from("visa_requirements")
+        .select("visa_status, allowed_stay, conditions, application_method")
+        .eq("country_code", country.country_code)
+        .limit(1);
+      visaRequirement = visaReqs?.[0];
+    }
+
     const title = country.meta_title || countryTax?.title || country.title || `${country.name} Vizesi - Kolay Seyahat`;
-    const description = countryTax?.description || country.description || `${country.name} vizesi için profesyonel danışmanlık. Kolay Seyahat ile başvurunuzu hızlı ve güvenli şekilde tamamlayın.`;
+    
+    // Generate optimized meta description (max 155 chars)
+    const description = countryTax?.description 
+      ? truncateAtWord(countryTax.description, 155)
+      : generateCountryMetaDescription(country, visaRequirement);
+    
     const imageUrl = country.image_url || '/default-country.jpg';
     const url = `https://www.kolayseyahat.net/${locale === 'en' ? 'en/' : ''}${decodedSlug}`;
 
@@ -203,12 +220,25 @@ export async function generateMetadata({ params }: CountryPageParams): Promise<M
   ]);
 
   if (menu) {
+    // Get country name for better context
+    let countryName;
+    if (menu.country_id) {
+      const { data: menuCountry } = await supabaseClient
+        .from("countries")
+        .select("name")
+        .eq("id", menu.country_id)
+        .maybeSingle();
+      countryName = menuCountry?.name;
+    }
+
+    // Generate optimized meta description (max 155 chars)
+    const description = menuTax?.description
+      ? truncateAtWord(menuTax.description, 155)
+      : generateMenuMetaDescription(menu.name, countryName, menu.description);
+
     return {
       title: menuTax?.title || menu.name || "Vize Hizmeti - Kolay Seyahat",
-      description:
-        menuTax?.description ||
-        menu.description ||
-        "Profesyonel vize danışmanlığı hizmeti. Kolay Seyahat ile başvurunuzu hızlı ve güvenli şekilde tamamlayın.",
+      description,
     };
   }
 
