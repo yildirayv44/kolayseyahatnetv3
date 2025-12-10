@@ -28,7 +28,7 @@ export async function GET() {
         images.push({
           loc: `${baseUrl}/${country.slug}`,
           images: [{
-            url: country.image_url,
+            url: escapeXml(country.image_url),
             title: escapeXml(country.name + ' Vizesi'),
             caption: escapeXml(`${country.name} vize başvurusu için gerekli bilgiler ve belgeler`),
           }],
@@ -62,7 +62,7 @@ export async function GET() {
             images.push({
               loc: `${baseUrl}/blog/${blog.taxonomy_slug}`,
               images: [{
-                url: imageUrl,
+                url: escapeXml(imageUrl),
                 title: escapeXml(blog.title || 'Blog'),
                 caption: escapeXml(blog.description || blog.title || 'Blog yazısı'),
               }],
