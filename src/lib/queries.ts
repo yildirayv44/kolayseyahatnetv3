@@ -736,5 +736,17 @@ export async function submitApplication(formData: any) {
     return false;
   }
 
+  // Send email notification (non-blocking)
+  try {
+    await fetch('/api/send-application-notification', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData),
+    }).catch(err => console.error('Email notification failed:', err));
+  } catch (err) {
+    // Don't fail the application if email fails
+    console.error('Email notification error:', err);
+  }
+
   return true;
 }
