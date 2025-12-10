@@ -44,7 +44,8 @@ export async function POST(request: NextRequest) {
       console.log(`🎙️ Generating audio for scene ${i + 1}/${storyboard.scenes.length}`);
       
       // Generate TTS for narration
-      const ttsResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/admin/ai/text-to-speech`, {
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+      const ttsResponse = await fetch(`${baseUrl}/api/admin/ai/text-to-speech`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -71,7 +72,8 @@ export async function POST(request: NextRequest) {
     // Step 2: Get background music if selected
     let musicUrl = null;
     if (musicTrackId) {
-      const musicResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/admin/ai/music-library`);
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+      const musicResponse = await fetch(`${baseUrl}/api/admin/ai/music-library`);
       const musicData = await musicResponse.json();
       const selectedTrack = musicData.tracks.find((t: any) => t.id === musicTrackId);
       if (selectedTrack) {
