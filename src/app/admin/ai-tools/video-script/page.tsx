@@ -231,7 +231,8 @@ export default function VideoScriptPage() {
     setRenderJob(null);
 
     try {
-      const response = await fetch('/api/admin/ai/render-video', {
+      // Use remotion-render for actual video rendering
+      const response = await fetch('/api/admin/ai/remotion-render', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -252,7 +253,14 @@ export default function VideoScriptPage() {
       const data = await response.json();
       
       if (data.success) {
-        setRenderJob(data.renderJob);
+        // Show success with video URL
+        setRenderJob({
+          status: 'completed',
+          videoUrl: data.videoUrl,
+          duration: data.duration,
+          scenes: data.scenes,
+          message: data.message,
+        });
       } else {
         alert('Video render başlatılamadı: ' + data.error);
       }
@@ -731,61 +739,126 @@ export default function VideoScriptPage() {
                       <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border-2 border-green-200">
                         <div className="flex items-center gap-3 mb-4">
                           <Sparkles className="h-6 w-6 text-green-600" />
-                          <h4 className="font-bold text-green-900 text-lg">Video Render İşlemi Başlatıldı!</h4>
+                          <h4 className="font-bold text-green-900 text-lg">
+                            {renderJob.status === 'completed' ? '🎉 Video Başarıyla Oluşturuldu!' : 'Video Render İşlemi Başlatıldı!'}
+                          </h4>
                         </div>
                         
-                        <div className="space-y-3 mb-4">
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="text-green-700 font-semibold">Durum:</span>
-                            <span className="bg-green-600 text-white px-3 py-1 rounded-full text-xs font-bold">
-                              {renderJob.status.toUpperCase()}
-                            </span>
-                          </div>
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="text-green-700 font-semibold">Sahne Sayısı:</span>
-                            <span className="text-green-900 font-bold">{renderJob.scenes}</span>
-                          </div>
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="text-green-700 font-semibold">Tahmini Süre:</span>
-                            <span className="text-green-900 font-bold">{Math.floor(renderJob.estimatedTime / 60)}:{(renderJob.estimatedTime % 60).toString().padStart(2, '0')}</span>
-                          </div>
-                        </div>
+                        {renderJob.status === 'completed' && renderJob.videoUrl ? (
+                          <>
+                            <div className="space-y-4 mb-4">
+                              {/* Video Preview */}
+                              <div className="bg-black rounded-lg overflow-hidden">
+                                <video
+                                  src={renderJob.videoUrl}
+                                  controls
+                                  className="w-full"
+                                  style={{ maxHeight: '400px' }}
+                                >
+                                  Tarayıcınız video oynatmayı desteklemiyor.
+                                </video>
+                              </div>
 
-                        <div className="bg-white rounded-lg p-4 mb-4">
-                          <h5 className="font-bold text-slate-900 mb-2 text-sm">✅ Tamamlanan Adımlar:</h5>
-                          <ul className="space-y-1">
-                            {renderJob.nextSteps.slice(0, 4).map((step: string, idx: number) => (
-                              <li key={idx} className="text-xs text-slate-700 flex items-start gap-2">
-                                <span className="text-green-600">✓</span>
-                                {step}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
+                              {/* Video Info */}
+                              <div className="grid grid-cols-2 gap-4">
+                                <div className="bg-white rounded-lg p-4">
+                                  <p className="text-xs text-slate-500 mb-1">Süre</p>
+                                  <p className="text-lg font-bold text-slate-900">
+                                    {Math.floor(renderJob.duration / 60)}:{(renderJob.duration % 60).toString().padStart(2, '0')}
+                                  </p>
+                                </div>
+                                <div className="bg-white rounded-lg p-4">
+                                  <p className="text-xs text-slate-500 mb-1">Sahne Sayısı</p>
+                                  <p className="text-lg font-bold text-slate-900">{renderJob.scenes}</p>
+                                </div>
+                              </div>
 
-                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                          <h5 className="font-bold text-yellow-900 mb-2 text-sm flex items-center gap-2">
-                            <Sparkles className="h-4 w-4" />
-                            Prodüksiyon Notu
-                          </h5>
-                          <p className="text-xs text-yellow-800 mb-3">
-                            {renderJob.productionNote}
-                          </p>
-                          <div className="space-y-1">
-                            <p className="text-xs font-semibold text-yellow-900">Remotion Kurulumu:</p>
-                            {renderJob.remotionSetup.required.map((req: string, idx: number) => (
-                              <p key={idx} className="text-xs text-yellow-800 ml-2">• {req}</p>
-                            ))}
-                            <a 
-                              href={renderJob.remotionSetup.documentation}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-xs text-blue-600 hover:text-blue-800 underline block mt-2"
-                            >
-                              📚 Remotion Dokümantasyonu →
-                            </a>
-                          </div>
-                        </div>
+                              {/* Download Button */}
+                              <a
+                                href={renderJob.videoUrl}
+                                download
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-6 py-4 rounded-lg font-bold hover:from-blue-700 hover:to-cyan-700 transition-all shadow-lg flex items-center justify-center gap-3"
+                              >
+                                <Download className="h-6 w-6" />
+                                Videoyu İndir (MP4)
+                              </a>
+
+                              {/* Success Message */}
+                              <div className="bg-white rounded-lg p-4">
+                                <p className="text-sm text-green-800">
+                                  ✅ {renderJob.message || 'Video başarıyla oluşturuldu ve yüklendi!'}
+                                </p>
+                              </div>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div className="space-y-3 mb-4">
+                              <div className="flex items-center justify-between text-sm">
+                                <span className="text-green-700 font-semibold">Durum:</span>
+                                <span className="bg-green-600 text-white px-3 py-1 rounded-full text-xs font-bold">
+                                  {renderJob.status?.toUpperCase() || 'PROCESSING'}
+                                </span>
+                              </div>
+                              {renderJob.scenes && (
+                                <div className="flex items-center justify-between text-sm">
+                                  <span className="text-green-700 font-semibold">Sahne Sayısı:</span>
+                                  <span className="text-green-900 font-bold">{renderJob.scenes}</span>
+                                </div>
+                              )}
+                              {renderJob.estimatedTime && (
+                                <div className="flex items-center justify-between text-sm">
+                                  <span className="text-green-700 font-semibold">Tahmini Süre:</span>
+                                  <span className="text-green-900 font-bold">{Math.floor(renderJob.estimatedTime / 60)}:{(renderJob.estimatedTime % 60).toString().padStart(2, '0')}</span>
+                                </div>
+                              )}
+                            </div>
+
+                            {renderJob.nextSteps && (
+                              <div className="bg-white rounded-lg p-4 mb-4">
+                                <h5 className="font-bold text-slate-900 mb-2 text-sm">✅ Tamamlanan Adımlar:</h5>
+                                <ul className="space-y-1">
+                                  {renderJob.nextSteps.slice(0, 4).map((step: string, idx: number) => (
+                                    <li key={idx} className="text-xs text-slate-700 flex items-start gap-2">
+                                      <span className="text-green-600">✓</span>
+                                      {step}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+
+                            {renderJob.productionNote && (
+                              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                                <h5 className="font-bold text-yellow-900 mb-2 text-sm flex items-center gap-2">
+                                  <Sparkles className="h-4 w-4" />
+                                  Prodüksiyon Notu
+                                </h5>
+                                <p className="text-xs text-yellow-800 mb-3">
+                                  {renderJob.productionNote}
+                                </p>
+                                {renderJob.remotionSetup && (
+                                  <div className="space-y-1">
+                                    <p className="text-xs font-semibold text-yellow-900">Remotion Kurulumu:</p>
+                                    {renderJob.remotionSetup.required.map((req: string, idx: number) => (
+                                      <p key={idx} className="text-xs text-yellow-800 ml-2">• {req}</p>
+                                    ))}
+                                    <a 
+                                      href={renderJob.remotionSetup.documentation}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-xs text-blue-600 hover:text-blue-800 underline block mt-2"
+                                    >
+                                      📚 Remotion Dokümantasyonu →
+                                    </a>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </>
+                        )}
                       </div>
                     )}
                   </div>
