@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "translate": "tsx scripts/translate-all-content.ts"
+    "translate": "tsx scripts/translate-all-content.ts",
+    "restore-slugs": "tsx scripts/restore-old-slugs.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
