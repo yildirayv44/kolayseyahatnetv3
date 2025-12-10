@@ -16,7 +16,7 @@ export function generateSEOMetadata({
   title,
   description,
   keywords = [],
-  image = "/og-image.jpg",
+  image = "/opengraph-image",
   url = "https://www.kolayseyahat.net",
   type = "website",
   publishedTime,
