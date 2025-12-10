@@ -54,6 +54,19 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url, 301); // Permanent redirect for SEO
   }
 
+  // Handle old blog category URLs: /blog/category/slug -> /blog/slug
+  // Example: /blog/vize-rehberi/adli-sicil-kaydi-olan-yurt-disina-cikabilir-mi
+  //       -> /blog/adli-sicil-kaydi-olan-yurt-disina-cikabilir-mi
+  const blogCategoryPattern = /^\/blog\/[^\/]+\/(.+)$/;
+  const blogMatch = pathWithoutLocale.match(blogCategoryPattern);
+  if (blogMatch) {
+    const slug = blogMatch[1];
+    const url = request.nextUrl.clone();
+    const locale = pathname.startsWith("/en") ? "/en" : "";
+    url.pathname = `${locale}/blog/${slug}`;
+    return NextResponse.redirect(url, 301); // Permanent redirect for SEO
+  }
+
   // If pathname has /tr/ prefix, redirect to remove it (tr is default)
   if (pathname.startsWith("/tr/") || pathname === "/tr") {
     const url = request.nextUrl.clone();
