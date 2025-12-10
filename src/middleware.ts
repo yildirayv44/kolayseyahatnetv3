@@ -43,8 +43,6 @@ export async function middleware(request: NextRequest) {
     "/dubai-sik-sorulan-sorular": "/blog/dubai-sik-sorulan-sorular",
     "/kuveytte-colde-safari": "/blog/kuveytte-colde-safari",
     "/yunanistan-adalari-kapi-vizesi-rehberi": "/blog/yunanistan-adalari-kapi-vizesi-rehberi",
-    // Slug changes (old slug to new slug)
-    "/amerika-f2m2-ogrenci-aile-vizesi": "/amerika-f2-ve-m2-ogrenci-ailesi-vizeleri",
   };
 
   // Check for redirects (works for both with and without locale)
