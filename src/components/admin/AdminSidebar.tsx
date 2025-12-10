@@ -47,6 +47,7 @@ const menuItems = [
   { href: "/admin/ayarlar", label: "Ayarlar", icon: Settings },
   { href: "/admin/fix-taxonomies", label: "🔧 Taxonomy Düzelt", icon: Settings, divider: true },
   { href: "/admin/fix-slug", label: "🔗 Slug Düzelt", icon: Settings },
+  { href: "/admin/slug-manager", label: "📊 Slug Yöneticisi", icon: Settings, highlight: true },
 ];
 
 export function AdminSidebar() {
