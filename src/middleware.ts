@@ -54,16 +54,27 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url, 301); // Permanent redirect for SEO
   }
 
-  // Handle old blog category URLs: /blog/category/slug -> /blog/slug
-  // Example: /blog/vize-rehberi/adli-sicil-kaydi-olan-yurt-disina-cikabilir-mi
-  //       -> /blog/adli-sicil-kaydi-olan-yurt-disina-cikabilir-mi
-  const blogCategoryPattern = /^\/blog\/[^\/]+\/(.+)$/;
-  const blogMatch = pathWithoutLocale.match(blogCategoryPattern);
-  if (blogMatch) {
-    const slug = blogMatch[1];
+  // Handle old blog category URLs
+  // 1. Category pages: /blog/category -> /blog
+  // 2. Category posts: /blog/category/slug -> /blog/slug
+  const blogCategoryWithSlugPattern = /^\/blog\/[^\/]+\/(.+)$/;
+  const blogCategoryOnlyPattern = /^\/blog\/[^\/]+$/;
+  
+  const blogSlugMatch = pathWithoutLocale.match(blogCategoryWithSlugPattern);
+  const blogCategoryMatch = pathWithoutLocale.match(blogCategoryOnlyPattern);
+  
+  if (blogSlugMatch) {
+    // /blog/category/slug -> /blog/slug
+    const slug = blogSlugMatch[1];
     const url = request.nextUrl.clone();
     const locale = pathname.startsWith("/en") ? "/en" : "";
     url.pathname = `${locale}/blog/${slug}`;
+    return NextResponse.redirect(url, 301); // Permanent redirect for SEO
+  } else if (blogCategoryMatch) {
+    // /blog/category -> /blog
+    const url = request.nextUrl.clone();
+    const locale = pathname.startsWith("/en") ? "/en" : "";
+    url.pathname = `${locale}/blog`;
     return NextResponse.redirect(url, 301); // Permanent redirect for SEO
   }
 
