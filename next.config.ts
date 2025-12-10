@@ -3,36 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* config options here */
   reactCompiler: true,
-  
-  // Webpack configuration for Remotion
-  webpack: (config, { isServer }) => {
-    // Ignore esbuild binaries
-    config.externals = config.externals || [];
-    config.externals.push({
-      '@esbuild/darwin-arm64': 'commonjs @esbuild/darwin-arm64',
-      '@esbuild/linux-x64': 'commonjs @esbuild/linux-x64',
-      '@esbuild/win32-x64': 'commonjs @esbuild/win32-x64',
-    });
-
-    // Handle .md files
-    config.module = config.module || {};
-    config.module.rules = config.module.rules || [];
-    config.module.rules.push({
-      test: /\.md$/,
-      type: 'asset/source',
-    });
-
-    return config;
-  },
-  
-  turbopack: {
-    rules: {
-      '*.md': {
-        loaders: ['raw-loader'],
-        as: '*.js',
-      },
-    },
-  },
+  turbopack: {}, // Silence turbopack warning
   
   // Image optimization
   images: {
