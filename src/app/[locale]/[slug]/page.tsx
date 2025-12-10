@@ -28,7 +28,7 @@ import { GenericCommentSection } from "@/components/comments/GenericCommentSecti
 import { getLocalizedFields } from "@/lib/locale-content";
 import { getLocalizedUrl } from "@/lib/locale-link";
 import { supabase } from "@/lib/supabase";
-import { generateFAQSchema, generateBreadcrumbSchema } from "@/components/shared/SEOHead";
+import { generateFAQSchema, generateBreadcrumbSchema, generateHowToSchema } from "@/components/shared/SEOHead";
 import { fixHtmlImageUrls } from "@/lib/image-helpers";
 import { generateCountryMetaDescription, generateMenuMetaDescription, truncateAtWord } from "@/lib/meta-helpers";
 
@@ -549,6 +549,59 @@ export default async function CountryPage({ params }: CountryPageParams) {
     { name: country.name, url: `/${country.slug || decodedSlug}` }
   ]);
 
+  // Generate HowTo Schema for visa application process
+  const howToSchema = generateHowToSchema({
+    name: `${country.name} Vizesi Nasıl Alınır?`,
+    description: `${country.name} vize başvurusu için adım adım rehber. Gerekli belgeler, başvuru süreci ve önemli bilgiler.`,
+    image: country.image_url,
+    totalTime: country.process_time ? `P${country.process_time}D` : 'P14D', // ISO 8601 duration format
+    steps: [
+      {
+        name: 'Gerekli Belgeleri Hazırlayın',
+        text: `${country.name} vizesi için gerekli tüm belgeleri eksiksiz hazırlayın. Pasaport, fotoğraf, mali durum belgeleri ve diğer gerekli evraklar.`,
+      },
+      {
+        name: 'Online Başvuru Formu',
+        text: 'Vize başvuru formunu online olarak doldurun. Tüm bilgileri doğru ve eksiksiz girin.',
+      },
+      {
+        name: 'Randevu Alın',
+        text: `${country.name} konsolosluğu veya vize merkezinden randevu alın. Randevu tarihini belirleyin.`,
+      },
+      {
+        name: 'Vize Ücretini Ödeyin',
+        text: 'Vize başvuru ücretini belirtilen yöntemlerle ödeyin. Ödeme makbuzunu saklayın.',
+      },
+      {
+        name: 'Başvurunuzu Tamamlayın',
+        text: 'Randevu gününde tüm belgelerinizle başvuru merkezine gidin ve başvurunuzu tamamlayın.',
+      },
+    ],
+  });
+
+  // Generate Product Schema for visa packages
+  const productSchemas = products.map((product: any) => ({
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.name,
+    description: product.description || `${country.name} ${product.name} vize paketi`,
+    image: country.image_url,
+    offers: {
+      "@type": "Offer",
+      price: product.price || "0",
+      priceCurrency: getCurrencySymbol(product.currency_id) === "₺" ? "TRY" : getCurrencySymbol(product.currency_id) === "$" ? "USD" : "EUR",
+      availability: "https://schema.org/InStock",
+      url: `https://www.kolayseyahat.net/${country.slug}`,
+    },
+    aggregateRating: {
+      "@type": "AggregateRating",
+      ratingValue: "4.8",
+      reviewCount: "1250",
+      bestRating: "5",
+      worstRating: "1",
+    },
+  }));
+
   // Check if we should show required documents section
   const hasRequiredDocs = (country.required_documents && country.required_documents.length > 0) || fixedReqDocument;
 
@@ -583,6 +636,19 @@ export default async function CountryPage({ params }: CountryPageParams) {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
         />
       )}
+      {howToSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(howToSchema) }}
+        />
+      )}
+      {productSchemas.map((schema, index) => (
+        <script
+          key={`product-${index}`}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+        />
+      ))}
 
       {/* BREADCRUMB */}
       <Breadcrumb

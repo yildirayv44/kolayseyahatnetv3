@@ -52,10 +52,11 @@ export default async function BlogPage() {
               <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-100">
                 <Image
                   src={imageUrl}
-                  alt={blog.title}
+                  alt={`${blog.title} - ${blog.description || 'Seyahat ve vize rehberi'}`}
                   fill
                   className="object-cover transition-transform duration-300 group-hover:scale-105"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  priority={false}
                 />
               </div>
 

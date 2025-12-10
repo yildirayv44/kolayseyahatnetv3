@@ -113,7 +113,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
         <div className="relative aspect-[21/9] w-full overflow-hidden rounded-2xl bg-slate-100">
           <Image
             src={imageUrl}
-            alt={blog.title}
+            alt={`${blog.title} - ${blog.description || 'Detaylı rehber ve bilgiler'} | Kolay Seyahat`}
             fill
             className="object-cover"
             priority
