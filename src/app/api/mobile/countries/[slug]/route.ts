@@ -75,7 +75,7 @@ export async function GET(
     }
 
     // Get products/packages for this country
-    const { data: products } = await supabase
+    const { data: products, error: productsError } = await supabase
       .from('products')
       .select(`
         id,
@@ -83,11 +83,17 @@ export async function GET(
         description,
         price,
         currency_id,
-        features
+        contents,
+        req_document,
+        processing
       `)
       .eq('country_id', countryId)
       .eq('status', 1)
-      .order('sorted', { ascending: true });
+      .order('id', { ascending: true });
+    
+    if (productsError) {
+      console.error('Products fetch error:', productsError);
+    }
 
     // Get currency symbols
     const currencyMap: Record<number, string> = {
@@ -103,7 +109,9 @@ export async function GET(
       description: product.description,
       price: product.price,
       currency: currencyMap[product.currency_id] || 'TRY',
-      features: product.features || [],
+      processingTime: product.processing,
+      contents: product.contents,
+      requiredDocuments: product.req_document,
     })) || [];
 
     // Format response with ALL available data
