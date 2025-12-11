@@ -258,6 +258,7 @@ export async function GET(request: Request) {
 
     // Get taxonomy slugs for all countries
     const countryIds = countries?.map(c => c.id) || [];
+    const countryCodes = countries?.map(c => c.country_code).filter(Boolean) || [];
     
     const { data: taxonomies } = await supabase
       .from('taxonomies')
@@ -270,10 +271,21 @@ export async function GET(request: Request) {
       taxonomyMap.set(tax.model_id, tax.slug);
     });
 
+    // Get visa requirements from visa_requirements table (accurate data)
+    const { data: visaReqs } = await supabase
+      .from('visa_requirements')
+      .select('country_code, visa_status, allowed_stay')
+      .in('country_code', countryCodes);
+
+    const visaReqMap = new Map<string, any>();
+    visaReqs?.forEach(req => {
+      visaReqMap.set(req.country_code, req);
+    });
+
     // Statistics counters
     const stats = {
       visaFree: 0,
-      evisa: 0,
+      eta: 0,
       visaOnArrival: 0,
       visaRequired: 0,
       total: 0,
@@ -284,14 +296,17 @@ export async function GET(request: Request) {
 
     // Format response
     let formattedCountries = countries?.map(country => {
-      const normalizedVisaStatus = normalizeVisaType(country.visa_type);
+      // Get visa status from visa_requirements table first, fallback to visa_type
+      const visaReq = visaReqMap.get(country.country_code);
+      const visaStatus = visaReq?.visa_status || normalizeVisaType(country.visa_type);
+      
       const continent = CONTINENT_MAP[country.country_code] || { name: 'Diğer', nameEn: 'Other' };
       
       // Update statistics
       stats.total++;
-      if (normalizedVisaStatus === 'visa-free') stats.visaFree++;
-      else if (normalizedVisaStatus === 'evisa') stats.evisa++;
-      else if (normalizedVisaStatus === 'visa-on-arrival') stats.visaOnArrival++;
+      if (visaStatus === 'visa-free') stats.visaFree++;
+      else if (visaStatus === 'eta' || visaStatus === 'evisa') stats.eta++;
+      else if (visaStatus === 'visa-on-arrival') stats.visaOnArrival++;
       else stats.visaRequired++;
 
       // Update continent counts
@@ -306,8 +321,8 @@ export async function GET(request: Request) {
         processTime: country.process_time,
         visaRequired: country.visa_required,
         visaType: country.visa_type,
-        visaStatus: normalizedVisaStatus,
-        maxStayDuration: country.max_stay_duration,
+        visaStatus: visaStatus,
+        maxStayDuration: visaReq?.allowed_stay || country.max_stay_duration,
         continent: continent.name,
         continentEn: continent.nameEn,
       };
