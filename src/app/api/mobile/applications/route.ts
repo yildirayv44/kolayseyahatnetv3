@@ -76,9 +76,8 @@ export async function POST(request: Request) {
         country_name: countryName || null,
         package_id: packageId || null,
         package_name: packageName || null,
-        notes: notes || null,
+        notes: notes ? `[Mobil Uygulama] ${notes}` : '[Mobil Uygulama]',
         status: 'new',
-        source: 'mobile_app',
       })
       .select('id')
       .single();
