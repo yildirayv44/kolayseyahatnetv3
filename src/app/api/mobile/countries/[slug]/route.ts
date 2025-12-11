@@ -3,14 +3,31 @@ import { supabase } from '@/lib/supabase';
 
 export const revalidate = 3600; // 1 hour cache
 
+// Normalize visa type to standard format
+function normalizeVisaType(visaType: string | null): string {
+  if (!visaType) return 'unknown';
+  const lower = visaType.toLowerCase().trim();
+  if (lower.includes('vizesiz') || lower === 'visa-free') return 'visa-free';
+  if (lower.includes('e-vize') || lower.includes('evize') || lower === 'eta') return 'evisa';
+  if (lower.includes('kapıda') || lower.includes('on-arrival')) return 'visa-on-arrival';
+  if (lower.includes('schengen')) return 'schengen';
+  return 'visa-required';
+}
+
 /**
  * GET /api/mobile/countries/[slug]
  * 
  * Returns detailed country information including:
- * - Country details
- * - Visa requirements
+ * - Country details (name, capital, currency, language, timezone)
+ * - Visa requirements (status, stay duration, application method)
  * - Available packages with pricing
  * - Required documents
+ * - Application steps
+ * - Important notes
+ * - Health requirements
+ * - Customs regulations
+ * - Emergency contacts
+ * - Popular cities
  * 
  * Response:
  * {
@@ -42,7 +59,7 @@ export async function GET(
 
     const countryId = taxonomy.model_id;
 
-    // Get country details
+    // Get country details with ALL fields
     const { data: country, error: countryError } = await supabase
       .from('countries')
       .select('*')
@@ -56,14 +73,6 @@ export async function GET(
         { status: 404 }
       );
     }
-
-    // Get visa requirements for Turkish citizens
-    const { data: visaReq } = await supabase
-      .from('visa_requirements')
-      .select('*')
-      .eq('country_id', countryId)
-      .eq('passport_country', 'TR')
-      .maybeSingle();
 
     // Get products/packages for this country
     const { data: products } = await supabase
@@ -97,11 +106,9 @@ export async function GET(
       features: product.features || [],
     })) || [];
 
-    // Get required documents
-    const requiredDocs = country.required_documents || [];
-
-    // Format response
+    // Format response with ALL available data
     const response = {
+      // Basic Info
       id: country.id,
       name: country.name,
       slug: slug,
@@ -109,19 +116,61 @@ export async function GET(
       imageUrl: country.image_url,
       title: country.title,
       description: country.description,
-      processTime: country.process_time,
-      visaRequired: country.visa_required,
-      visaRequirement: visaReq ? {
-        visaStatus: visaReq.visa_status,
-        allowedStay: visaReq.allowed_stay,
-        conditions: visaReq.conditions,
-        applicationMethod: visaReq.application_method,
-        notes: visaReq.notes,
-        availableMethods: visaReq.available_methods || [],
-      } : null,
+      
+      // Country Info
+      countryInfo: {
+        capital: country.capital,
+        currency: country.currency,
+        language: country.language,
+        timezone: country.timezone,
+      },
+      
+      // Visa Info
+      visaInfo: {
+        visaRequired: country.visa_required,
+        visaType: country.visa_type,
+        visaStatus: normalizeVisaType(country.visa_type),
+        processTime: country.process_time,
+        maxStayDuration: country.max_stay_duration,
+        visaFee: country.visa_fee,
+        applicationMethod: country.visa_type === 'Vizesiz' ? 'not-required' : 
+                          country.visa_type?.includes('E-') ? 'online' : 'embassy',
+      },
+      
+      // Documents & Steps
+      requiredDocuments: country.required_documents || [],
+      applicationSteps: country.application_steps || [],
+      
+      // Notes & Tips
+      importantNotes: country.important_notes || [],
+      travelTips: country.travel_tips || [],
+      
+      // Health & Customs
+      healthRequirements: country.health_requirements,
+      customsRegulations: country.customs_regulations,
+      
+      // Emergency Info
+      emergencyContacts: country.emergency_contacts || {},
+      
+      // Popular Cities
+      popularCities: country.popular_cities || [],
+      
+      // Best Time to Visit
+      bestTimeToVisit: country.best_time_to_visit,
+      
+      // Why Kolay Seyahat
+      whyKolaySeyahat: country.why_kolay_seyahat,
+      
+      // Packages
       packages: formattedPackages,
-      requiredDocuments: requiredDocs,
       hasPackages: formattedPackages.length > 0,
+      
+      // Pricing (if available)
+      pricing: country.price ? {
+        price: country.price,
+        originalPrice: country.original_price,
+        discountPercentage: country.discount_percentage,
+      } : null,
     };
 
     return NextResponse.json({

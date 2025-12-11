@@ -23,7 +23,7 @@ Tüm endpoint'ler CORS destekler ve herhangi bir origin'den erişilebilir.
 
 ### 1. Ülkeler Listesi
 
-Tüm aktif ülkeleri ve vize durumlarını listeler.
+Tüm aktif ülkeleri, vize durumlarını, istatistikleri ve kıta bilgilerini listeler.
 
 ```
 GET /api/mobile/countries
@@ -34,7 +34,8 @@ GET /api/mobile/countries
 | Parametre | Tip | Açıklama |
 |-----------|-----|----------|
 | search | string | Ülke adına göre filtrele |
-| visaStatus | string | Vize durumuna göre filtrele: `visa-free`, `evisa`, `visa-required`, `visa-on-arrival` |
+| visaStatus | string | Vize durumuna göre filtrele: `visa-free`, `evisa`, `visa-required`, `visa-on-arrival`, `schengen` |
+| continent | string | Kıtaya göre filtrele: `Avrupa`, `Asya`, `Afrika`, `Orta Doğu`, `Kuzey Amerika`, `Güney Amerika`, `Okyanusya` |
 
 #### Örnek Request
 
@@ -46,7 +47,10 @@ curl https://www.kolayseyahat.net/api/mobile/countries
 curl "https://www.kolayseyahat.net/api/mobile/countries?search=amerika"
 
 # Vize durumuna göre
-curl "https://www.kolayseyahat.net/api/mobile/countries?visaStatus=evisa"
+curl "https://www.kolayseyahat.net/api/mobile/countries?visaStatus=visa-free"
+
+# Kıtaya göre
+curl "https://www.kolayseyahat.net/api/mobile/countries?continent=Avrupa"
 ```
 
 #### Örnek Response
@@ -56,29 +60,37 @@ curl "https://www.kolayseyahat.net/api/mobile/countries?visaStatus=evisa"
   "success": true,
   "data": [
     {
-      "id": 4,
-      "name": "Amerika",
-      "slug": "amerika",
-      "countryCode": "US",
+      "id": 80,
+      "name": "Bosna Hersek",
+      "slug": "bosna-hersek",
+      "countryCode": "BIH",
       "imageUrl": "https://...",
-      "processTime": "1-4 Ay",
-      "visaRequired": true,
-      "visaStatus": "visa-required",
-      "allowedStay": null
-    },
-    {
-      "id": 10,
-      "name": "Bahreyn",
-      "slug": "bahreyn",
-      "countryCode": "BH",
-      "imageUrl": "https://...",
-      "processTime": "3-5 Gün",
-      "visaRequired": true,
-      "visaStatus": "evisa",
-      "allowedStay": "30 gün"
+      "processTime": "İşlem süresi yoktur",
+      "visaRequired": false,
+      "visaType": "Vizesiz",
+      "visaStatus": "visa-free",
+      "maxStayDuration": "90 gün",
+      "continent": "Avrupa",
+      "continentEn": "Europe"
     }
   ],
-  "count": 85
+  "count": 196,
+  "statistics": {
+    "visaFree": 115,
+    "evisa": 7,
+    "visaOnArrival": 1,
+    "visaRequired": 73,
+    "total": 196
+  },
+  "continents": [
+    { "name": "Afrika", "count": 53 },
+    { "name": "Avrupa", "count": 49 },
+    { "name": "Asya", "count": 26 },
+    { "name": "Orta Doğu", "count": 14 },
+    { "name": "Güney Amerika", "count": 12 },
+    { "name": "Kuzey Amerika", "count": 11 },
+    { "name": "Okyanusya", "count": 8 }
+  ]
 }
 ```
 
@@ -86,7 +98,17 @@ curl "https://www.kolayseyahat.net/api/mobile/countries?visaStatus=evisa"
 
 ### 2. Ülke Detayı
 
-Belirli bir ülkenin detaylı bilgilerini, vize gerekliliklerini ve paketlerini getirir.
+Belirli bir ülkenin TÜM detaylı bilgilerini getirir:
+- Ülke bilgileri (başkent, para birimi, dil, saat dilimi)
+- Vize gereklilikleri (durum, kalış süresi, başvuru yöntemi)
+- Gerekli belgeler
+- Başvuru adımları
+- Önemli notlar ve seyahat ipuçları
+- Sağlık gereksinimleri
+- Gümrük kuralları
+- Acil durum iletişim bilgileri
+- Popüler şehirler
+- Paketler ve fiyatlar
 
 ```
 GET /api/mobile/countries/{slug}
@@ -96,12 +118,12 @@ GET /api/mobile/countries/{slug}
 
 | Parametre | Tip | Açıklama |
 |-----------|-----|----------|
-| slug | string | Ülke slug'ı (örn: `amerika`, `ingiltere`) |
+| slug | string | Ülke slug'ı (örn: `bosna-hersek`, `amerika`) |
 
 #### Örnek Request
 
 ```bash
-curl https://www.kolayseyahat.net/api/mobile/countries/amerika
+curl https://www.kolayseyahat.net/api/mobile/countries/bosna-hersek
 ```
 
 #### Örnek Response
@@ -110,56 +132,76 @@ curl https://www.kolayseyahat.net/api/mobile/countries/amerika
 {
   "success": true,
   "data": {
-    "id": 4,
-    "name": "Amerika",
-    "slug": "amerika",
-    "countryCode": "US",
+    "id": 80,
+    "name": "Bosna Hersek",
+    "slug": "bosna-hersek",
+    "countryCode": "BIH",
     "imageUrl": "https://...",
-    "title": "Amerika Vizesi",
-    "description": "Amerika vize başvurusu için gerekli belgeler...",
-    "processTime": "1-4 Ay",
-    "visaRequired": true,
-    "visaRequirement": {
-      "visaStatus": "visa-required",
-      "allowedStay": null,
-      "conditions": "Tourist visa required",
-      "applicationMethod": "Embassy appointment",
-      "notes": "DS-160 formu doldurulmalı",
-      "availableMethods": ["embassy"]
+    "title": "Bosna Hersek Vizesi",
+    "description": "Bosna Hersek, tarihi ve kültürel zenginlikleriyle dolu bir Balkan ülkesidir.",
+    
+    "countryInfo": {
+      "capital": "Sarajevo",
+      "currency": "Bosna-Hersek Markı (1 BAM = 14.49 TRY)",
+      "language": "Boşnakça, Sırpça, Hırvatça",
+      "timezone": "Orta Avrupa Zamanı (CET)"
     },
-    "packages": [
-      {
-        "id": 1,
-        "name": "B1/B2 Turist Vizesi",
-        "description": "Amerika turist ve iş vizesi paketi",
-        "price": "2500",
-        "currency": "TRY",
-        "features": [
-          "DS-160 form hazırlama",
-          "Mülakat koçluğu",
-          "Belge kontrolü"
-        ]
-      },
-      {
-        "id": 2,
-        "name": "F1 Öğrenci Vizesi",
-        "description": "Amerika öğrenci vizesi paketi",
-        "price": "3000",
-        "currency": "TRY",
-        "features": [
-          "I-20 danışmanlığı",
-          "SEVIS ücreti rehberliği",
-          "Mülakat hazırlığı"
-        ]
-      }
-    ],
+    
+    "visaInfo": {
+      "visaRequired": false,
+      "visaType": "Vizesiz",
+      "visaStatus": "visa-free",
+      "processTime": "İşlem süresi yoktur",
+      "maxStayDuration": "90 gün",
+      "visaFee": "Vize ücreti yoktur",
+      "applicationMethod": "not-required"
+    },
+    
     "requiredDocuments": [
-      "Pasaport (6 ay geçerli)",
-      "Biyometrik fotoğraf (5x5 cm)",
-      "DS-160 onay sayfası",
-      "Banka hesap dökümü"
+      "Geçerli pasaport",
+      "Seyahat sağlık sigortası",
+      "Otel rezervasyonu",
+      "Dönüş bileti"
     ],
-    "hasPackages": true
+    
+    "applicationSteps": [
+      "Adım 1: Kolay Seyahat uzman danışmanlarıyla iletişime geçin",
+      "Adım 2: Gerekli belgeleri hazırlayın",
+      "Adım 3: Başvuru formunu doldurun",
+      "Adım 4: Randevu alın ve konsolosluğa gidin",
+      "Adım 5: Vize sonucunu bekleyin"
+    ],
+    
+    "importantNotes": [
+      "Bosna Hersek'e vizesiz seyahat edebilirsiniz.",
+      "Seyahat sağlık sigortası yaptırmayı unutmayın."
+    ],
+    
+    "travelTips": [
+      "Yerel para birimini kullanmayı öğrenin.",
+      "Temel Boşnakça kelimeleri öğrenmek faydalı olabilir."
+    ],
+    
+    "healthRequirements": "Yurtdışı seyahat sağlık sigortası önerilmektedir.",
+    
+    "customsRegulations": "Yasaklı maddeler veya yüksek miktarda nakit para ile seyahat etmemeye dikkat edin.",
+    
+    "emergencyContacts": {
+      "police": "122",
+      "ambulance": "124",
+      "emergencyNumber": "112",
+      "embassy": "Türk Elçiliği - Tel: +387 33 441 140, Adres: Bistrik 15, 71000 Sarajevo"
+    },
+    
+    "popularCities": ["Sarajevo", "Mostar", "Banja Luka"],
+    
+    "bestTimeToVisit": "Bahar ve yaz ayları",
+    
+    "whyKolaySeyahat": "Uzman desteği, zaman kazancı ve güvenli seyahat deneyimi.",
+    
+    "packages": [],
+    "hasPackages": false,
+    "pricing": null
   }
 }
 ```
