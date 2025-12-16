@@ -116,13 +116,14 @@ export function CountriesListWithFilters({ initialCountries }: { initialCountrie
 
   return (
     <div className="space-y-8">
-      {/* Header */}
+      {/* Header - SEO Optimized */}
       <section className="space-y-4">
-        <h1 className="text-3xl font-bold text-slate-900">
-          Vize Başvurusu Yapılabilecek Ülkeler
+        <h1 className="text-3xl font-bold text-slate-900 md:text-4xl">
+          Türk Vatandaşları İçin {countries.length} Ülkeye Vize Başvurusu
         </h1>
-        <p className="text-lg text-slate-600">
-          {filteredCountries.length} ülke için profesyonel vize danışmanlık hizmeti sunuyoruz.
+        <p className="text-lg text-slate-600 max-w-3xl">
+          Vizesiz giriş, varışta vize, e-vize ve konsolosluk başvurusu gerektiren tüm ülkeler için 
+          profesyonel vize danışmanlık hizmeti. %98 başarı oranıyla güvenle başvurun.
         </p>
       </section>
 

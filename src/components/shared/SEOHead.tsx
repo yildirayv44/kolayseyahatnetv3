@@ -262,3 +262,49 @@ export function generateItemListSchema(items: Array<{
     numberOfItems: items.length,
   };
 }
+
+// Review Schema for user comments
+export function generateReviewSchema(reviews: Array<{
+  author: string;
+  rating?: number;
+  content: string;
+  date?: string;
+}>, itemName: string) {
+  if (!reviews || reviews.length === 0) {
+    return null;
+  }
+
+  // Calculate aggregate rating
+  const ratingsWithValue = reviews.filter(r => r.rating && r.rating > 0);
+  const avgRating = ratingsWithValue.length > 0
+    ? ratingsWithValue.reduce((sum, r) => sum + (r.rating || 5), 0) / ratingsWithValue.length
+    : 4.8;
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: itemName,
+    aggregateRating: {
+      "@type": "AggregateRating",
+      ratingValue: avgRating.toFixed(1),
+      reviewCount: reviews.length.toString(),
+      bestRating: "5",
+      worstRating: "1",
+    },
+    review: reviews.slice(0, 10).map(review => ({
+      "@type": "Review",
+      author: {
+        "@type": "Person",
+        name: review.author,
+      },
+      reviewRating: {
+        "@type": "Rating",
+        ratingValue: (review.rating || 5).toString(),
+        bestRating: "5",
+        worstRating: "1",
+      },
+      reviewBody: review.content,
+      ...(review.date && { datePublished: review.date }),
+    })),
+  };
+}
