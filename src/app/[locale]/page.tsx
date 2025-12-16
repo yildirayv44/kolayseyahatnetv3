@@ -148,29 +148,29 @@ export default async function Home({ params }: HomePageProps) {
                 <FavoriteButton id={country.id} type="country" size="sm" />
               </div>
               <div className="space-y-2">
-                <div className="flex items-center justify-between gap-2 pr-10">
+                <div className="flex items-center gap-2 pr-10">
                   <div className="inline-flex items-center gap-1 rounded-full bg-slate-50 px-2 py-1 text-[11px] font-medium text-slate-600">
                     <Globe2 className="h-3 w-3 text-primary" />
                     <span>{country.name}</span>
                   </div>
-                  {country.visa_labels && country.visa_labels.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
-                      {country.visa_labels.map((label: string, idx: number) => (
-                        <span key={idx} className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                          label === "Vizesiz" 
-                            ? "bg-emerald-50 text-emerald-600" 
-                            : label === "Varışta Vize"
-                            ? "bg-blue-50 text-blue-600"
-                            : label === "E-vize"
-                            ? "bg-purple-50 text-purple-600"
-                            : "bg-orange-50 text-orange-600"
-                        }`}>
-                          {label}
-                        </span>
-                      ))}
-                    </div>
-                  )}
                 </div>
+                {country.visa_labels && country.visa_labels.length > 0 && (
+                  <div className="flex flex-wrap gap-1">
+                    {country.visa_labels.map((label: string, idx: number) => (
+                      <span key={idx} className={`rounded-full px-1.5 py-0.5 text-[9px] font-semibold ${
+                        label === "Vizesiz" 
+                          ? "bg-emerald-50 text-emerald-600" 
+                          : label === "Varışta Vize"
+                          ? "bg-blue-50 text-blue-600"
+                          : label === "E-vize"
+                          ? "bg-purple-50 text-purple-600"
+                          : "bg-orange-50 text-orange-600"
+                      }`}>
+                        {label}
+                      </span>
+                    ))}
+                  </div>
+                )}
                 <h3 className="text-sm font-semibold text-slate-900">
                   {country.title || `${country.name} ${locale === "en" ? "Visa" : "Vizesi"}`}
                 </h3>

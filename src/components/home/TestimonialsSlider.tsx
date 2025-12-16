@@ -143,7 +143,7 @@ export function TestimonialsSlider() {
 
             {/* Author - Kompakt */}
             <div className="flex items-center justify-center gap-3">
-              <div className="relative h-10 w-10 overflow-hidden rounded-full">
+              <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-full">
                 <Image
                   src={current.image}
                   alt={current.name}
@@ -151,11 +151,11 @@ export function TestimonialsSlider() {
                   className="object-cover"
                 />
               </div>
-              <div className="text-left">
-                <div className="text-sm font-semibold text-slate-900">{current.name}</div>
-                <div className="text-xs text-slate-500">{current.country}</div>
+              <div className="min-w-0 text-left">
+                <div className="truncate text-sm font-semibold text-slate-900">{current.name}</div>
+                <div className="truncate text-xs text-slate-500">{current.country}</div>
               </div>
-              <div className="ml-auto text-[10px] text-slate-400">{current.date}</div>
+              <div className="flex-shrink-0 text-[10px] text-slate-400">{current.date}</div>
             </div>
           </div>
 

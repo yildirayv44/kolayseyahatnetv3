@@ -2,29 +2,27 @@
 
 import { CheckCircle, Clock, Globe, XCircle, TrendingUp } from "lucide-react";
 
-interface VisaRequirement {
-  countryCode: string;
-  visaStatus: string;
-  allowedStay: string | null;
+interface Country {
+  id: number;
+  visa_labels?: string[];
 }
 
 interface Props {
-  visaData: Record<string, VisaRequirement>;
-  totalCountries: number;
+  countries: Country[];
 }
 
-export function VisaMap({ visaData, totalCountries }: Props) {
-  // Calculate statistics
-  const statusCounts = Object.values(visaData).reduce((acc, visa) => {
-    acc[visa.visaStatus] = (acc[visa.visaStatus] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+export function VisaMap({ countries }: Props) {
+  // Calculate statistics from visa_labels
+  const visaFreeCount = countries.filter(c => c.visa_labels?.includes("Vizesiz")).length;
+  const visaOnArrivalCount = countries.filter(c => c.visa_labels?.includes("Varışta Vize")).length;
+  const eVisaCount = countries.filter(c => c.visa_labels?.includes("E-vize")).length;
+  const visaRequiredCount = countries.filter(c => c.visa_labels?.includes("Vize Gerekli")).length;
 
   const stats = [
     {
       status: 'visa-free',
       label: 'Vizesiz Giriş',
-      count: statusCounts['visa-free'] || 0,
+      count: visaFreeCount,
       icon: CheckCircle,
       color: 'bg-green-50 border-green-200',
       iconColor: 'text-green-600',
@@ -33,7 +31,7 @@ export function VisaMap({ visaData, totalCountries }: Props) {
     {
       status: 'visa-on-arrival',
       label: 'Varışta Vize',
-      count: statusCounts['visa-on-arrival'] || 0,
+      count: visaOnArrivalCount,
       icon: Clock,
       color: 'bg-blue-50 border-blue-200',
       iconColor: 'text-blue-600',
@@ -41,17 +39,17 @@ export function VisaMap({ visaData, totalCountries }: Props) {
     },
     {
       status: 'eta',
-      label: 'eTA Gerekli',
-      count: statusCounts['eta'] || 0,
+      label: 'E-vize',
+      count: eVisaCount,
       icon: Globe,
-      color: 'bg-cyan-50 border-cyan-200',
-      iconColor: 'text-cyan-600',
-      textColor: 'text-cyan-900'
+      color: 'bg-purple-50 border-purple-200',
+      iconColor: 'text-purple-600',
+      textColor: 'text-purple-900'
     },
     {
       status: 'visa-required',
       label: 'Vize Gerekli',
-      count: statusCounts['visa-required'] || 0,
+      count: visaRequiredCount,
       icon: XCircle,
       color: 'bg-orange-50 border-orange-200',
       iconColor: 'text-orange-600',
@@ -59,9 +57,9 @@ export function VisaMap({ visaData, totalCountries }: Props) {
     },
   ];
 
-  const totalWithData = Object.keys(visaData).length;
-  const visaFreePercentage = totalWithData > 0 
-    ? Math.round(((statusCounts['visa-free'] || 0) / totalWithData) * 100)
+  const totalCountries = countries.length;
+  const visaFreePercentage = totalCountries > 0 
+    ? Math.round((visaFreeCount / totalCountries) * 100)
     : 0;
 
   return (
