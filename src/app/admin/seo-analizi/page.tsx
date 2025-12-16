@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Search, Filter, TrendingUp, TrendingDown, AlertCircle, CheckCircle, ExternalLink, RefreshCw, Edit3, Save, X, Globe, Languages } from "lucide-react";
+import { Search, Filter, TrendingUp, TrendingDown, AlertCircle, CheckCircle, ExternalLink, RefreshCw, Edit3, Save, X, Globe, Languages, Sparkles, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 interface RichSnippet {
@@ -76,6 +76,81 @@ export default function SEOAnaliziPage() {
   const [editMode, setEditMode] = useState(false);
   const [editData, setEditData] = useState<Record<string, string>>({});
   const [showOnlyMissing, setShowOnlyMissing] = useState(false);
+  const [translating, setTranslating] = useState(false);
+  const [translateSingleId, setTranslateSingleId] = useState<number | null>(null);
+  const [missingCount, setMissingCount] = useState({ countries: 0, blogs: 0, total: 0 });
+
+  // Fetch missing translation count
+  const fetchMissingCount = async () => {
+    try {
+      const response = await fetch('/api/admin/seo/translate-missing');
+      const data = await response.json();
+      if (data.success) {
+        setMissingCount(data.missing);
+      }
+    } catch (error) {
+      console.error('Error fetching missing count:', error);
+    }
+  };
+
+  // Translate all missing content
+  const translateAllMissing = async (type?: string) => {
+    if (!confirm(`${type ? (type === 'country' ? 'Ülkeler' : 'Bloglar') : 'Tüm içerikler'} için eksik İngilizce içerikler AI ile çevrilecek. Devam etmek istiyor musunuz?`)) {
+      return;
+    }
+
+    setTranslating(true);
+    try {
+      const response = await fetch('/api/admin/seo/translate-missing', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ translateAll: true, type }),
+      });
+      const data = await response.json();
+      
+      if (data.success) {
+        alert(`✅ ${data.total_translated} içerik başarıyla çevrildi!\n\nDetaylar:\n${data.results.map((r: any) => `• ${r.name}: ${r.fields_translated.join(', ') || 'Zaten çevrilmiş'}`).join('\n')}`);
+        fetchAnalysis();
+        fetchMissingCount();
+      } else {
+        alert('❌ Çeviri hatası: ' + data.error);
+      }
+    } catch (error: any) {
+      alert('❌ Çeviri hatası: ' + error.message);
+    } finally {
+      setTranslating(false);
+    }
+  };
+
+  // Translate single item
+  const translateSingle = async (item: SEOScore) => {
+    setTranslateSingleId(item.id);
+    try {
+      const response = await fetch('/api/admin/seo/translate-missing', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: item.type, id: item.id }),
+      });
+      const data = await response.json();
+      
+      if (data.success && data.results[0]) {
+        const result = data.results[0];
+        if (result.fields_translated.length > 0) {
+          alert(`✅ ${result.name} çevrildi!\nAlanlar: ${result.fields_translated.join(', ')}`);
+          fetchAnalysis();
+          fetchMissingCount();
+        } else {
+          alert('ℹ️ Çevrilecek eksik alan bulunamadı.');
+        }
+      } else {
+        alert('❌ Çeviri hatası: ' + (data.error || data.results[0]?.error));
+      }
+    } catch (error: any) {
+      alert('❌ Çeviri hatası: ' + error.message);
+    } finally {
+      setTranslateSingleId(null);
+    }
+  };
 
   const fetchAnalysis = async () => {
     setLoading(true);
@@ -103,6 +178,7 @@ export default function SEOAnaliziPage() {
 
   useEffect(() => {
     fetchAnalysis();
+    fetchMissingCount();
   }, [typeFilter, statusFilter, sortBy]);
 
   // Filter results
@@ -382,6 +458,27 @@ export default function SEOAnaliziPage() {
               <span className="text-slate-700">Sadece EN Eksik</span>
             </label>
           </div>
+
+          {/* AI Translation Buttons */}
+          {missingCount.total > 0 && (
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-slate-500">
+                Eksik: {missingCount.countries} ülke, {missingCount.blogs} blog
+              </span>
+              <button
+                onClick={() => translateAllMissing()}
+                disabled={translating}
+                className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-500 to-indigo-500 px-4 py-2 text-sm font-semibold text-white hover:from-purple-600 hover:to-indigo-600 disabled:opacity-50"
+              >
+                {translating ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Sparkles className="h-4 w-4" />
+                )}
+                {translating ? 'Çevriliyor...' : 'AI ile Tümünü Çevir'}
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -502,6 +599,21 @@ export default function SEOAnaliziPage() {
                       </td>
                       <td className="px-4 py-4">
                         <div className="flex items-center justify-end gap-2">
+                          {/* AI Translate Button - show if EN content missing */}
+                          {item.en_issues && item.en_issues.some(i => i.includes('eksik')) && (
+                            <button
+                              onClick={() => translateSingle(item)}
+                              disabled={translateSingleId === item.id}
+                              className="rounded-lg p-2 text-purple-600 hover:bg-purple-100 disabled:opacity-50"
+                              title="AI ile Çevir"
+                            >
+                              {translateSingleId === item.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Sparkles className="h-4 w-4" />
+                              )}
+                            </button>
+                          )}
                           <button
                             onClick={() => startEdit(item)}
                             className="rounded-lg p-2 text-slate-600 hover:bg-blue-100 hover:text-blue-600"
