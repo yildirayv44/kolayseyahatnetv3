@@ -150,18 +150,22 @@ export default async function Home({ params }: HomePageProps) {
                     <Globe2 className="h-3 w-3 text-primary" />
                     <span>{country.name}</span>
                   </div>
-                  {country.visa_label && (
-                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                      country.visa_label === "Vizesiz" 
-                        ? "bg-emerald-50 text-emerald-600" 
-                        : country.visa_label === "Kapıda Vize"
-                        ? "bg-blue-50 text-blue-600"
-                        : country.visa_label === "E-vize"
-                        ? "bg-purple-50 text-purple-600"
-                        : "bg-orange-50 text-orange-600"
-                    }`}>
-                      {country.visa_label}
-                    </span>
+                  {country.visa_labels && country.visa_labels.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {country.visa_labels.map((label: string, idx: number) => (
+                        <span key={idx} className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                          label === "Vizesiz" 
+                            ? "bg-emerald-50 text-emerald-600" 
+                            : label === "Varışta Vize"
+                            ? "bg-blue-50 text-blue-600"
+                            : label === "E-vize"
+                            ? "bg-purple-50 text-purple-600"
+                            : "bg-orange-50 text-orange-600"
+                        }`}>
+                          {label}
+                        </span>
+                      ))}
+                    </div>
                   )}
                 </div>
                 <h3 className="text-sm font-semibold text-slate-900">

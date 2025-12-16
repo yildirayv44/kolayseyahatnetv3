@@ -74,7 +74,7 @@ export function CountriesByContinent({ countries, visaData }: Props) {
       className = "bg-green-100 text-green-700 border-green-200";
       Icon = CheckCircle;
     } else if (status === "visa-on-arrival" || status === "visa_on_arrival") {
-      label = "Kapıda Vize";
+      label = "Varışta Vize";
       className = "bg-blue-100 text-blue-700 border-blue-200";
       Icon = Clock;
     } else if (status.includes("eta") || status.includes("esta")) {

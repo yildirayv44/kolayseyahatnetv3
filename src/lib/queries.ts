@@ -40,10 +40,10 @@ export async function getCountries() {
     .map(c => c.country_code)
     .filter((code): code is string => !!code);
 
-  // Vize gerekliliklerini çek
+  // Vize gerekliliklerini çek (available_methods dahil)
   const { data: visaRequirements } = await supabase
     .from("visa_requirements")
-    .select("country_code, visa_status")
+    .select("country_code, visa_status, available_methods")
     .in("country_code", countryCodes);
 
   // Taxonomy map'i oluştur
@@ -64,9 +64,12 @@ export async function getCountries() {
   });
 
   // Vize gereklilikleri map'i oluştur
-  const visaMap = new Map<string, string>();
+  const visaMap = new Map<string, { visa_status: string; available_methods: string[] | null }>();
   visaRequirements?.forEach(req => {
-    visaMap.set(req.country_code, req.visa_status);
+    visaMap.set(req.country_code, {
+      visa_status: req.visa_status,
+      available_methods: req.available_methods
+    });
   });
 
   // Ülkelere slug'ları ve fiyatları ekle
@@ -78,21 +81,35 @@ export async function getCountries() {
     const productData = priceMap.get(country.id);
 
     // Vize durumu: visa_requirements tablosundan
-    const visaStatus = country.country_code ? visaMap.get(country.country_code) : null;
+    const visaData = country.country_code ? visaMap.get(country.country_code) : null;
+    const visaStatus = visaData?.visa_status || null;
+    const availableMethods = visaData?.available_methods || [];
     
-    // Vize durumu etiketini belirle
-    let visaLabel = "Vize Gerekli";
+    // Vize durumu etiketlerini belirle (birden fazla yöntem olabilir)
+    const visaLabels: string[] = [];
     let isVisaFree = false;
     
-    if (visaStatus === "visa_free" || visaStatus === "visa-free") {
-      visaLabel = "Vizesiz";
-      isVisaFree = true;
-    } else if (visaStatus === "visa_on_arrival" || visaStatus === "visa-on-arrival") {
-      visaLabel = "Kapıda Vize";
-      isVisaFree = true;
-    } else if (visaStatus?.toLowerCase().includes("eta") || visaStatus?.toLowerCase().includes("esta")) {
-      visaLabel = "E-vize";
-      isVisaFree = false;
+    // available_methods varsa onları kullan, yoksa visa_status'a bak
+    const methodsToCheck = availableMethods.length > 0 ? availableMethods : (visaStatus ? [visaStatus] : []);
+    
+    methodsToCheck.forEach(method => {
+      const m = method.toLowerCase();
+      if (m === "visa_free" || m === "visa-free") {
+        if (!visaLabels.includes("Vizesiz")) visaLabels.push("Vizesiz");
+        isVisaFree = true;
+      } else if (m === "visa_on_arrival" || m === "visa-on-arrival") {
+        if (!visaLabels.includes("Varışta Vize")) visaLabels.push("Varışta Vize");
+        isVisaFree = true;
+      } else if (m.includes("eta") || m.includes("esta") || m.includes("evisa") || m === "e-visa") {
+        if (!visaLabels.includes("E-vize")) visaLabels.push("E-vize");
+      } else if (m === "embassy" || m === "visa-required" || m === "visa_required") {
+        if (!visaLabels.includes("Vize Gerekli")) visaLabels.push("Vize Gerekli");
+      }
+    });
+    
+    // Eğer hiç etiket yoksa varsayılan olarak "Vize Gerekli" ekle
+    if (visaLabels.length === 0 && visaStatus) {
+      visaLabels.push("Vize Gerekli");
     }
     
     return {
@@ -103,8 +120,10 @@ export async function getCountries() {
       currency_id: productData?.currency_id ?? 1,
       // Vize durumu
       visa_status: visaStatus,
-      visa_label: visaLabel,
+      visa_labels: visaLabels,
+      visa_label: visaLabels.join(" / ") || null,
       visa_required: !isVisaFree,
+      available_methods: availableMethods,
       // original_price ve discount_percentage artık kullanılmıyor
       original_price: null,
       discount_percentage: null,
