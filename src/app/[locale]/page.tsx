@@ -150,9 +150,17 @@ export default async function Home({ params }: HomePageProps) {
                     <Globe2 className="h-3 w-3 text-primary" />
                     <span>{country.name}</span>
                   </div>
-                  {country.visa_required === false && (
-                    <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-600">
-                      {t.popular.visaFree}
+                  {country.visa_label && (
+                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                      country.visa_label === "Vizesiz" 
+                        ? "bg-emerald-50 text-emerald-600" 
+                        : country.visa_label === "Kapıda Vize"
+                        ? "bg-blue-50 text-blue-600"
+                        : country.visa_label === "E-vize"
+                        ? "bg-purple-50 text-purple-600"
+                        : "bg-orange-50 text-orange-600"
+                    }`}>
+                      {country.visa_label}
                     </span>
                   )}
                 </div>

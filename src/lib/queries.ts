@@ -35,6 +35,17 @@ export async function getCountries() {
     .eq("status", 1)
     .order("price", { ascending: true });
 
+  // Ülke kodlarını topla
+  const countryCodes = countries
+    .map(c => c.country_code)
+    .filter((code): code is string => !!code);
+
+  // Vize gerekliliklerini çek
+  const { data: visaRequirements } = await supabase
+    .from("visa_requirements")
+    .select("country_code, visa_status")
+    .in("country_code", countryCodes);
+
   // Taxonomy map'i oluştur
   const taxonomyMap = new Map<number, string>();
   taxonomies?.forEach(tax => {
@@ -52,6 +63,12 @@ export async function getCountries() {
     }
   });
 
+  // Vize gereklilikleri map'i oluştur
+  const visaMap = new Map<string, string>();
+  visaRequirements?.forEach(req => {
+    visaMap.set(req.country_code, req.visa_status);
+  });
+
   // Ülkelere slug'ları ve fiyatları ekle
   const countriesWithSlugs = countries.map(country => {
     // Öncelik sırası: taxonomy slug > mapping > fallback
@@ -59,6 +76,24 @@ export async function getCountries() {
     
     // Fiyat: products tablosundan en düşük fiyat ve para birimi
     const productData = priceMap.get(country.id);
+
+    // Vize durumu: visa_requirements tablosundan
+    const visaStatus = country.country_code ? visaMap.get(country.country_code) : null;
+    
+    // Vize durumu etiketini belirle
+    let visaLabel = "Vize Gerekli";
+    let isVisaFree = false;
+    
+    if (visaStatus === "visa_free" || visaStatus === "visa-free") {
+      visaLabel = "Vizesiz";
+      isVisaFree = true;
+    } else if (visaStatus === "visa_on_arrival" || visaStatus === "visa-on-arrival") {
+      visaLabel = "Kapıda Vize";
+      isVisaFree = true;
+    } else if (visaStatus?.toLowerCase().includes("eta") || visaStatus?.toLowerCase().includes("esta")) {
+      visaLabel = "E-vize";
+      isVisaFree = false;
+    }
     
     return {
       ...country,
@@ -66,6 +101,10 @@ export async function getCountries() {
       // Fiyatı products tablosundan al, yoksa null
       price: productData?.price ?? null,
       currency_id: productData?.currency_id ?? 1,
+      // Vize durumu
+      visa_status: visaStatus,
+      visa_label: visaLabel,
+      visa_required: !isVisaFree,
       // original_price ve discount_percentage artık kullanılmıyor
       original_price: null,
       discount_percentage: null,

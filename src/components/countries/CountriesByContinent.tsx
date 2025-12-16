@@ -62,38 +62,31 @@ export function CountriesByContinent({ countries, visaData }: Props) {
     const visa = visaData[countryCode];
     if (!visa) return null;
 
-    const statusConfig: Record<string, { label: string; className: string; icon: any }> = {
-      'visa-free': { 
-        label: 'Vizesiz', 
-        className: 'bg-green-100 text-green-700 border-green-200',
-        icon: CheckCircle
-      },
-      'visa-on-arrival': { 
-        label: 'Varışta Vize', 
-        className: 'bg-blue-100 text-blue-700 border-blue-200',
-        icon: Clock
-      },
-      'eta': { 
-        label: 'eTA', 
-        className: 'bg-cyan-100 text-cyan-700 border-cyan-200',
-        icon: Globe2
-      },
-      'visa-required': { 
-        label: 'Vize Gerekli', 
-        className: 'bg-orange-100 text-orange-700 border-orange-200',
-        icon: XCircle
-      },
-    };
+    // Vize durumunu normalize et
+    const status = visa.visaStatus?.toLowerCase() || "";
+    
+    let label = "Vize Gerekli";
+    let className = "bg-orange-100 text-orange-700 border-orange-200";
+    let Icon = XCircle;
 
-    const config = statusConfig[visa.visaStatus];
-    if (!config) return null;
-
-    const Icon = config.icon;
+    if (status === "visa-free" || status === "visa_free") {
+      label = "Vizesiz";
+      className = "bg-green-100 text-green-700 border-green-200";
+      Icon = CheckCircle;
+    } else if (status === "visa-on-arrival" || status === "visa_on_arrival") {
+      label = "Kapıda Vize";
+      className = "bg-blue-100 text-blue-700 border-blue-200";
+      Icon = Clock;
+    } else if (status.includes("eta") || status.includes("esta")) {
+      label = "E-vize";
+      className = "bg-purple-100 text-purple-700 border-purple-200";
+      Icon = Globe2;
+    }
 
     return (
-      <div className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium ${config.className}`}>
+      <div className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium ${className}`}>
         <Icon className="h-3 w-3" />
-        {config.label}
+        {label}
       </div>
     );
   };

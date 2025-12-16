@@ -98,38 +98,31 @@ export function CountriesListWithFilters({ initialCountries }: { initialCountrie
     const visa = visaData[countryCode];
     if (!visa) return null;
 
-    const statusConfig: Record<string, { label: string; className: string; icon: any }> = {
-      'visa-free': { 
-        label: 'Vizesiz', 
-        className: 'bg-green-100 text-green-700 border-green-200',
-        icon: CheckCircle
-      },
-      'visa-on-arrival': { 
-        label: 'Varışta Vize', 
-        className: 'bg-blue-100 text-blue-700 border-blue-200',
-        icon: Clock
-      },
-      'eta': { 
-        label: 'eTA', 
-        className: 'bg-cyan-100 text-cyan-700 border-cyan-200',
-        icon: Globe
-      },
-      'visa-required': { 
-        label: 'Vize Gerekli', 
-        className: 'bg-orange-100 text-orange-700 border-orange-200',
-        icon: XCircle
-      },
-    };
+    // Vize durumunu normalize et
+    const status = visa.visaStatus?.toLowerCase() || "";
+    
+    let label = "Vize Gerekli";
+    let className = "bg-orange-100 text-orange-700 border-orange-200";
+    let Icon = XCircle;
 
-    const config = statusConfig[visa.visaStatus];
-    if (!config) return null;
-
-    const Icon = config.icon;
+    if (status === "visa-free" || status === "visa_free") {
+      label = "Vizesiz";
+      className = "bg-green-100 text-green-700 border-green-200";
+      Icon = CheckCircle;
+    } else if (status === "visa-on-arrival" || status === "visa_on_arrival") {
+      label = "Kapıda Vize";
+      className = "bg-blue-100 text-blue-700 border-blue-200";
+      Icon = Clock;
+    } else if (status.includes("eta") || status.includes("esta")) {
+      label = "E-vize";
+      className = "bg-purple-100 text-purple-700 border-purple-200";
+      Icon = Globe;
+    }
 
     return (
-      <div className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold ${config.className}`}>
+      <div className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold ${className}`}>
         <Icon className="h-3.5 w-3.5" />
-        <span>{config.label}</span>
+        <span>{label}</span>
         {visa.allowedStay && (
           <span className="text-[10px] opacity-75">• {visa.allowedStay}</span>
         )}
@@ -207,9 +200,9 @@ export function CountriesListWithFilters({ initialCountries }: { initialCountrie
             className="rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
           >
             <option value="all">Tüm Vize Durumları</option>
-            <option value="visa-free">✅ Vizesiz Giriş</option>
-            <option value="visa-on-arrival">🛬 Varışta Vize</option>
-            <option value="eta">📧 eTA Gerekli</option>
+            <option value="visa-free">✅ Vizesiz</option>
+            <option value="visa-on-arrival">🛬 Kapıda Vize</option>
+            <option value="eta">📧 E-vize</option>
             <option value="visa-required">🏛️ Vize Gerekli</option>
           </select>
         </div>
@@ -226,8 +219,8 @@ export function CountriesListWithFilters({ initialCountries }: { initialCountrie
             {visaStatusFilter !== "all" && (
               <span className="rounded-full bg-primary/10 px-2 py-1 text-xs text-primary">
                 {visaStatusFilter === "visa-free" && "Vizesiz"}
-                {visaStatusFilter === "visa-on-arrival" && "Varışta Vize"}
-                {visaStatusFilter === "eta" && "eTA"}
+                {visaStatusFilter === "visa-on-arrival" && "Kapıda Vize"}
+                {visaStatusFilter === "eta" && "E-vize"}
                 {visaStatusFilter === "visa-required" && "Vize Gerekli"}
               </span>
             )}
