@@ -10,8 +10,17 @@ interface ExtendedCountryInfoProps {
 export function ExtendedCountryInfo({ country, locale }: ExtendedCountryInfoProps) {
   const hasCountryInfo = country.capital || country.currency || country.language || country.timezone;
   const hasPopularCities = country.popular_cities && country.popular_cities.length > 0;
-  const hasTravelTips = country.travel_tips && country.travel_tips.length > 0;
-  const hasApplicationSteps = country.application_steps && country.application_steps.length > 0;
+  
+  // Use English versions if available and locale is 'en'
+  const travelTips = locale === 'en' && country.travel_tips_en?.length > 0 
+    ? country.travel_tips_en 
+    : country.travel_tips;
+  const applicationSteps = locale === 'en' && country.application_steps_en?.length > 0 
+    ? country.application_steps_en 
+    : country.application_steps;
+  
+  const hasTravelTips = travelTips && travelTips.length > 0;
+  const hasApplicationSteps = applicationSteps && applicationSteps.length > 0;
   // Check both new array format and old HTML format for backward compatibility
   const hasRequiredDocs = (country.required_documents && country.required_documents.length > 0) || country.req_document;
   const hasImportantNotes = country.important_notes && country.important_notes.length > 0;
@@ -121,7 +130,7 @@ export function ExtendedCountryInfo({ country, locale }: ExtendedCountryInfoProp
             </h2>
           </div>
           <ul className="space-y-2">
-            {country.travel_tips.map((tip: string, index: number) => (
+            {travelTips.map((tip: string, index: number) => (
               <li key={index} className="flex items-start gap-2">
                 <span className="mt-1 text-primary">•</span>
                 <span className="flex-1 text-slate-700">{tip}</span>
@@ -141,7 +150,7 @@ export function ExtendedCountryInfo({ country, locale }: ExtendedCountryInfoProp
             </h2>
           </div>
           <ol className="space-y-3">
-            {country.application_steps.map((step: string, index: number) => (
+            {applicationSteps.map((step: string, index: number) => (
               <li key={index} className="flex items-start gap-3">
                 <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
                   {index + 1}

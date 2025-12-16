@@ -188,10 +188,14 @@ export default function SEOAnaliziPage() {
       return false;
     }
     
-    // Show only missing EN content filter
+    // Show only missing EN content filter - only truly missing content, not quality issues
     if (showOnlyMissing) {
-      const hasEnIssues = item.en_issues && item.en_issues.some(issue => issue.includes('eksik'));
-      if (!hasEnIssues) return false;
+      const hasTrulyMissingEN = item.en_issues && item.en_issues.some(issue => 
+        issue.includes('Meta title eksik') || 
+        issue.includes('Meta description eksik') || 
+        issue.includes('İçerik eksik')
+      );
+      if (!hasTrulyMissingEN) return false;
     }
     
     return true;
@@ -460,25 +464,56 @@ export default function SEOAnaliziPage() {
           </div>
 
           {/* AI Translation Buttons */}
-          {missingCount.total > 0 && (
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-slate-500">
-                Eksik: {missingCount.countries} ülke, {missingCount.blogs} blog
-              </span>
-              <button
-                onClick={() => translateAllMissing()}
-                disabled={translating}
-                className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-500 to-indigo-500 px-4 py-2 text-sm font-semibold text-white hover:from-purple-600 hover:to-indigo-600 disabled:opacity-50"
-              >
-                {translating ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Sparkles className="h-4 w-4" />
-                )}
-                {translating ? 'Çevriliyor...' : 'AI ile Tümünü Çevir'}
-              </button>
-            </div>
-          )}
+          <div className="flex items-center gap-2">
+            {missingCount.total > 0 && (
+              <>
+                <span className="text-sm text-slate-500">
+                  Eksik: {missingCount.countries} ülke, {missingCount.blogs} blog
+                </span>
+                <button
+                  onClick={() => translateAllMissing()}
+                  disabled={translating}
+                  className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-500 to-indigo-500 px-4 py-2 text-sm font-semibold text-white hover:from-purple-600 hover:to-indigo-600 disabled:opacity-50"
+                >
+                  {translating ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-4 w-4" />
+                  )}
+                  {translating ? 'Çevriliyor...' : 'AI ile Meta Çevir'}
+                </button>
+              </>
+            )}
+            <button
+              onClick={async () => {
+                if (!confirm('Tüm ülkelerin travel_tips ve application_steps alanları İngilizce\'ye çevrilecek. Devam?')) return;
+                setTranslating(true);
+                try {
+                  const res = await fetch('/api/admin/seo/translate-json-fields', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ limit: 20 }),
+                  });
+                  const data = await res.json();
+                  if (data.success) {
+                    alert(`✅ ${data.total_translated} ülke çevrildi!`);
+                    fetchAnalysis();
+                  } else {
+                    alert('❌ Hata: ' + data.error);
+                  }
+                } catch (e: any) {
+                  alert('❌ Hata: ' + e.message);
+                } finally {
+                  setTranslating(false);
+                }
+              }}
+              disabled={translating}
+              className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-green-500 to-teal-500 px-4 py-2 text-sm font-semibold text-white hover:from-green-600 hover:to-teal-600 disabled:opacity-50"
+            >
+              {translating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+              Tips & Steps Çevir
+            </button>
+          </div>
         </div>
       </div>
 
@@ -562,12 +597,12 @@ export default function SEOAnaliziPage() {
                         <div className="space-y-1 text-xs">
                           {trIssueCount > 0 && (
                             <div className="text-orange-600">
-                              🇹🇷 {trIssueCount} eksik
+                              🇹🇷 {trIssueCount} sorun
                             </div>
                           )}
                           {enIssueCount > 0 && (
                             <div className="text-red-600">
-                              🇬🇧 {enIssueCount} eksik
+                              🇬🇧 {enIssueCount} sorun
                             </div>
                           )}
                           {trIssueCount === 0 && enIssueCount === 0 && (
@@ -599,8 +634,12 @@ export default function SEOAnaliziPage() {
                       </td>
                       <td className="px-4 py-4">
                         <div className="flex items-center justify-end gap-2">
-                          {/* AI Translate Button - show if EN content missing */}
-                          {item.en_issues && item.en_issues.some(i => i.includes('eksik')) && (
+                          {/* AI Translate Button - show only if EN content truly missing */}
+                          {item.en_issues && item.en_issues.some(i => 
+                            i.includes('Meta title eksik') || 
+                            i.includes('Meta description eksik') || 
+                            i.includes('İçerik eksik')
+                          ) && (
                             <button
                               onClick={() => translateSingle(item)}
                               disabled={translateSingleId === item.id}
