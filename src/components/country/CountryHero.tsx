@@ -89,7 +89,76 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
       }
     }
     
-    return condition;  // Determine visa status from database
+    return condition;
+  };
+
+  // Format allowed stay for display
+  const formatAllowedStay = (stay: string | null): string => {
+    if (!stay) return locale === 'tr' ? 'Belirtilmemiş' : 'Not specified';
+    
+    const match = stay.match(/^(\d+)\s*(days?|gün)$/i);
+    if (match) {
+      const num = match[1];
+      return locale === 'tr' ? `${num} gün` : `${num} days`;
+    }
+    
+    if (stay.toLowerCase().includes('gün')) {
+      return locale === 'en' ? stay.replace(/gün/gi, 'days') : stay;
+    }
+    
+    return stay;
+  };
+
+  // Format application method for display
+  const formatApplicationMethod = (method: string | null): string => {
+    if (!method) return locale === 'tr' ? 'Belirtilmemiş' : 'Not specified';
+    
+    const translations: Record<string, { tr: string; en: string; icon: string }> = {
+      'online': { tr: 'Online Başvuru', en: 'Online Application', icon: '💻' },
+      'embassy': { tr: 'Konsolosluk', en: 'Embassy/Consulate', icon: '🏛️' },
+      'on-arrival': { tr: 'Varışta', en: 'On Arrival', icon: '✈️' },
+      'visa-on-arrival': { tr: 'Varışta', en: 'On Arrival', icon: '✈️' },
+      'not-required': { tr: 'Gerekmez', en: 'Not Required', icon: '✅' },
+      'evisa': { tr: 'E-Vize', en: 'E-Visa', icon: '📧' },
+    };
+    
+    const trans = translations[method];
+    if (trans) {
+      return `${trans.icon} ${trans[locale]}`;
+    }
+    return method;
+  };
+
+  // Get process time tooltip
+  const getProcessTimeTooltip = (): string | null => {
+    const status = getVisaStatus();
+    const method = visaReq?.application_method;
+    
+    if (status === 'visa-required' && method === 'embassy') {
+      return locale === 'tr' 
+        ? 'Bu süre konsolosluk randevusu sonrası başvurunuzun değerlendirilme süresidir. Randevu alma süresi dahil değildir.'
+        : 'This is the processing time after your consulate appointment. Appointment scheduling time is not included.';
+    }
+    
+    if (status === 'eta' || method === 'online' || method === 'evisa') {
+      return locale === 'tr'
+        ? 'Online başvuru sonrası onay süresidir.'
+        : 'Processing time after online application.';
+    }
+    
+    if (status === 'visa-on-arrival' || method === 'on-arrival') {
+      return locale === 'tr'
+        ? 'Havalimanında vize işleminiz tamamlanır.'
+        : 'Visa is processed at the airport.';
+    }
+    
+    if (status === 'visa-free' || method === 'not-required') {
+      return locale === 'tr'
+        ? 'Vize işlemi gerekmez.'
+        : 'No visa processing required.';
+    }
+    
+    return null;
   };
 
   const getVisaStatus = () => {
@@ -195,8 +264,19 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
                 <Clock className="h-6 w-6 text-blue-600" />
               </div>
               <div>
-                <div className="text-sm font-bold text-slate-900">
-                  {country.process_time || "7-14 Gün"}
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm font-bold text-slate-900">
+                    {country.process_time || "7-14 Gün"}
+                  </span>
+                  {getProcessTimeTooltip() && (
+                    <div className="group relative">
+                      <Info className="h-3.5 w-3.5 text-slate-400 cursor-help hover:text-primary transition-colors" />
+                      <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-2 bg-slate-800 text-white text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 w-64 z-50 shadow-lg">
+                        {getProcessTimeTooltip()}
+                        <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-800"></div>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div className="text-xs text-slate-600">{t(locale, "processingTime")}</div>
               </div>
@@ -348,25 +428,24 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
                 </div>
                 {visaConfig.allowedStay && (
                   <div className="rounded-lg bg-white/80 backdrop-blur-sm border border-slate-200 px-4 py-3">
-                    <div className="text-xs text-slate-600 mb-1">Kalış Süresi</div>
-                    <div className="text-sm font-bold text-slate-900">{visaConfig.allowedStay}</div>
+                    <div className="text-xs text-slate-600 mb-1">
+                      {locale === 'tr' ? 'Kalış Süresi' : 'Allowed Stay'}
+                    </div>
+                    <div className="text-sm font-bold text-slate-900">
+                      {formatAllowedStay(visaConfig.allowedStay)}
+                    </div>
                   </div>
                 )}
                 <div className="rounded-lg bg-white/80 backdrop-blur-sm border border-slate-200 px-4 py-3">
-                  <div className="text-xs text-slate-600 mb-1">Başvuru Yöntemi</div>
+                  <div className="text-xs text-slate-600 mb-1">
+                    {locale === 'tr' ? 'Başvuru Yöntemi' : 'Application Method'}
+                  </div>
                   <div className="text-sm font-bold text-slate-900">
-                    {(() => {
-                      // Use selected method if multi-method country
-                      const method = (visaReq.available_methods && visaReq.available_methods.length > 1)
+                    {formatApplicationMethod(
+                      (visaReq.available_methods && visaReq.available_methods.length > 1)
                         ? selectedMethod
-                        : visaReq.application_method;
-                      
-                      if (method === 'embassy') return '🏛️ Konsolosluk';
-                      if (method === 'online') return '💻 Online';
-                      if (method === 'on-arrival' || method === 'visa-on-arrival') return '✈️ Varışta';
-                      if (method === 'evisa') return '📧 E-Vize';
-                      return method || '✈️ Varışta';
-                    })()}
+                        : visaReq.application_method
+                    )}
                   </div>
                 </div>
                 {visaReq.notes && (

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CheckCircle, XCircle, Clock, DollarSign, FileText, Globe, AlertCircle } from "lucide-react";
+import { CheckCircle, XCircle, Clock, DollarSign, FileText, Globe, AlertCircle, Info } from "lucide-react";
 
 interface VisaRequirement {
   country_code: string;
@@ -17,6 +17,72 @@ interface VisaRequirement {
 interface VisaRequirementsSectionProps {
   countryCode: string;
   countryName: string;
+  locale?: 'tr' | 'en';
+}
+
+// Kalış süresi çevirisi
+function formatAllowedStay(stay: string | null, locale: 'tr' | 'en'): string {
+  if (!stay) return locale === 'tr' ? 'Belirtilmemiş' : 'Not specified';
+  
+  // "90 days" -> "90 gün" veya "90 days"
+  const match = stay.match(/^(\d+)\s*(days?|gün)$/i);
+  if (match) {
+    const num = match[1];
+    return locale === 'tr' ? `${num} gün` : `${num} days`;
+  }
+  
+  // Zaten Türkçe ise
+  if (stay.toLowerCase().includes('gün')) {
+    if (locale === 'en') {
+      return stay.replace(/gün/gi, 'days');
+    }
+    return stay;
+  }
+  
+  return stay;
+}
+
+// Başvuru yöntemi çevirisi
+function formatApplicationMethod(method: string | null, locale: 'tr' | 'en'): string {
+  if (!method) return locale === 'tr' ? 'Belirtilmemiş' : 'Not specified';
+  
+  const translations: Record<string, { tr: string; en: string }> = {
+    'online': { tr: 'Online başvuru', en: 'Online application' },
+    'embassy': { tr: 'Konsolosluk başvurusu', en: 'Embassy/Consulate application' },
+    'on-arrival': { tr: 'Varışta başvuru', en: 'On arrival' },
+    'not-required': { tr: 'Başvuru gerekmez', en: 'Not required' },
+  };
+  
+  return translations[method]?.[locale] || method;
+}
+
+// İşlem süresi tooltip'i
+function getProcessTimeTooltip(visaStatus: string, applicationMethod: string | null, locale: 'tr' | 'en'): string | null {
+  if (visaStatus === 'visa-required' && applicationMethod === 'embassy') {
+    return locale === 'tr' 
+      ? 'Bu süre konsolosluk randevusu sonrası başvurunuzun değerlendirilme süresidir. Randevu alma süresi dahil değildir.'
+      : 'This is the processing time after your consulate appointment. Appointment scheduling time is not included.';
+  }
+  
+  if (visaStatus === 'eta' || applicationMethod === 'online') {
+    return locale === 'tr'
+      ? 'Online başvuru sonrası onay süresidir.'
+      : 'Processing time after online application.';
+  }
+  
+  if (visaStatus === 'visa-on-arrival' || applicationMethod === 'on-arrival') {
+    return locale === 'tr'
+      ? 'Havalimanında vize işleminiz tamamlanır.'
+      : 'Visa is processed at the airport.';
+  }
+  
+  if (visaStatus === 'visa-free' || applicationMethod === 'not-required') {
+    return locale === 'tr'
+      ? 'Vize işlemi gerekmez.'
+      : 'No visa processing required.';
+  }
+  
+  return null;
 }
 
 const VISA_STATUS_CONFIG = {
@@ -54,7 +120,7 @@ const VISA_STATUS_CONFIG = {
   },
 };
 
-export function VisaRequirementsSection({ countryCode, countryName }: VisaRequirementsSectionProps) {
+export function VisaRequirementsSection({ countryCode, countryName, locale = 'tr' }: VisaRequirementsSectionProps) {
   const [visaData, setVisaData] = useState<VisaRequirement | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -155,8 +221,10 @@ export function VisaRequirementsSection({ countryCode, countryName }: VisaRequir
           <div className="flex items-start gap-3">
             <Clock className="h-5 w-5 text-slate-400 flex-shrink-0 mt-0.5" />
             <div>
-              <h3 className="font-semibold text-slate-900 mb-1">Kalış Süresi</h3>
-              <p className="text-slate-700">{visaData.allowed_stay}</p>
+              <h3 className="font-semibold text-slate-900 mb-1">
+                {locale === 'tr' ? 'Kalış Süresi' : 'Allowed Stay'}
+              </h3>
+              <p className="text-slate-700">{formatAllowedStay(visaData.allowed_stay, locale)}</p>
             </div>
           </div>
         )}
@@ -191,7 +259,20 @@ export function VisaRequirementsSection({ countryCode, countryName }: VisaRequir
           <div className="flex items-start gap-3">
             <Clock className="h-5 w-5 text-slate-400 flex-shrink-0 mt-0.5" />
             <div>
-              <h3 className="font-semibold text-slate-900 mb-1">İşlem Süresi</h3>
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="font-semibold text-slate-900">
+                  {locale === 'tr' ? 'İşlem Süresi' : 'Processing Time'}
+                </h3>
+                {getProcessTimeTooltip(visaData.visa_status, visaData.application_method, locale) && (
+                  <div className="group relative">
+                    <Info className="h-4 w-4 text-slate-400 cursor-help hover:text-primary transition-colors" />
+                    <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-2 bg-slate-800 text-white text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 w-64 z-50 shadow-lg">
+                      {getProcessTimeTooltip(visaData.visa_status, visaData.application_method, locale)}
+                      <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-800"></div>
+                    </div>
+                  </div>
+                )}
+              </div>
               <p className="text-slate-700">{visaData.processing_time}</p>
             </div>
           </div>
@@ -202,12 +283,11 @@ export function VisaRequirementsSection({ countryCode, countryName }: VisaRequir
           <div className="flex items-start gap-3">
             <Globe className="h-5 w-5 text-slate-400 flex-shrink-0 mt-0.5" />
             <div>
-              <h3 className="font-semibold text-slate-900 mb-1">Başvuru Yöntemi</h3>
+              <h3 className="font-semibold text-slate-900 mb-1">
+                {locale === 'tr' ? 'Başvuru Yöntemi' : 'Application Method'}
+              </h3>
               <p className="text-slate-700">
-                {visaData.application_method === 'online' && 'Online başvuru'}
-                {visaData.application_method === 'embassy' && 'Elçilik/Konsolosluk başvurusu'}
-                {visaData.application_method === 'on-arrival' && 'Varışta başvuru'}
-                {visaData.application_method === 'not-required' && 'Başvuru gerekmez'}
+                {formatApplicationMethod(visaData.application_method, locale)}
               </p>
             </div>
           </div>
