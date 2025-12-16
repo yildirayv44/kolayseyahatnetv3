@@ -617,18 +617,24 @@ export default function SEOAnaliziPage() {
                   </div>
                 </div>
 
-                {/* Description */}
+                {/* Description - country/page için meta_description, blog için description */}
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
                     <label className="mb-1 block text-sm font-semibold text-slate-700">
-                      🇹🇷 Description ({editData.description?.length || 0}/160)
+                      🇹🇷 Description ({(selectedItem?.type === 'blog' ? editData.description?.length : editData.meta_description?.length) || 0}/160)
                     </label>
                     <textarea
-                      value={editData.description || ''}
-                      onChange={(e) => setEditData({ ...editData, description: e.target.value })}
+                      value={(selectedItem?.type === 'blog' ? editData.description : editData.meta_description) || ''}
+                      onChange={(e) => setEditData({ 
+                        ...editData, 
+                        ...(selectedItem?.type === 'blog' 
+                          ? { description: e.target.value } 
+                          : { meta_description: e.target.value })
+                      })}
                       rows={3}
                       className={`w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 ${
-                        (editData.description?.length || 0) >= 100 && (editData.description?.length || 0) <= 160
+                        ((selectedItem?.type === 'blog' ? editData.description?.length : editData.meta_description?.length) || 0) >= 100 && 
+                        ((selectedItem?.type === 'blog' ? editData.description?.length : editData.meta_description?.length) || 0) <= 160
                           ? 'border-green-300 bg-green-50'
                           : 'border-slate-200'
                       }`}
@@ -637,16 +643,22 @@ export default function SEOAnaliziPage() {
                   </div>
                   <div>
                     <label className="mb-1 block text-sm font-semibold text-slate-700">
-                      🇬🇧 Description EN ({editData.description_en?.length || 0}/160)
+                      🇬🇧 Description EN ({(selectedItem?.type === 'blog' ? editData.description_en?.length : editData.meta_description_en?.length) || 0}/160)
                     </label>
                     <textarea
-                      value={editData.description_en || ''}
-                      onChange={(e) => setEditData({ ...editData, description_en: e.target.value })}
+                      value={(selectedItem?.type === 'blog' ? editData.description_en : editData.meta_description_en) || ''}
+                      onChange={(e) => setEditData({ 
+                        ...editData, 
+                        ...(selectedItem?.type === 'blog' 
+                          ? { description_en: e.target.value } 
+                          : { meta_description_en: e.target.value })
+                      })}
                       rows={3}
                       className={`w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 ${
-                        (editData.description_en?.length || 0) >= 100 && (editData.description_en?.length || 0) <= 160
+                        ((selectedItem?.type === 'blog' ? editData.description_en?.length : editData.meta_description_en?.length) || 0) >= 100 && 
+                        ((selectedItem?.type === 'blog' ? editData.description_en?.length : editData.meta_description_en?.length) || 0) <= 160
                           ? 'border-green-300 bg-green-50'
-                          : (editData.description_en?.length || 0) === 0
+                          : ((selectedItem?.type === 'blog' ? editData.description_en?.length : editData.meta_description_en?.length) || 0) === 0
                           ? 'border-red-300 bg-red-50'
                           : 'border-slate-200'
                       }`}
