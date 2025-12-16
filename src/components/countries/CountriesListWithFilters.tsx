@@ -127,7 +127,16 @@ export function CountriesListWithFilters({ initialCountries }: { initialCountrie
       </section>
 
       {/* Visa Statistics - VisaMap bileşeni */}
-      <VisaMap countries={countries} />
+      <VisaMap 
+        countries={countries} 
+        onFilterChange={(filterValue) => {
+          // Filtre değerini dropdown formatına çevir
+          if (filterValue === "Vizesiz") setVisaStatusFilter("visa-free");
+          else if (filterValue === "Varışta Vize") setVisaStatusFilter("visa-on-arrival");
+          else if (filterValue === "E-vize") setVisaStatusFilter("eta");
+          else if (filterValue === "Vize Gerekli") setVisaStatusFilter("visa-required");
+        }}
+      />
 
       {/* View Mode Toggle & Filters */}
       <div className="card space-y-4">
