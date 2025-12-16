@@ -36,6 +36,8 @@ interface SEOScore {
   raw_data?: {
     meta_title?: string;
     meta_title_en?: string;
+    meta_description?: string;
+    meta_description_en?: string;
     description?: string;
     description_en?: string;
     title?: string;
@@ -129,11 +131,20 @@ export default function SEOAnaliziPage() {
       setEditData({
         meta_title: item.raw_data?.meta_title || '',
         meta_title_en: item.raw_data?.meta_title_en || '',
-        meta_description: item.raw_data?.description || '',
-        meta_description_en: item.raw_data?.description_en || '',
+        meta_description: item.raw_data?.meta_description || '',
+        meta_description_en: item.raw_data?.meta_description_en || '',
+        title_en: item.raw_data?.title_en || '',
+      });
+    } else if (item.type === 'page') {
+      setEditData({
+        meta_title: item.raw_data?.meta_title || item.raw_data?.title || '',
+        meta_title_en: item.raw_data?.meta_title_en || item.raw_data?.title_en || '',
+        meta_description: item.raw_data?.meta_description || '',
+        meta_description_en: item.raw_data?.meta_description_en || '',
         title_en: item.raw_data?.title_en || '',
       });
     } else {
+      // blog
       setEditData({
         meta_title: item.raw_data?.meta_title || '',
         meta_title_en: item.raw_data?.meta_title_en || '',

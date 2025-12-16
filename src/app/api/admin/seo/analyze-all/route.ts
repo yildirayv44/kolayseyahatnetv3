@@ -48,6 +48,8 @@ interface SEOScore {
   raw_data?: {
     meta_title?: string;
     meta_title_en?: string;
+    meta_description?: string;
+    meta_description_en?: string;
     description?: string;
     description_en?: string;
     title?: string;
@@ -322,10 +324,12 @@ function calculateSEOScore(item: any, type: string, locale: 'tr' | 'en' = 'tr'):
     en_issues: enResult.issues,
     rich_snippets,
     raw_data: {
-      meta_title: tr_meta_title,
-      meta_title_en: en_meta_title,
-      description: tr_description,
-      description_en: en_description,
+      meta_title: item.meta_title || '',
+      meta_title_en: item.meta_title_en || '',
+      meta_description: item.meta_description || '',
+      meta_description_en: item.meta_description_en || '',
+      description: item.description || '',
+      description_en: item.description_en || '',
       title: title,
       title_en: item.title_en || '',
       contents: tr_content,
