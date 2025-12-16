@@ -74,6 +74,36 @@ export async function GET(
       );
     }
 
+    // Get visa requirements from visa_requirements table
+    let visaRequirement = null;
+    if (country.country_code) {
+      const { data: visaReq } = await supabase
+        .from('visa_requirements')
+        .select('visa_status, allowed_stay, available_methods, conditions, application_method')
+        .eq('country_code', country.country_code)
+        .maybeSingle();
+      visaRequirement = visaReq;
+    }
+
+    // Helper function to convert visa method to Turkish label
+    const getVisaLabel = (method: string): string => {
+      switch (method) {
+        case 'visa-free': return 'Vizesiz';
+        case 'visa-on-arrival': return 'Varışta Vize';
+        case 'evisa': return 'E-vize';
+        case 'eta': return 'E-vize';
+        case 'embassy': return 'Vize Gerekli';
+        case 'visa-required': return 'Vize Gerekli';
+        default: return 'Vize Gerekli';
+      }
+    };
+
+    // Process available methods and labels
+    const availableMethods: string[] = visaRequirement?.available_methods || [];
+    const visaStatus = visaRequirement?.visa_status || normalizeVisaType(country.visa_type);
+    const methodsToProcess = availableMethods.length > 0 ? availableMethods : (visaStatus ? [visaStatus] : []);
+    const visaLabels = [...new Set(methodsToProcess.map(getVisaLabel))];
+
     // Get products/packages for this country
     const { data: products, error: productsError } = await supabase
       .from('products')
@@ -133,16 +163,22 @@ export async function GET(
         timezone: country.timezone,
       },
       
-      // Visa Info
+      // Visa Info (from visa_requirements table)
       visaInfo: {
         visaRequired: country.visa_required,
         visaType: country.visa_type,
-        visaStatus: normalizeVisaType(country.visa_type),
+        visaStatus: visaStatus,
+        availableMethods: availableMethods,
+        visaLabels: visaLabels,
+        visaLabel: visaLabels.join(' / '),
         processTime: country.process_time,
-        maxStayDuration: country.max_stay_duration,
+        maxStayDuration: visaRequirement?.allowed_stay || country.max_stay_duration,
         visaFee: country.visa_fee,
-        applicationMethod: country.visa_type === 'Vizesiz' ? 'not-required' : 
-                          country.visa_type?.includes('E-') ? 'online' : 'embassy',
+        conditions: visaRequirement?.conditions,
+        applicationMethod: visaRequirement?.application_method || 
+                          (visaStatus === 'visa-free' ? 'not-required' : 
+                          visaStatus === 'evisa' || visaStatus === 'eta' ? 'online' : 
+                          visaStatus === 'visa-on-arrival' ? 'on-arrival' : 'embassy'),
       },
       
       // Documents & Steps
