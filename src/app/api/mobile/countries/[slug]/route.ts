@@ -14,6 +14,31 @@ function normalizeVisaType(visaType: string | null): string {
   return 'visa-required';
 }
 
+// Generate tooltip for process time based on visa type
+function getProcessTimeTooltip(visaStatus: string, availableMethods: string[]): string | null {
+  // Schengen/Embassy visa - randevu sonrası süre
+  if (visaStatus === 'visa-required' && availableMethods.includes('embassy')) {
+    return 'Bu süre konsolosluk randevusu sonrası başvurunuzun değerlendirilme süresidir. Randevu alma süresi dahil değildir.';
+  }
+  
+  // E-vize
+  if (visaStatus === 'eta' || availableMethods.includes('evisa')) {
+    return 'Online başvuru sonrası onay süresidir. Başvurunuz onaylandıktan sonra seyahat edebilirsiniz.';
+  }
+  
+  // Varışta vize
+  if (visaStatus === 'visa-on-arrival') {
+    return 'Havalimanında vize işleminiz tamamlanır. Nakit döviz bulundurmanız önerilir.';
+  }
+  
+  // Vizesiz
+  if (visaStatus === 'visa-free') {
+    return 'Vize işlemi gerekmez. Geçerli pasaportunuzla seyahat edebilirsiniz.';
+  }
+  
+  return null;
+}
+
 /**
  * GET /api/mobile/countries/[slug]
  * 
@@ -172,6 +197,7 @@ export async function GET(
         visaLabels: visaLabels,
         visaLabel: visaLabels.join(' / '),
         processTime: country.process_time,
+        processTimeTooltip: getProcessTimeTooltip(visaStatus, availableMethods),
         maxStayDuration: visaRequirement?.allowed_stay || country.max_stay_duration,
         visaFee: country.visa_fee,
         conditions: visaRequirement?.conditions,

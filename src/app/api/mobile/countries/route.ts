@@ -307,6 +307,23 @@ export async function GET(request: Request) {
       }
     };
 
+    // Helper function to generate process time tooltip
+    const getProcessTimeTooltip = (visaStatus: string, availableMethods: string[]): string | null => {
+      if (visaStatus === 'visa-required' && availableMethods.includes('embassy')) {
+        return 'Randevu sonrası değerlendirme süresi';
+      }
+      if (visaStatus === 'eta' || availableMethods.includes('evisa')) {
+        return 'Online başvuru sonrası onay süresi';
+      }
+      if (visaStatus === 'visa-on-arrival') {
+        return 'Havalimanında işlem süresi';
+      }
+      if (visaStatus === 'visa-free') {
+        return 'Vize işlemi gerekmez';
+      }
+      return null;
+    };
+
     // Format response
     let formattedCountries = countries?.map(country => {
       // Get visa status from visa_requirements table first, fallback to visa_type
@@ -339,6 +356,7 @@ export async function GET(request: Request) {
         countryCode: country.country_code,
         imageUrl: country.image_url,
         processTime: country.process_time,
+        processTimeTooltip: getProcessTimeTooltip(visaStatus, availableMethods),
         visaRequired: country.visa_required,
         visaType: country.visa_type,
         visaStatus: visaStatus,
