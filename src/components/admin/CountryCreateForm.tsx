@@ -41,13 +41,7 @@ export function CountryCreateForm() {
     req_document: "",
     price_contents: "",
     process_time: "7-14 Gün",
-    visa_required: true,
-    visa_type: "",
-    price_range: "",
     image_url: "",
-    price: "",
-    original_price: "",
-    discount_percentage: "",
     sorted: 0,
     status: 1,
     // Extended fields from migration
@@ -387,51 +381,6 @@ export function CountryCreateForm() {
           </p>
         </div>
 
-        {/* Fiyatlandırma */}
-        <div className="grid grid-cols-3 gap-4 rounded-lg border border-slate-200 p-4">
-          <div className="space-y-2">
-            <label className="block text-sm font-semibold text-slate-900">
-              Güncel Fiyat (₺)
-            </label>
-            <input
-              type="number"
-              value={formData.price}
-              onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-              className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-              placeholder="6800"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="block text-sm font-semibold text-slate-900">
-              Eski Fiyat (₺)
-            </label>
-            <input
-              type="number"
-              value={formData.original_price}
-              onChange={(e) => setFormData({ ...formData, original_price: e.target.value })}
-              className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-              placeholder="8500"
-            />
-            <p className="text-xs text-slate-500">Üstü çizili gösterilir</p>
-          </div>
-
-          <div className="space-y-2">
-            <label className="block text-sm font-semibold text-slate-900">
-              İndirim (%)
-            </label>
-            <input
-              type="number"
-              value={formData.discount_percentage}
-              onChange={(e) => setFormData({ ...formData, discount_percentage: e.target.value })}
-              className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-              placeholder="20"
-              max="100"
-            />
-            <p className="text-xs text-slate-500">Badge olarak gösterilir</p>
-          </div>
-        </div>
-
         <div className="space-y-2">
           <label className="block text-sm font-semibold text-slate-900">
             Ana İçerik
@@ -451,59 +400,36 @@ export function CountryCreateForm() {
             Ülke detay sayfasında gösterilecek temel bilgiler
           </p>
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <label className="block text-sm font-semibold text-slate-900">
-                İşlem Süresi
-              </label>
-              <input
-                type="text"
-                value={formData.process_time}
-                onChange={(e) => setFormData({ ...formData, process_time: e.target.value })}
-                className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                placeholder="Örn: 7-14 Gün"
-              />
-            </div>
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-slate-900">
+              İşlem Süresi
+            </label>
+            <input
+              type="text"
+              value={formData.process_time}
+              onChange={(e) => setFormData({ ...formData, process_time: e.target.value })}
+              className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              placeholder="Örn: 7-14 Gün"
+            />
+          </div>
 
-            <div className="space-y-2">
-              <label className="block text-sm font-semibold text-slate-900">
-                Vize Gerekli mi?
-              </label>
-              <select
-                value={formData.visa_required ? "true" : "false"}
-                onChange={(e) => setFormData({ ...formData, visa_required: e.target.value === "true" })}
-                className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-              >
-                <option value="true">Evet</option>
-                <option value="false">Hayır (Vizesiz)</option>
-              </select>
-            </div>
-
-            <div className="space-y-2">
-              <label className="block text-sm font-semibold text-slate-900">
-                Vize Türü
-              </label>
-              <input
-                type="text"
-                value={formData.visa_type}
-                onChange={(e) => setFormData({ ...formData, visa_type: e.target.value })}
-                className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                placeholder="Örn: E-vize, Kapıda Vize, Klasik Vize"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="block text-sm font-semibold text-slate-900">
-                Ücret Aralığı
-              </label>
-              <input
-                type="text"
-                value={formData.price_range}
-                onChange={(e) => setFormData({ ...formData, price_range: e.target.value })}
-                className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                placeholder="Örn: 400 USD - 1.200 USD"
-              />
-            </div>
+          <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+            <p className="text-sm font-semibold text-emerald-900 mb-2">
+              ℹ️ Otomatik Bilgiler
+            </p>
+            <p className="text-xs text-emerald-700">
+              <strong>Vize gereklilikleri</strong> (vize durumu, kalış süresi, başvuru yöntemi vb.) 
+              ülke kodu ile <code className="bg-emerald-100 px-1 rounded">visa_requirements</code> tablosundan 
+              otomatik olarak çekilmektedir.
+            </p>
+            <p className="text-xs text-emerald-700 mt-2">
+              <strong>Fiyat bilgisi</strong> ise bu ülkeye tanımlı vize paketlerinden (en düşük fiyatlı paket) 
+              otomatik olarak gösterilmektedir. Ülkeyi kaydettikten sonra{" "}
+              <a href="/admin/vize-paketleri/yeni" className="text-emerald-800 underline hover:text-emerald-900">
+                Vize Paketleri
+              </a>{" "}
+              sayfasından fiyat ekleyebilirsiniz.
+            </p>
           </div>
         </div>
 

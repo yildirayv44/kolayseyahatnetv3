@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Globe2, ArrowRight, TrendingDown, Search, Filter, CheckCircle, Clock, Globe, XCircle, Grid3x3, Map } from "lucide-react";
+import { Globe2, ArrowRight, Search, Filter, CheckCircle, Clock, Globe, XCircle, Grid3x3, Map } from "lucide-react";
 import { getCountrySlug } from "@/lib/helpers";
 import { getCountryDefaultImage } from "@/lib/image-helpers";
 import { CountriesByContinent } from "./CountriesByContinent";
@@ -17,9 +17,7 @@ interface Country {
   slug: string;
   country_code: string | null;
   visa_required: boolean;
-  price: number;
-  original_price: number;
-  discount_percentage: number;
+  price: number | null;
 }
 
 interface VisaRequirement {
@@ -293,19 +291,6 @@ export function CountriesListWithFilters({ initialCountries }: { initialCountrie
                   {country.price ? (
                     <div className="flex items-end justify-between border-t border-slate-100 pt-3">
                       <div>
-                        {country.original_price && country.original_price > country.price && (
-                          <div className="flex items-center gap-1 mb-1">
-                            <span className="text-xs text-slate-400 line-through">
-                              ₺{country.original_price.toLocaleString('tr-TR')}
-                            </span>
-                            {country.discount_percentage && (
-                              <span className="inline-flex items-center gap-0.5 rounded-full bg-red-50 px-1.5 py-0.5 text-[10px] font-bold text-red-600">
-                                <TrendingDown className="h-2.5 w-2.5" />
-                                %{country.discount_percentage}
-                              </span>
-                            )}
-                          </div>
-                        )}
                         <div className="text-2xl font-bold text-emerald-600">
                           ₺{country.price.toLocaleString('tr-TR')}
                         </div>

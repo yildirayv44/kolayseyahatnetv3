@@ -27,20 +27,44 @@ export async function getCountries() {
     .in("model_id", countryIds)
     .eq("type", "Country\\CountryController@detail");
 
+  // Tek sorguda tüm ülkelerin en düşük fiyatlı paketlerini çek
+  const { data: products } = await supabase
+    .from("products")
+    .select("country_id, price")
+    .in("country_id", countryIds)
+    .eq("status", 1)
+    .order("price", { ascending: true });
+
   // Taxonomy map'i oluştur
   const taxonomyMap = new Map<number, string>();
   taxonomies?.forEach(tax => {
     taxonomyMap.set(tax.model_id, tax.slug);
   });
 
-  // Ülkelere slug'ları ekle
+  // Her ülke için en düşük fiyatlı paketi bul (products zaten price'a göre sıralı)
+  const priceMap = new Map<number, number>();
+  products?.forEach(product => {
+    if (!priceMap.has(product.country_id)) {
+      priceMap.set(product.country_id, parseFloat(product.price));
+    }
+  });
+
+  // Ülkelere slug'ları ve fiyatları ekle
   const countriesWithSlugs = countries.map(country => {
     // Öncelik sırası: taxonomy slug > mapping > fallback
     const slug = taxonomyMap.get(country.id) || COUNTRY_ID_TO_SLUG[country.id] || `country-${country.id}`;
     
+    // Fiyat: products tablosundan en düşük fiyat
+    const productPrice = priceMap.get(country.id);
+    
     return {
       ...country,
       slug,
+      // Fiyatı products tablosundan al, yoksa null
+      price: productPrice ?? null,
+      // original_price ve discount_percentage artık kullanılmıyor
+      original_price: null,
+      discount_percentage: null,
     };
   });
 

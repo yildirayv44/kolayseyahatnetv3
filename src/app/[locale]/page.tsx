@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Globe2, ShieldCheck, Users, Clock4, PhoneCall, TrendingDown } from "lucide-react";
+import { ArrowRight, Globe2, ShieldCheck, Users, Clock4, PhoneCall } from "lucide-react";
 import { getCountries, getBlogs, getConsultants } from "@/lib/queries";
 import { getCountrySlug, getBlogSlug } from "@/lib/helpers";
 import { getLocalizedUrl } from "@/lib/locale-link";
@@ -160,19 +160,6 @@ export default async function Home({ params }: HomePageProps) {
                 <div className="mt-3 border-t border-slate-100 pt-3">
                   <div className="flex items-end justify-between">
                     <div>
-                      {country.original_price && country.original_price > country.price && (
-                        <div className="flex items-center gap-1">
-                          <span className="text-xs text-slate-400 line-through">
-                            ₺{country.original_price.toLocaleString('tr-TR')}
-                          </span>
-                          {country.discount_percentage && (
-                            <span className="inline-flex items-center gap-0.5 rounded-full bg-red-50 px-1.5 py-0.5 text-[10px] font-bold text-red-600">
-                              <TrendingDown className="h-2.5 w-2.5" />
-                              %{country.discount_percentage}
-                            </span>
-                          )}
-                        </div>
-                      )}
                       <div className="text-2xl font-bold text-emerald-600">
                         ₺{country.price.toLocaleString('tr-TR')}
                       </div>

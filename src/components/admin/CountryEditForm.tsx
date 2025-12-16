@@ -46,9 +46,6 @@ export function CountryEditForm({ country }: { country: any }) {
     req_document: country.req_document || "",
     price_contents: country.price_contents || "",
     process_time: country.process_time || "7-14 Gün",
-    visa_required: country.visa_required !== undefined ? country.visa_required : true,
-    visa_type: country.visa_type || "",
-    price_range: country.price_range || "",
     title_en: country.title_en || "",
     description_en: country.description_en || "",
     contents_en: country.contents_en || "",
@@ -509,59 +506,36 @@ export function CountryEditForm({ country }: { country: any }) {
                 Ülke detay sayfasında gösterilecek temel bilgiler
               </p>
 
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-slate-900">
-                    İşlem Süresi
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.process_time}
-                    onChange={(e) => setFormData({ ...formData, process_time: e.target.value })}
-                    className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                    placeholder="Örn: 7-14 Gün"
-                  />
-                </div>
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-slate-900">
+                  İşlem Süresi
+                </label>
+                <input
+                  type="text"
+                  value={formData.process_time}
+                  onChange={(e) => setFormData({ ...formData, process_time: e.target.value })}
+                  className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  placeholder="Örn: 7-14 Gün"
+                />
+              </div>
 
-                <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-slate-900">
-                    Vize Gerekli mi?
-                  </label>
-                  <select
-                    value={formData.visa_required ? "true" : "false"}
-                    onChange={(e) => setFormData({ ...formData, visa_required: e.target.value === "true" })}
-                    className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  >
-                    <option value="true">Evet</option>
-                    <option value="false">Hayır (Vizesiz)</option>
-                  </select>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-slate-900">
-                    Vize Türü
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.visa_type}
-                    onChange={(e) => setFormData({ ...formData, visa_type: e.target.value })}
-                    className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                    placeholder="Örn: E-vize, Kapıda Vize, Klasik Vize"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-slate-900">
-                    Ücret Aralığı
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.price_range}
-                    onChange={(e) => setFormData({ ...formData, price_range: e.target.value })}
-                    className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                    placeholder="Örn: 400 USD - 1.200 USD"
-                  />
-                </div>
+              <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+                <p className="text-sm font-semibold text-emerald-900 mb-2">
+                  ℹ️ Otomatik Bilgiler
+                </p>
+                <p className="text-xs text-emerald-700">
+                  <strong>Vize gereklilikleri</strong> (vize durumu, kalış süresi, başvuru yöntemi vb.) 
+                  ülke kodu ile <code className="bg-emerald-100 px-1 rounded">visa_requirements</code> tablosundan 
+                  otomatik olarak çekilmektedir.
+                </p>
+                <p className="text-xs text-emerald-700 mt-2">
+                  <strong>Fiyat bilgisi</strong> ise bu ülkeye tanımlı vize paketlerinden (en düşük fiyatlı paket) 
+                  otomatik olarak gösterilmektedir. Fiyat düzenlemek için{" "}
+                  <a href="/admin/vize-paketleri" className="text-emerald-800 underline hover:text-emerald-900">
+                    Vize Paketleri
+                  </a>{" "}
+                  sayfasını kullanın.
+                </p>
               </div>
             </div>
 
