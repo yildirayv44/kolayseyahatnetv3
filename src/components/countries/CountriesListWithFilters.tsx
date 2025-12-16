@@ -18,7 +18,17 @@ interface Country {
   country_code: string | null;
   visa_required: boolean;
   price: number | null;
+  currency_id?: number;
 }
+
+// Para birimi sembolü helper fonksiyonu
+const getCurrencySymbol = (currencyId: number = 1) => {
+  switch (currencyId) {
+    case 2: return '$';
+    case 3: return '€';
+    default: return '₺';
+  }
+};
 
 interface VisaRequirement {
   countryCode: string;

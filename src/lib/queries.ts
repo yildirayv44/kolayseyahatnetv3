@@ -27,10 +27,10 @@ export async function getCountries() {
     .in("model_id", countryIds)
     .eq("type", "Country\\CountryController@detail");
 
-  // Tek sorguda tüm ülkelerin en düşük fiyatlı paketlerini çek
+  // Tek sorguda tüm ülkelerin en düşük fiyatlı paketlerini çek (currency_id dahil)
   const { data: products } = await supabase
     .from("products")
-    .select("country_id, price")
+    .select("country_id, price, currency_id")
     .in("country_id", countryIds)
     .eq("status", 1)
     .order("price", { ascending: true });
@@ -42,10 +42,13 @@ export async function getCountries() {
   });
 
   // Her ülke için en düşük fiyatlı paketi bul (products zaten price'a göre sıralı)
-  const priceMap = new Map<number, number>();
+  const priceMap = new Map<number, { price: number; currency_id: number }>();
   products?.forEach(product => {
     if (!priceMap.has(product.country_id)) {
-      priceMap.set(product.country_id, parseFloat(product.price));
+      priceMap.set(product.country_id, {
+        price: parseFloat(product.price),
+        currency_id: product.currency_id || 1
+      });
     }
   });
 
@@ -54,14 +57,15 @@ export async function getCountries() {
     // Öncelik sırası: taxonomy slug > mapping > fallback
     const slug = taxonomyMap.get(country.id) || COUNTRY_ID_TO_SLUG[country.id] || `country-${country.id}`;
     
-    // Fiyat: products tablosundan en düşük fiyat
-    const productPrice = priceMap.get(country.id);
+    // Fiyat: products tablosundan en düşük fiyat ve para birimi
+    const productData = priceMap.get(country.id);
     
     return {
       ...country,
       slug,
       // Fiyatı products tablosundan al, yoksa null
-      price: productPrice ?? null,
+      price: productData?.price ?? null,
+      currency_id: productData?.currency_id ?? 1,
       // original_price ve discount_percentage artık kullanılmıyor
       original_price: null,
       discount_percentage: null,

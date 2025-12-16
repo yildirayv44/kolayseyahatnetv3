@@ -16,7 +16,17 @@ interface Country {
   slug: string;
   country_code: string | null;
   price: number | null;
+  currency_id?: number;
 }
+
+// Para birimi sembolü helper fonksiyonu
+const getCurrencySymbol = (currencyId: number = 1) => {
+  switch (currencyId) {
+    case 2: return '$';
+    case 3: return '€';
+    default: return '₺';
+  }
+};
 
 interface VisaRequirement {
   countryCode: string;
@@ -196,7 +206,7 @@ export function CountriesByContinent({ countries, visaData }: Props) {
                             <div className="flex items-end justify-between border-t border-slate-100 pt-3">
                               <div>
                                 <div className="text-2xl font-bold text-emerald-600">
-                                  ₺{country.price.toLocaleString('tr-TR')}
+                                  {getCurrencySymbol(country.currency_id)}{country.price.toLocaleString('tr-TR')}
                                 </div>
                                 <p className="text-[10px] text-slate-500">Başlangıç fiyatı</p>
                               </div>
@@ -261,7 +271,7 @@ export function CountriesByContinent({ countries, visaData }: Props) {
                     <div className="flex items-end justify-between border-t border-slate-100 pt-3">
                       <div>
                         <div className="text-2xl font-bold text-emerald-600">
-                          ₺{country.price.toLocaleString('tr-TR')}
+                          {getCurrencySymbol(country.currency_id)}{country.price.toLocaleString('tr-TR')}
                         </div>
                         <p className="text-[10px] text-slate-500">Başlangıç fiyatı</p>
                       </div>
