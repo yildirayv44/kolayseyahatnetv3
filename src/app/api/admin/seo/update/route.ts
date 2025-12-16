@@ -34,8 +34,8 @@ export async function POST(request: NextRequest) {
 
     // Validate field names to prevent SQL injection
     const allowedFields: Record<string, string[]> = {
-      blog: ['title', 'title_en', 'meta_title', 'meta_title_en', 'description', 'description_en', 'contents', 'contents_en'],
-      country: ['title', 'title_en', 'meta_title', 'meta_title_en', 'description', 'description_en', 'contents', 'contents_en'],
+      blog: ['title', 'title_en', 'slug', 'meta_title', 'meta_title_en', 'description', 'description_en', 'contents', 'contents_en'],
+      country: ['title', 'title_en', 'meta_title', 'meta_title_en', 'meta_description', 'meta_description_en', 'description', 'description_en', 'contents', 'contents_en'],
       page: ['title', 'title_en', 'meta_description', 'meta_description_en', 'content', 'content_en'],
     };
 
@@ -97,8 +97,8 @@ export async function PUT(request: NextRequest) {
 
     // Validate all field names
     const allowedFields: Record<string, string[]> = {
-      blog: ['title', 'title_en', 'meta_title', 'meta_title_en', 'description', 'description_en', 'contents', 'contents_en'],
-      country: ['title', 'title_en', 'meta_title', 'meta_title_en', 'description', 'description_en', 'contents', 'contents_en'],
+      blog: ['title', 'title_en', 'slug', 'meta_title', 'meta_title_en', 'description', 'description_en', 'contents', 'contents_en'],
+      country: ['title', 'title_en', 'meta_title', 'meta_title_en', 'meta_description', 'meta_description_en', 'description', 'description_en', 'contents', 'contents_en'],
       page: ['title', 'title_en', 'meta_description', 'meta_description_en', 'content', 'content_en'],
     };
 

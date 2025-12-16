@@ -123,13 +123,25 @@ export default function SEOAnaliziPage() {
   const startEdit = (item: SEOScore) => {
     setSelectedItem(item);
     setEditMode(true);
-    setEditData({
-      meta_title: item.raw_data?.meta_title || '',
-      meta_title_en: item.raw_data?.meta_title_en || '',
-      description: item.raw_data?.description || '',
-      description_en: item.raw_data?.description_en || '',
-      title_en: item.raw_data?.title_en || '',
-    });
+    
+    // Set edit data based on content type
+    if (item.type === 'country') {
+      setEditData({
+        meta_title: item.raw_data?.meta_title || '',
+        meta_title_en: item.raw_data?.meta_title_en || '',
+        meta_description: item.raw_data?.description || '',
+        meta_description_en: item.raw_data?.description_en || '',
+        title_en: item.raw_data?.title_en || '',
+      });
+    } else {
+      setEditData({
+        meta_title: item.raw_data?.meta_title || '',
+        meta_title_en: item.raw_data?.meta_title_en || '',
+        description: item.raw_data?.description || '',
+        description_en: item.raw_data?.description_en || '',
+        title_en: item.raw_data?.title_en || '',
+      });
+    }
   };
 
   // Save changes

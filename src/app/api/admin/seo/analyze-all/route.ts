@@ -244,14 +244,14 @@ function calculateSingleScore(
 function calculateSEOScore(item: any, type: string, locale: 'tr' | 'en' = 'tr'): SEOScore {
   const title = item.title || item.name || '';
   
-  // Get TR values
+  // Get TR values - prioritize meta fields, fallback to regular fields
   const tr_meta_title = item.meta_title || title;
-  const tr_description = item.description || item.meta_description || '';
+  const tr_description = item.meta_description || item.description || '';
   const tr_content = item.contents || item.content || '';
   
-  // Get EN values
+  // Get EN values - prioritize meta fields, fallback to regular fields
   const en_meta_title = item.meta_title_en || item.title_en || '';
-  const en_description = item.description_en || item.meta_description_en || '';
+  const en_description = item.meta_description_en || item.description_en || '';
   const en_content = item.contents_en || item.content_en || '';
   
   // Calculate scores for both locales
@@ -339,58 +339,92 @@ export async function GET(request: NextRequest) {
     const sort = searchParams.get('sort') || 'score_desc'; // 'score_asc', 'score_desc', 'title_asc', 'title_desc'
 
     const results: SEOScore[] = [];
+    const errors: string[] = [];
 
     // Fetch blogs
     if (!type || type === 'all' || type === 'blog') {
-      const { data: blogs, error: blogsError } = await supabase
-        .from('blogs')
-        .select('id, title, title_en, slug, meta_title, meta_title_en, description, description_en, contents, contents_en, status');
-        // Removed status filter to show all blogs
+      try {
+        const { data: blogs, error: blogsError } = await supabase
+          .from('blogs')
+          .select('id, title, title_en, slug, meta_title, meta_title_en, description, description_en, contents, contents_en, status, image_url, created_at');
 
-      if (blogsError) {
-        console.error('Blogs fetch error:', blogsError);
-      }
+        if (blogsError) {
+          console.error('Blogs fetch error:', blogsError);
+          errors.push(`Blogs: ${blogsError.message}`);
+        }
 
-      if (blogs && blogs.length > 0) {
-        blogs.forEach(blog => {
-          results.push(calculateSEOScore(blog, 'blog'));
-        });
+        if (blogs && blogs.length > 0) {
+          // Get slugs from taxonomies for blogs without slug
+          const blogsWithoutSlug = blogs.filter(b => !b.slug);
+          let slugMap = new Map<number, string>();
+          
+          if (blogsWithoutSlug.length > 0) {
+            const blogIds = blogsWithoutSlug.map(b => b.id);
+            const { data: taxonomies } = await supabase
+              .from('taxonomies')
+              .select('model_id, slug')
+              .in('model_id', blogIds)
+              .like('type', '%Blog%');
+            
+            slugMap = new Map(taxonomies?.map(t => [t.model_id, t.slug]) || []);
+          }
+          
+          blogs.forEach(blog => {
+            // Use blog.slug if exists, otherwise use taxonomy slug
+            const finalSlug = blog.slug || slugMap.get(blog.id);
+            const blogWithSlug = { ...blog, slug: finalSlug };
+            results.push(calculateSEOScore(blogWithSlug, 'blog'));
+          });
+        }
+      } catch (e: any) {
+        console.error('Blogs processing error:', e);
+        errors.push(`Blogs processing: ${e.message}`);
       }
     }
 
     // Fetch countries
     if (!type || type === 'all' || type === 'country') {
-      const { data: countries, error: countriesError } = await supabase
-        .from('countries')
-        .select('id, name, slug, title, title_en, meta_title, meta_title_en, description, description_en, contents, contents_en, status');
-        // Removed status filter to show all countries
+      try {
+        const { data: countries, error: countriesError } = await supabase
+          .from('countries')
+          .select('id, name, slug, title, title_en, meta_title, meta_title_en, meta_description, meta_description_en, description, description_en, contents, contents_en, status');
 
-      if (countriesError) {
-        console.error('Countries fetch error:', countriesError);
-      }
+        if (countriesError) {
+          console.error('Countries fetch error:', countriesError);
+          errors.push(`Countries: ${countriesError.message}`);
+        }
 
-      if (countries && countries.length > 0) {
-        countries.forEach(country => {
-          results.push(calculateSEOScore(country, 'country'));
-        });
+        if (countries && countries.length > 0) {
+          countries.forEach(country => {
+            results.push(calculateSEOScore(country, 'country'));
+          });
+        }
+      } catch (e: any) {
+        console.error('Countries processing error:', e);
+        errors.push(`Countries processing: ${e.message}`);
       }
     }
 
     // Fetch custom pages
     if (!type || type === 'all' || type === 'page') {
-      const { data: pages, error: pagesError } = await supabase
-        .from('custom_pages')
-        .select('id, slug, title, title_en, meta_description, meta_description_en, content, content_en, is_published');
-        // Removed is_published filter to show all pages
+      try {
+        const { data: pages, error: pagesError } = await supabase
+          .from('custom_pages')
+          .select('id, slug, title, title_en, meta_description, meta_description_en, content, content_en, is_published');
 
-      if (pagesError) {
-        console.error('Pages fetch error:', pagesError);
-      }
+        if (pagesError) {
+          console.error('Pages fetch error:', pagesError);
+          errors.push(`Pages: ${pagesError.message}`);
+        }
 
-      if (pages && pages.length > 0) {
-        pages.forEach(page => {
-          results.push(calculateSEOScore(page, 'page'));
-        });
+        if (pages && pages.length > 0) {
+          pages.forEach(page => {
+            results.push(calculateSEOScore(page, 'page'));
+          });
+        }
+      } catch (e: any) {
+        console.error('Pages processing error:', e);
+        errors.push(`Pages processing: ${e.message}`);
       }
     }
 
@@ -432,6 +466,7 @@ export async function GET(request: NextRequest) {
       success: true,
       results: filteredResults,
       stats,
+      errors: errors.length > 0 ? errors : undefined,
     });
   } catch (error: any) {
     console.error('SEO analysis error:', error);
