@@ -82,11 +82,12 @@ function analyzeRichSnippets(item: any, type: string): RichSnippet[] {
     });
     
     // FAQ Schema - requires questions
-    const hasFAQ = item.has_faq || false; // Will be set from questions count
+    const faqCount = item.faq_count || 0;
+    const hasFAQ = faqCount > 0;
     snippets.push({
       type: 'FAQ',
       available: hasFAQ,
-      fields: hasFAQ ? ['Sorular', 'Cevaplar'] : [],
+      fields: hasFAQ ? [`${faqCount} Soru/Cevap`] : [],
     });
     
     // HowTo Schema - always generated for visa process
@@ -97,19 +98,21 @@ function analyzeRichSnippets(item: any, type: string): RichSnippet[] {
     });
     
     // Product Schema - requires products/packages
-    const hasProducts = item.has_products || false;
+    const productCount = item.product_count || 0;
+    const hasProducts = productCount > 0;
     snippets.push({
       type: 'Product',
       available: hasProducts,
-      fields: hasProducts ? ['Paket Adı', 'Fiyat', 'Rating'] : [],
+      fields: hasProducts ? [`${productCount} Paket`, 'Fiyat', 'Rating'] : [],
     });
     
     // Review Schema - requires comments
-    const hasReviews = item.has_reviews || false;
+    const reviewCount = item.review_count || 0;
+    const hasReviews = reviewCount > 0;
     snippets.push({
       type: 'Review',
       available: hasReviews,
-      fields: hasReviews ? ['Yorumlar', 'Puanlar'] : [],
+      fields: hasReviews ? [`${reviewCount} Yorum`] : [],
     });
     
     // Organization Schema - always available
@@ -395,8 +398,51 @@ export async function GET(request: NextRequest) {
         }
 
         if (countries && countries.length > 0) {
+          // Get FAQ counts for all countries
+          const countryIds = countries.map(c => c.id);
+          const { data: faqCounts } = await supabase
+            .from('question_to_countries')
+            .select('country_id')
+            .in('country_id', countryIds);
+          
+          const faqCountMap = new Map<number, number>();
+          faqCounts?.forEach(f => {
+            faqCountMap.set(f.country_id, (faqCountMap.get(f.country_id) || 0) + 1);
+          });
+
+          // Get product counts
+          const { data: productCounts } = await supabase
+            .from('products')
+            .select('country_id')
+            .in('country_id', countryIds);
+          
+          const productCountMap = new Map<number, number>();
+          productCounts?.forEach(p => {
+            productCountMap.set(p.country_id, (productCountMap.get(p.country_id) || 0) + 1);
+          });
+
+          // Get comment/review counts
+          const { data: commentCounts } = await supabase
+            .from('country_comments')
+            .select('country_id')
+            .in('country_id', countryIds);
+          
+          const commentCountMap = new Map<number, number>();
+          commentCounts?.forEach(c => {
+            commentCountMap.set(c.country_id, (commentCountMap.get(c.country_id) || 0) + 1);
+          });
+
           countries.forEach(country => {
-            results.push(calculateSEOScore(country, 'country'));
+            const countryWithCounts = {
+              ...country,
+              has_faq: (faqCountMap.get(country.id) || 0) > 0,
+              has_products: (productCountMap.get(country.id) || 0) > 0,
+              has_reviews: (commentCountMap.get(country.id) || 0) > 0,
+              faq_count: faqCountMap.get(country.id) || 0,
+              product_count: productCountMap.get(country.id) || 0,
+              review_count: commentCountMap.get(country.id) || 0,
+            };
+            results.push(calculateSEOScore(countryWithCounts, 'country'));
           });
         }
       } catch (e: any) {
