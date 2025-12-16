@@ -302,7 +302,7 @@ export function CountriesListWithFilters({ initialCountries }: { initialCountrie
                     <div className="flex items-end justify-between border-t border-slate-100 pt-3">
                       <div>
                         <div className="text-2xl font-bold text-emerald-600">
-                          ₺{country.price.toLocaleString('tr-TR')}
+                          {getCurrencySymbol(country.currency_id)}{country.price.toLocaleString('tr-TR')}
                         </div>
                         <p className="text-[10px] text-slate-500">Başlangıç fiyatı</p>
                       </div>

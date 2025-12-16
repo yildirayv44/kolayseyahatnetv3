@@ -12,6 +12,15 @@ import { ComparisonTable } from "@/components/home/ComparisonTable";
 import { translateArray } from "@/lib/translation";
 import { type Locale } from "@/i18n/config";
 
+// Para birimi sembolü helper fonksiyonu
+const getCurrencySymbol = (currencyId: number = 1) => {
+  switch (currencyId) {
+    case 2: return '$';
+    case 3: return '€';
+    default: return '₺';
+  }
+};
+
 interface HomePageProps {
   params: Promise<{ locale: Locale }>;
 }
@@ -161,7 +170,7 @@ export default async function Home({ params }: HomePageProps) {
                   <div className="flex items-end justify-between">
                     <div>
                       <div className="text-2xl font-bold text-emerald-600">
-                        ₺{country.price.toLocaleString('tr-TR')}
+                        {getCurrencySymbol(country.currency_id)}{country.price.toLocaleString('tr-TR')}
                       </div>
                       <p className="text-[10px] text-slate-500">Başlangıç fiyatı</p>
                     </div>

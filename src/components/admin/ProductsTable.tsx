@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Edit, Trash2, Eye, EyeOff } from "lucide-react";
-import { supabase } from "@/lib/supabase";
 
 interface Product {
   id: number;
@@ -29,12 +28,15 @@ export function ProductsTable({ products }: { products: Product[] }) {
     setDeleting(productId);
 
     try {
-      const { error } = await supabase
-        .from("products")
-        .delete()
-        .eq("id", productId);
+      const response = await fetch(`/api/admin/products/${productId}`, {
+        method: "DELETE",
+      });
 
-      if (error) throw error;
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Silme işlemi başarısız");
+      }
 
       alert("Vize paketi başarıyla silindi!");
       router.refresh();
