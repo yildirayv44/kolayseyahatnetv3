@@ -15,6 +15,7 @@ import { type Locale } from "@/i18n/config";
 import { t } from "@/i18n/translations";
 
 const menuItems = [
+  { path: "ulkeler", label: "Ülkeler" },
   { path: "kurumsal-vize-danismanligi", label: "Kurumsal Vize Danışmanlığı" },
   { path: "blog", label: "Blog" },
   { path: "danisman", label: "Danışmanlar" },
