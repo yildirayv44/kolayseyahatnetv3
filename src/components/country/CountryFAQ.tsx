@@ -12,9 +12,10 @@ interface FAQItem {
 
 interface CountryFAQProps {
   questions: FAQItem[];
+  locale?: 'tr' | 'en';
 }
 
-export function CountryFAQ({ questions }: CountryFAQProps) {
+export function CountryFAQ({ questions, locale = 'tr' }: CountryFAQProps) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -29,8 +30,8 @@ export function CountryFAQ({ questions }: CountryFAQProps) {
   return (
     <section className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-slate-900">Sık Sorulan Sorular</h2>
-        <span className="text-sm text-slate-500">{filteredQuestions.length} soru</span>
+        <h2 className="text-2xl font-bold text-slate-900">{locale === 'en' ? 'Frequently Asked Questions' : 'Sık Sorulan Sorular'}</h2>
+        <span className="text-sm text-slate-500">{filteredQuestions.length} {locale === 'en' ? 'questions' : 'soru'}</span>
       </div>
 
       {/* Search */}
@@ -38,7 +39,7 @@ export function CountryFAQ({ questions }: CountryFAQProps) {
         <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
         <input
           type="text"
-          placeholder="Soru ara..."
+          placeholder={locale === 'en' ? 'Search questions...' : 'Soru ara...'}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-12 pr-4 text-sm transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -109,7 +110,7 @@ export function CountryFAQ({ questions }: CountryFAQProps) {
         {filteredQuestions.length === 0 && (
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-8 text-center">
             <p className="text-sm text-slate-600">
-              "{searchQuery}" için sonuç bulunamadı.
+              {locale === 'en' ? `No results found for "${searchQuery}".` : `"${searchQuery}" için sonuç bulunamadı.`}
             </p>
           </div>
         )}

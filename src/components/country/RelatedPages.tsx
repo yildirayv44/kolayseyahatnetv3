@@ -16,9 +16,10 @@ interface Menu {
 
 interface RelatedPagesProps {
   menus: Menu[];
+  locale?: 'tr' | 'en';
 }
 
-export function RelatedPages({ menus }: RelatedPagesProps) {
+export function RelatedPages({ menus, locale = 'tr' }: RelatedPagesProps) {
   // Kategorilere göre grupla
   const categories = menus.filter((m) => !m.parent_id || m.parent_id === 0);
   const subPages = menus.filter((m) => m.parent_id && m.parent_id > 0);
@@ -34,7 +35,7 @@ export function RelatedPages({ menus }: RelatedPagesProps) {
       <section id="vize-turleri" className="scroll-mt-20">
         <div className="rounded-xl border-2 border-slate-200 bg-slate-50 p-6">
           <h2 className="mb-4 text-xl font-bold text-slate-900">
-            İlişkili Sayfalar
+            {locale === 'en' ? 'Related Pages' : 'İlişkili Sayfalar'}
           </h2>
           <div className="space-y-2">
             {menus.map((menu) => (

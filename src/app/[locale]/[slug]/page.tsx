@@ -720,7 +720,7 @@ export default async function CountryPage({ params }: CountryPageParams) {
       {tocItems.length > 0 && <TableOfContents items={tocItems} locale={locale as 'tr' | 'en'} />}
 
       {/* İLİŞKİLİ SAYFALAR - Compact Version */}
-      {menus.length > 0 && <RelatedPages menus={menus} />}
+      {menus.length > 0 && <RelatedPages menus={menus} locale={locale as 'tr' | 'en'} />}
 
       {/* ANA İÇERİK */}
       {fixedContents && (
@@ -838,6 +838,7 @@ export default async function CountryPage({ params }: CountryPageParams) {
               ...q,
               answers: getAnswersForQuestion(q.id),
             }))}
+            locale={locale as 'tr' | 'en'}
           />
         </div>
       )}
@@ -850,7 +851,7 @@ export default async function CountryPage({ params }: CountryPageParams) {
       {/* İLGİLİ BLOG YAZILARI */}
       {blogs.length > 0 && (
         <section className="space-y-4">
-          <h2 className="text-lg font-semibold text-slate-900">İlgili Blog Yazıları</h2>
+          <h2 className="text-lg font-semibold text-slate-900">{locale === 'en' ? 'Related Blog Posts' : 'İlgili Blog Yazıları'}</h2>
           <div className="grid gap-4 md:grid-cols-3">
             {blogs.map((blog: any) => (
               <Link
@@ -870,14 +871,18 @@ export default async function CountryPage({ params }: CountryPageParams) {
         </section>
       )}
 
-      {/* CTA */}
+          {/* CTA */}
       <section className="card flex flex-col items-start justify-between gap-4 border-primary/10 bg-primary/5 md:flex-row md:items-center">
         <div>
           <h2 className="text-lg font-semibold text-slate-900">
-            {country.title || `${country.name} vizesi`} için hemen başvurun.
+            {locale === 'en' 
+              ? `Apply now for ${country.title || `${country.name} visa`}.`
+              : `${country.title || `${country.name} vizesi`} için hemen başvurun.`}
           </h2>
           <p className="mt-1 text-sm text-slate-600">
-            Belgelerinizi birlikte hazırlayalım, randevu ve süreç takibini biz üstlenelim.
+            {locale === 'en'
+              ? "Let's prepare your documents together, we'll handle the appointment and process tracking."
+              : 'Belgelerinizi birlikte hazırlayalım, randevu ve süreç takibini biz üstlenelim.'}
           </p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row">
@@ -886,10 +891,10 @@ export default async function CountryPage({ params }: CountryPageParams) {
             className="inline-flex items-center justify-center rounded-lg border border-primary bg-white px-4 py-2 text-sm font-semibold text-primary shadow-sm hover:bg-slate-50"
           >
             <PhoneCall className="mr-2 h-4 w-4" />
-            0212 909 99 71&apos;i Ara
+            {locale === 'en' ? 'Call 0212 909 99 71' : "0212 909 99 71'i Ara"}
           </a>
           <Link href="/vize-basvuru-formu" className="btn-primary text-xs md:text-sm">
-            Online Başvuru Yap
+            {locale === 'en' ? 'Apply Online' : 'Online Başvuru Yap'}
           </Link>
         </div>
       </section>
@@ -905,6 +910,7 @@ export default async function CountryPage({ params }: CountryPageParams) {
           entityId={country.id}
           entityType="country"
           showRating={true}
+          locale={locale as 'tr' | 'en'}
         />
       </section>
     </div>

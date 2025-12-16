@@ -176,23 +176,28 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
   };
 
   const getVisaStatusConfig = (status: string) => {
+    const isEn = locale === 'en';
     const configs: Record<string, any> = {
       'visa-free': { 
-        label: 'Vizesiz Giriş', 
+        label: isEn ? 'Visa Free' : 'Vizesiz Giriş', 
         color: 'text-green-700', 
         bgColor: 'bg-green-50 border-green-200', 
         icon: '✅',
-        description: 'Pasaportunuzla doğrudan seyahat edebilirsiniz. Ancak seyahat planlaması, otel rezervasyonu ve sigorta konularında uzman desteğimizden faydalanabilirsiniz.',
-        cta: 'Seyahat danışmanlığı almak ister misiniz?',
+        description: isEn 
+          ? 'You can travel directly with your passport. However, you can benefit from our expert support for travel planning, hotel reservations and insurance.'
+          : 'Pasaportunuzla doğrudan seyahat edebilirsiniz. Ancak seyahat planlaması, otel rezervasyonu ve sigorta konularında uzman desteğimizden faydalanabilirsiniz.',
+        cta: isEn ? 'Would you like travel consultation?' : 'Seyahat danışmanlığı almak ister misiniz?',
         allowedStay: visaReq?.allowed_stay || null
       },
       'visa-on-arrival': { 
-        label: 'Varışta Vize', 
+        label: isEn ? 'Visa on Arrival' : 'Varışta Vize', 
         color: 'text-blue-700', 
         bgColor: 'bg-blue-50 border-blue-200', 
         icon: '🛬',
-        description: 'Vizenizi havaalanında alabilirsiniz. Ancak doğru evraklar ve ön hazırlık için profesyonel destek almanızı öneririz. Reddedilme riskini sıfırlayın!',
-        cta: 'Garantili geçiş için danışmanlık alın',
+        description: isEn
+          ? 'You can get your visa at the airport. However, we recommend getting professional support for proper documents and preparation. Eliminate rejection risk!'
+          : 'Vizenizi havaalanında alabilirsiniz. Ancak doğru evraklar ve ön hazırlık için profesyonel destek almanızı öneririz. Reddedilme riskini sıfırlayın!',
+        cta: isEn ? 'Get consultation for guaranteed entry' : 'Garantili geçiş için danışmanlık alın',
         allowedStay: visaReq?.allowed_stay || null
       },
       'eta': { 
@@ -200,17 +205,21 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
         color: 'text-cyan-700', 
         bgColor: 'bg-cyan-50 border-cyan-200', 
         icon: '📧',
-        description: 'Online başvuru hızlı görünse de hata yapma riski yüksektir. Uzman desteğimizle ilk seferde onay alın, zaman ve para kaybetmeyin!',
-        cta: 'Hatasız başvuru için destek alın',
+        description: isEn
+          ? 'Although online application seems fast, the risk of making mistakes is high. Get approval on the first try with our expert support!'
+          : 'Online başvuru hızlı görünse de hata yapma riski yüksektir. Uzman desteğimizle ilk seferde onay alın, zaman ve para kaybetmeyin!',
+        cta: isEn ? 'Get support for error-free application' : 'Hatasız başvuru için destek alın',
         allowedStay: visaReq?.allowed_stay || null
       },
       'visa-required': { 
-        label: 'Vize Gerekli', 
+        label: isEn ? 'Visa Required' : 'Vize Gerekli', 
         color: 'text-orange-700', 
         bgColor: 'bg-orange-50 border-orange-200', 
         icon: '🏛️',
-        description: 'Vize başvurusu karmaşık ve zaman alıcıdır. Evrak eksikliği veya hata reddedilme sebebidir. %98 başarı oranımızla vizenizi garantiye alın!',
-        cta: 'Garantili vize için hemen başlayın',
+        description: isEn
+          ? 'Visa application is complex and time-consuming. Missing documents or errors cause rejection. Guarantee your visa with our 98% success rate!'
+          : 'Vize başvurusu karmaşık ve zaman alıcıdır. Evrak eksikliği veya hata reddedilme sebebidir. %98 başarı oranımızla vizenizi garantiye alın!',
+        cta: isEn ? 'Start now for guaranteed visa' : 'Garantili vize için hemen başlayın',
         allowedStay: null
       },
     };
@@ -247,13 +256,15 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
               </h1>
               {visaReq && visaReq.visa_status === 'visa-free' && (
                 <span className="rounded-full bg-emerald-500 px-3 py-1 text-sm font-bold text-white">
-                  Vizesiz Giriş
+                  {locale === 'en' ? 'Visa Free' : 'Vizesiz Giriş'}
                 </span>
               )}
             </div>
             <p className="text-base leading-relaxed text-slate-600 md:text-lg">
               {country.description ||
-                `${country.name} vizesi başvurularınız için profesyonel danışmanlık. Evrak hazırlığı, randevu ve süreç takibi tek noktadan.`}
+                (locale === 'en' 
+                  ? `Professional consultation for your ${country.name} visa applications. Document preparation, appointment and process tracking from one point.`
+                  : `${country.name} vizesi başvurularınız için profesyonel danışmanlık. Evrak hazırlığı, randevu ve süreç takibi tek noktadan.`)}
             </p>
           </div>
 
@@ -266,7 +277,7 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
               <div>
                 <div className="flex items-center gap-1.5">
                   <span className="text-sm font-bold text-slate-900">
-                    {country.process_time || "7-14 Gün"}
+                    {country.process_time || (locale === 'en' ? "7-14 Days" : "7-14 Gün")}
                   </span>
                   {getProcessTimeTooltip() && (
                     <div className="group relative">
@@ -318,7 +329,7 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
             <div className="rounded-xl border-2 bg-white p-4">
               <div className="mb-3 flex items-center gap-2">
                 <Globe className="h-5 w-5 text-primary" />
-                <h3 className="font-bold text-slate-900">Vize Gereklilikleri</h3>
+                <h3 className="font-bold text-slate-900">{locale === 'en' ? 'Visa Requirements' : 'Vize Gereklilikleri'}</h3>
               </div>
               
               {/* User-friendly description */}
@@ -330,7 +341,7 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
               {visaReq.available_methods && visaReq.available_methods.length > 1 && (
                 <div className="mb-4">
                   <div className="mb-2 text-xs font-semibold text-slate-700">
-                    Başvuru Yöntemlerini Seçin:
+                    {locale === 'en' ? 'Select Application Method:' : 'Başvuru Yöntemlerini Seçin:'}
                   </div>
                   <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                     {visaReq.available_methods.map((method: string) => {
@@ -357,7 +368,7 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
                         >
                           {isRecommended && (
                             <div className="absolute -top-2 left-3 rounded-full bg-emerald-500 px-2 py-0.5 text-xs font-bold text-white">
-                              ÖNERİLEN
+                              {locale === 'en' ? 'RECOMMENDED' : 'ÖNERİLEN'}
                             </div>
                           )}
                           <div className="mb-2 flex items-center gap-2">
@@ -371,15 +382,15 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
                               <>
                                 <div className="flex items-center gap-1">
                                   <span className="text-emerald-600">✓</span>
-                                  <span>Online başvuru</span>
+                                  <span>{locale === 'en' ? 'Online application' : 'Online başvuru'}</span>
                                 </div>
                                 <div className="flex items-center gap-1">
                                   <span className="text-emerald-600">✓</span>
-                                  <span>Hızlı işlem</span>
+                                  <span>{locale === 'en' ? 'Fast processing' : 'Hızlı işlem'}</span>
                                 </div>
                                 <div className="flex items-center gap-1">
                                   <span className="text-emerald-600">✓</span>
-                                  <span>Evden başvuru</span>
+                                  <span>{locale === 'en' ? 'Apply from home' : 'Evden başvuru'}</span>
                                 </div>
                               </>
                             )}
@@ -387,15 +398,15 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
                               <>
                                 <div className="flex items-center gap-1">
                                   <span className="text-blue-600">✓</span>
-                                  <span>Havaalanında alınır</span>
+                                  <span>{locale === 'en' ? 'Get at airport' : 'Havaalanında alınır'}</span>
                                 </div>
                                 <div className="flex items-center gap-1">
                                   <span className="text-blue-600">✓</span>
-                                  <span>Ön başvuru gerekmez</span>
+                                  <span>{locale === 'en' ? 'No pre-application' : 'Ön başvuru gerekmez'}</span>
                                 </div>
                                 <div className="flex items-center gap-1">
                                   <span className="text-amber-600">!</span>
-                                  <span>Kuyruk olabilir</span>
+                                  <span>{locale === 'en' ? 'May have queues' : 'Kuyruk olabilir'}</span>
                                 </div>
                               </>
                             )}
@@ -403,11 +414,11 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
                               <>
                                 <div className="flex items-center gap-1">
                                   <span className="text-green-600">✓</span>
-                                  <span>Vize gerekmez</span>
+                                  <span>{locale === 'en' ? 'No visa needed' : 'Vize gerekmez'}</span>
                                 </div>
                                 <div className="flex items-center gap-1">
                                   <span className="text-green-600">✓</span>
-                                  <span>Direkt giriş</span>
+                                  <span>{locale === 'en' ? 'Direct entry' : 'Direkt giriş'}</span>
                                 </div>
                               </>
                             )}
@@ -421,7 +432,7 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
 
               <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
                 <div className={`rounded-lg border-2 px-4 py-3 ${visaConfig.bgColor}`}>
-                  <div className="text-xs text-slate-600 mb-1">Vize Durumu</div>
+                  <div className="text-xs text-slate-600 mb-1">{locale === 'en' ? 'Visa Status' : 'Vize Durumu'}</div>
                   <div className={`text-sm font-bold ${visaConfig.color}`}>
                     {visaConfig.icon} {visaConfig.label}
                   </div>
@@ -451,7 +462,7 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
                 {visaReq.notes && (
                   <div className="group relative rounded-lg bg-white/80 backdrop-blur-sm border border-slate-200 px-4 py-3">
                     <div className="flex items-center gap-1 text-xs text-slate-600 mb-1">
-                      <span>Notlar</span>
+                      <span>{locale === 'en' ? 'Notes' : 'Notlar'}</span>
                       <div className="relative">
                         <Info className="h-3 w-3 text-slate-400 cursor-help" />
                         <div className="invisible group-hover:visible absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 rounded-lg bg-slate-900 px-3 py-2 text-xs text-white shadow-lg z-10">
@@ -469,12 +480,13 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
               <div className="mt-3 flex items-start gap-2 rounded-lg bg-amber-50 border border-amber-200 p-3">
                 <Info className="h-4 w-4 flex-shrink-0 text-amber-600 mt-0.5" />
                 <p className="text-xs text-amber-800 leading-relaxed">
-                  <strong>Önemli:</strong> Vize gereklilikleri değişebilir ve burada verilen bilgiler kesin değildir. 
-                  Güncel ve detaylı bilgi için lütfen{' '}
+                  <strong>{locale === 'en' ? 'Important:' : 'Önemli:'}</strong> {locale === 'en' 
+                    ? 'Visa requirements may change and the information provided here is not definitive. For up-to-date and detailed information, please contact us at'
+                    : 'Vize gereklilikleri değişebilir ve burada verilen bilgiler kesin değildir. Güncel ve detaylı bilgi için lütfen'}{' '}
                   <a href="tel:02129099971" className="font-semibold underline hover:text-amber-900">
                     0212 909 99 71
                   </a>
-                  {' '}numaralı telefondan bizimle iletişime geçin.
+                  {locale === 'en' ? '.' : ' numaralı telefondan bizimle iletişime geçin.'}
                 </p>
               </div>
             </div>
@@ -485,10 +497,10 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
             <div className="rounded-xl border-2 border-primary/20 bg-gradient-to-r from-primary/5 to-blue-50 p-4">
               <div className="mb-2 flex items-center gap-2">
                 <Package className="h-5 w-5 text-primary" />
-                <h3 className="font-bold text-slate-900">Vize Paketleri</h3>
+                <h3 className="font-bold text-slate-900">{locale === 'en' ? 'Visa Packages' : 'Vize Paketleri'}</h3>
               </div>
               <p className="mb-3 text-xs text-slate-600">
-                💻 Online başvuru formu ile hemen işleme başlayabilirsiniz
+                {locale === 'en' ? '💻 Start processing immediately with online application form' : '💻 Online başvuru formu ile hemen işleme başlayabilirsiniz'}
               </p>
               <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
                 {products.slice(0, 3).map((product, index) => (
@@ -503,7 +515,7 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
                   >
                     {index === 0 && (
                       <div className="absolute -right-1 -top-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-white">
-                        ⭐ Popüler
+                        {locale === 'en' ? '⭐ Popular' : '⭐ Popüler'}
                       </div>
                     )}
                     {selectedPackage?.id === product.id && (
@@ -520,10 +532,10 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
                           {product.currency_id === 1 ? '₺' : product.currency_id === 2 ? '$' : '€'}
                           {Number(product.price).toFixed(0)}
                         </span>
-                        <span className="text-xs text-slate-500">/ başvuru</span>
+                        <span className="text-xs text-slate-500">{locale === 'en' ? '/ application' : '/ başvuru'}</span>
                       </div>
                       {selectedPackage?.id === product.id && (
-                        <span className="text-xs font-semibold text-green-600">Seçili</span>
+                        <span className="text-xs font-semibold text-green-600">{locale === 'en' ? 'Selected' : 'Seçili'}</span>
                       )}
                     </div>
                   </button>
@@ -534,7 +546,7 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
                   onClick={() => scrollToSection('vize-paketleri')}
                   className="mt-2 text-xs text-primary hover:underline"
                 >
-                  Tüm paketleri gör →
+                  {locale === 'en' ? 'View all packages →' : 'Tüm paketleri gör →'}
                 </button>
               )}
             </div>
@@ -557,7 +569,7 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
               }}
               className="group inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-4 text-base font-bold text-white shadow-xl transition-all hover:bg-primary/90 hover:shadow-2xl hover:scale-105"
             >
-              <span>{selectedPackage ? `${selectedPackage.name} - Hemen Başvur` : t(locale, "applyNow")}</span>
+              <span>{selectedPackage ? `${selectedPackage.name} - ${locale === 'en' ? 'Apply Now' : 'Hemen Başvur'}` : t(locale, "applyNow")}</span>
               <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
             </Link>
             <a
@@ -569,7 +581,7 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
                 <span>0212 909 99 71</span>
               </div>
               <span className="text-xs font-normal text-slate-500 group-hover:text-white">
-                ☎️ Uzman ekibimiz sizi bekliyor
+                {locale === 'en' ? '☎️ Our expert team is waiting for you' : '☎️ Uzman ekibimiz sizi bekliyor'}
               </span>
             </a>
             <a
@@ -583,7 +595,7 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
                 <span>{t(locale, "freeEvaluation")}</span>
               </div>
               <span className="text-xs font-normal text-emerald-100 opacity-90 group-hover:opacity-100">
-                📝 Formu doldurun, uzmanlarımız sizi arasın
+                {locale === 'en' ? '📝 Fill the form, our experts will call you' : '📝 Formu doldurun, uzmanlarımız sizi arasın'}
               </span>
             </a>
           </div>

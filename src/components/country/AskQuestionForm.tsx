@@ -47,11 +47,11 @@ export function AskQuestionForm({ countryId, countryName, locale = "tr" }: AskQu
           setFormData({ name: "", email: "", phone: "", question: "" });
         }, 3000);
       } else {
-        alert("Soru gönderilirken bir hata oluştu. Lütfen tekrar deneyin.");
+        alert(locale === 'en' ? 'An error occurred while sending your question. Please try again.' : 'Soru gönderilirken bir hata oluştu. Lütfen tekrar deneyin.');
       }
     } catch (error) {
       console.error("Question submit error:", error);
-      alert("Soru gönderilirken bir hata oluştu. Lütfen tekrar deneyin.");
+      alert(locale === 'en' ? 'An error occurred while sending your question. Please try again.' : 'Soru gönderilirken bir hata oluştu. Lütfen tekrar deneyin.');
     } finally {
       setIsSubmitting(false);
     }
@@ -77,10 +77,10 @@ export function AskQuestionForm({ countryId, countryName, locale = "tr" }: AskQu
     <div className="rounded-2xl border-2 border-slate-200 bg-white p-6 md:p-8">
       <div className="mb-6">
         <h3 className="mb-2 text-2xl font-bold text-slate-900">
-          {countryName} Vizesi Hakkında Soru Sor
+          {locale === 'en' ? `Ask a Question About ${countryName} Visa` : `${countryName} Vizesi Hakkında Soru Sor`}
         </h3>
         <p className="text-sm text-slate-600">
-          Uzman danışmanlarımız sorularınızı en kısa sürede yanıtlayacak.
+          {locale === 'en' ? 'Our expert consultants will answer your questions as soon as possible.' : 'Uzman danışmanlarımız sorularınızı en kısa sürede yanıtlayacak.'}
         </p>
       </div>
 
@@ -91,7 +91,7 @@ export function AskQuestionForm({ countryId, countryName, locale = "tr" }: AskQu
               htmlFor="name"
               className="mb-1.5 block text-sm font-semibold text-slate-700"
             >
-              Adınız Soyadınız *
+              {locale === 'en' ? 'Your Name *' : 'Adınız Soyadınız *'}
             </label>
             <input
               type="text"
@@ -110,7 +110,7 @@ export function AskQuestionForm({ countryId, countryName, locale = "tr" }: AskQu
               htmlFor="phone"
               className="mb-1.5 block text-sm font-semibold text-slate-700"
             >
-              Telefon Numaranız *
+              {locale === 'en' ? 'Phone Number *' : 'Telefon Numaranız *'}
             </label>
             <input
               type="tel"
@@ -131,7 +131,7 @@ export function AskQuestionForm({ countryId, countryName, locale = "tr" }: AskQu
             htmlFor="email"
             className="mb-1.5 block text-sm font-semibold text-slate-700"
           >
-            E-posta Adresiniz *
+            {locale === 'en' ? 'Email Address *' : 'E-posta Adresiniz *'}
           </label>
           <input
             type="email"
@@ -151,7 +151,7 @@ export function AskQuestionForm({ countryId, countryName, locale = "tr" }: AskQu
             htmlFor="question"
             className="mb-1.5 block text-sm font-semibold text-slate-700"
           >
-            Sorunuz *
+            {locale === 'en' ? 'Your Question *' : 'Sorunuz *'}
           </label>
           <textarea
             id="question"
@@ -185,11 +185,11 @@ export function AskQuestionForm({ countryId, countryName, locale = "tr" }: AskQu
         </button>
 
         <p className="text-center text-xs text-slate-500">
-          Formunu göndererek{" "}
+          {locale === 'en' ? 'By submitting this form, you agree to our ' : 'Formunu göndererek '}
           <a href="/gizlilik" className="text-primary hover:underline">
-            Gizlilik Politikası
+            {locale === 'en' ? 'Privacy Policy' : 'Gizlilik Politikası'}
           </a>
-          &apos;nı kabul etmiş olursunuz.
+          {locale === 'en' ? '.' : "'nı kabul etmiş olursunuz."}
         </p>
       </form>
     </div>

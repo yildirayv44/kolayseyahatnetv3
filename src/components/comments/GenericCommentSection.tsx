@@ -19,6 +19,7 @@ interface GenericCommentSectionProps {
   entityId: number;
   entityType: "blog" | "country" | "consultant";
   showRating?: boolean;
+  locale?: 'tr' | 'en';
 }
 
 export function GenericCommentSection({
@@ -26,6 +27,7 @@ export function GenericCommentSection({
   entityId,
   entityType,
   showRating = false,
+  locale = 'tr',
 }: GenericCommentSectionProps) {
   const [comments, setComments] = useState(initialComments);
   const [showForm, setShowForm] = useState(false);
@@ -56,11 +58,11 @@ export function GenericCommentSection({
         setFormData({ name: "", email: "", comment: "", rating: 5 });
         setShowForm(false);
         // Show success message
-        alert("Yorumunuz başarıyla gönderildi! Onaylandıktan sonra görünecektir.");
+        alert(locale === 'en' ? 'Your comment has been submitted! It will appear after approval.' : 'Yorumunuz başarıyla gönderildi! Onaylandıktan sonra görünecektir.');
       }
     } catch (error) {
       console.error("Comment submit error:", error);
-      alert("Yorum gönderilirken bir hata oluştu.");
+      alert(locale === 'en' ? 'An error occurred while sending your comment.' : 'Yorum gönderilirken bir hata oluştu.');
     } finally {
       setIsSubmitting(false);
     }
@@ -80,7 +82,7 @@ export function GenericCommentSection({
       });
 
       if (response.ok) {
-        alert("Cevabınız gönderildi! Onaylandıktan sonra görünecektir.");
+        alert(locale === 'en' ? 'Your reply has been sent! It will appear after approval.' : 'Cevabınız gönderildi! Onaylandıktan sonra görünecektir.');
       }
     } catch (error) {
       console.error("Reply error:", error);
@@ -124,16 +126,16 @@ export function GenericCommentSection({
           onClick={() => setShowForm(true)}
           className="w-full rounded-lg border-2 border-dashed border-slate-200 p-4 text-sm text-slate-600 transition-colors hover:border-primary hover:text-primary"
         >
-          + Yorum Ekle
+          {locale === 'en' ? '+ Add Comment' : '+ Yorum Ekle'}
         </button>
       ) : (
         <form onSubmit={handleSubmit} className="card space-y-4">
-          <h3 className="font-semibold text-slate-900">Yorum Yaz</h3>
+          <h3 className="font-semibold text-slate-900">{locale === 'en' ? 'Write a Comment' : 'Yorum Yaz'}</h3>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <input
               type="text"
-              placeholder="Adınız *"
+              placeholder={locale === 'en' ? 'Your Name *' : 'Adınız *'}
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               required
@@ -141,7 +143,7 @@ export function GenericCommentSection({
             />
             <input
               type="email"
-              placeholder="E-posta *"
+              placeholder={locale === 'en' ? 'Email *' : 'E-posta *'}
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               required
@@ -151,7 +153,7 @@ export function GenericCommentSection({
 
           {showRating && (
             <div className="flex items-center gap-2">
-              <span className="text-sm text-slate-700">Puanınız:</span>
+              <span className="text-sm text-slate-700">{locale === 'en' ? 'Your Rating:' : 'Puanınız:'}</span>
               <div className="flex gap-1">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
@@ -174,7 +176,7 @@ export function GenericCommentSection({
           )}
 
           <textarea
-            placeholder="Yorumunuz *"
+            placeholder={locale === 'en' ? 'Your Comment *' : 'Yorumunuz *'}
             value={formData.comment}
             onChange={(e) => setFormData({ ...formData, comment: e.target.value })}
             required
@@ -189,14 +191,14 @@ export function GenericCommentSection({
               className="flex items-center gap-2 rounded-lg bg-primary px-6 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary/90 disabled:opacity-50"
             >
               <Send className="h-4 w-4" />
-              {isSubmitting ? "Gönderiliyor..." : "Gönder"}
+              {isSubmitting ? (locale === 'en' ? 'Sending...' : 'Gönderiliyor...') : (locale === 'en' ? 'Submit' : 'Gönder')}
             </button>
             <button
               type="button"
               onClick={() => setShowForm(false)}
               className="rounded-lg border border-slate-200 px-6 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
             >
-              İptal
+              {locale === 'en' ? 'Cancel' : 'İptal'}
             </button>
           </div>
         </form>
