@@ -370,9 +370,10 @@ export default async function CountryPage({ params }: CountryPageParams) {
     );
   }
 
-  // Blog bulundu - redirect et
+  // Blog bulundu - doğrudan blog sayfasına yönlendir (locale ile)
   if (blog) {
-    redirect(`/blog/${decodedSlug}`);
+    const blogUrl = locale === 'en' ? `/en/blog/${decodedSlug}` : `/blog/${decodedSlug}`;
+    redirect(blogUrl);
   }
 
   // Ülke bulundu - işle ve localize et

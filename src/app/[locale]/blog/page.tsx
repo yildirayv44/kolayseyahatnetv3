@@ -5,35 +5,54 @@ import { Clock4, Calendar } from "lucide-react";
 import { getBlogs } from "@/lib/queries";
 import { getBlogSlug } from "@/lib/helpers";
 import { getCleanImageUrl, getBlogCategoryImage } from "@/lib/image-helpers";
+import { getLocalizedFields } from "@/lib/locale-content";
 
-export const metadata: Metadata = {
-  title: "Seyahat ve Vize Blogu | Kolay Seyahat",
-  description:
-    "Seyahat ipuçları, vize başvuru süreçleri, ülke rehberleri ve gezginler için pratik bilgiler. Dünya'yı keşfetmek için ihtiyacınız olan her şey.",
-};
+interface BlogPageProps {
+  params: Promise<{ locale: string }>;
+}
+
+export async function generateMetadata({ params }: BlogPageProps): Promise<Metadata> {
+  const { locale } = await params;
+  const isEnglish = locale === 'en';
+  
+  return {
+    title: isEnglish ? "Travel & Visa Blog | Kolay Seyahat" : "Seyahat ve Vize Blogu | Kolay Seyahat",
+    description: isEnglish
+      ? "Travel tips, visa application guides, country guides and practical information for travelers. Everything you need to explore the world."
+      : "Seyahat ipuçları, vize başvuru süreçleri, ülke rehberleri ve gezginler için pratik bilgiler. Dünya'yı keşfetmek için ihtiyacınız olan her şey.",
+  };
+}
 
 // ⚡ PERFORMANCE: Revalidate every 30 minutes (1800 seconds)
 export const revalidate = 1800;
 
-export default async function BlogPage() {
-  const blogs = await getBlogs();
+export default async function BlogPage({ params }: BlogPageProps) {
+  const { locale } = await params;
+  const isEnglish = locale === 'en';
+  let blogs = await getBlogs();
+  
+  // Localize blog content
+  blogs = blogs.map((blog: any) => getLocalizedFields(blog, locale as 'tr' | 'en'));
 
   return (
     <div className="space-y-8">
       <section className="space-y-3 border-b border-slate-200 pb-6">
         <h1 className="text-2xl font-semibold text-slate-900 md:text-3xl">
-          Seyahat ve Vize Blogu
+          {isEnglish ? "Travel & Visa Blog" : "Seyahat ve Vize Blogu"}
         </h1>
         <p className="max-w-2xl text-sm text-slate-600">
-          Seyahat ipuçları, vize başvuru süreçleri, ülke rehberleri ve gezginler için pratik bilgiler. 
-          Dünya'yı keşfetmek için ihtiyacınız olan her şey burada.
+          {isEnglish 
+            ? "Travel tips, visa application guides, country guides and practical information for travelers. Everything you need to explore the world."
+            : "Seyahat ipuçları, vize başvuru süreçleri, ülke rehberleri ve gezginler için pratik bilgiler. Dünya'yı keşfetmek için ihtiyacınız olan her şey burada."}
         </p>
       </section>
 
       {blogs.length === 0 && (
         <div className="rounded-xl border border-slate-200 bg-slate-50 px-6 py-12 text-center">
           <p className="text-sm text-slate-600">
-            Henüz blog yazısı bulunmuyor. Yakında yeni içeriklerle karşınızda olacağız.
+            {isEnglish 
+              ? "No blog posts yet. New content coming soon."
+              : "Henüz blog yazısı bulunmuyor. Yakında yeni içeriklerle karşınızda olacağız."}
           </p>
         </div>
       )}
@@ -77,7 +96,7 @@ export default async function BlogPage() {
                 <div className="flex items-center justify-between border-t border-slate-100 pt-3 text-xs text-slate-500">
                   <span className="inline-flex items-center gap-1">
                     <Calendar className="h-3 w-3" />
-                    {new Date(blog.created_at).toLocaleDateString("tr-TR", {
+                    {new Date(blog.created_at).toLocaleDateString(isEnglish ? "en-US" : "tr-TR", {
                       day: "numeric",
                       month: "short",
                       year: "numeric",
@@ -85,7 +104,7 @@ export default async function BlogPage() {
                   </span>
                   <span className="inline-flex items-center gap-1">
                     <Clock4 className="h-3 w-3" />
-                    {blog.views || 0} görüntülenme
+                    {blog.views || 0} {isEnglish ? "views" : "görüntülenme"}
                   </span>
                 </div>
               </div>

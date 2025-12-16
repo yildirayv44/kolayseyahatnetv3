@@ -8,22 +8,42 @@ interface ExtendedCountryInfoProps {
 }
 
 export function ExtendedCountryInfo({ country, locale }: ExtendedCountryInfoProps) {
+  const isEnglish = locale === 'en';
   const hasCountryInfo = country.capital || country.currency || country.language || country.timezone;
-  const hasPopularCities = country.popular_cities && country.popular_cities.length > 0;
   
   // Use English versions if available and locale is 'en'
-  const travelTips = locale === 'en' && country.travel_tips_en?.length > 0 
+  const popularCities = isEnglish && country.popular_cities_en?.length > 0 
+    ? country.popular_cities_en 
+    : country.popular_cities;
+  const hasPopularCities = popularCities && popularCities.length > 0;
+  
+  const travelTips = isEnglish && country.travel_tips_en?.length > 0 
     ? country.travel_tips_en 
     : country.travel_tips;
-  const applicationSteps = locale === 'en' && country.application_steps_en?.length > 0 
+  const applicationSteps = isEnglish && country.application_steps_en?.length > 0 
     ? country.application_steps_en 
     : country.application_steps;
+  const importantNotes = isEnglish && country.important_notes_en?.length > 0 
+    ? country.important_notes_en 
+    : country.important_notes;
+  const bestTimeToVisit = isEnglish && country.best_time_to_visit_en 
+    ? country.best_time_to_visit_en 
+    : country.best_time_to_visit;
+  const healthRequirements = isEnglish && country.health_requirements_en 
+    ? country.health_requirements_en 
+    : country.health_requirements;
+  const customsRegulations = isEnglish && country.customs_regulations_en 
+    ? country.customs_regulations_en 
+    : country.customs_regulations;
+  const whyKolaySeyahat = isEnglish && country.why_kolay_seyahat_en 
+    ? country.why_kolay_seyahat_en 
+    : country.why_kolay_seyahat;
   
   const hasTravelTips = travelTips && travelTips.length > 0;
   const hasApplicationSteps = applicationSteps && applicationSteps.length > 0;
   // Check both new array format and old HTML format for backward compatibility
   const hasRequiredDocs = (country.required_documents && country.required_documents.length > 0) || country.req_document;
-  const hasImportantNotes = country.important_notes && country.important_notes.length > 0;
+  const hasImportantNotes = importantNotes && importantNotes.length > 0;
   const hasEmergencyContacts = country.emergency_contacts && 
     (country.emergency_contacts.embassy || country.emergency_contacts.emergencyNumber || 
      country.emergency_contacts.police || country.emergency_contacts.ambulance);
@@ -43,14 +63,14 @@ export function ExtendedCountryInfo({ country, locale }: ExtendedCountryInfoProp
           <div className="mb-4 flex items-center gap-2">
             <MapPin className="h-5 w-5 text-primary" />
             <h2 className="text-xl font-bold text-slate-900">
-              {locale === 'en' ? 'Country Information' : 'Ülke Bilgileri'}
+              {isEnglish ? 'Country Information' : 'Ülke Bilgileri'}
             </h2>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
             {country.capital && (
               <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
                 <div className="text-sm font-semibold text-slate-600">
-                  {locale === 'en' ? 'Capital' : 'Başkent'}
+                  {isEnglish ? 'Capital' : 'Başkent'}
                 </div>
                 <div className="mt-1 text-lg font-bold text-slate-900">{country.capital}</div>
               </div>
@@ -58,7 +78,7 @@ export function ExtendedCountryInfo({ country, locale }: ExtendedCountryInfoProp
             {country.currency && (
               <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
                 <div className="text-sm font-semibold text-slate-600">
-                  {locale === 'en' ? 'Currency' : 'Para Birimi'}
+                  {isEnglish ? 'Currency' : 'Para Birimi'}
                 </div>
                 <div className="mt-1 text-lg font-bold text-slate-900">
                   {country.currency}
@@ -68,7 +88,7 @@ export function ExtendedCountryInfo({ country, locale }: ExtendedCountryInfoProp
             {country.language && (
               <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
                 <div className="text-sm font-semibold text-slate-600">
-                  {locale === 'en' ? 'Language' : 'Resmi Dil'}
+                  {isEnglish ? 'Language' : 'Resmi Dil'}
                 </div>
                 <div className="mt-1 text-lg font-bold text-slate-900">{country.language}</div>
               </div>
@@ -76,7 +96,7 @@ export function ExtendedCountryInfo({ country, locale }: ExtendedCountryInfoProp
             {country.timezone && (
               <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
                 <div className="text-sm font-semibold text-slate-600">
-                  {locale === 'en' ? 'Timezone' : 'Saat Dilimi'}
+                  {isEnglish ? 'Timezone' : 'Saat Dilimi'}
                 </div>
                 <div className="mt-1 text-lg font-bold text-slate-900">{country.timezone}</div>
               </div>
@@ -91,11 +111,11 @@ export function ExtendedCountryInfo({ country, locale }: ExtendedCountryInfoProp
           <div className="mb-4 flex items-center gap-2">
             <MapPin className="h-5 w-5 text-primary" />
             <h2 className="text-xl font-bold text-slate-900">
-              {locale === 'en' ? 'Popular Cities' : 'Popüler Şehirler'}
+              {isEnglish ? 'Popular Cities' : 'Popüler Şehirler'}
             </h2>
           </div>
           <div className="flex flex-wrap gap-2">
-            {country.popular_cities.map((city: string, index: number) => (
+            {popularCities.map((city: string, index: number) => (
               <span
                 key={index}
                 className="rounded-full bg-primary/10 px-4 py-2 text-sm font-semibold text-primary"
@@ -108,15 +128,15 @@ export function ExtendedCountryInfo({ country, locale }: ExtendedCountryInfoProp
       )}
 
       {/* En İyi Ziyaret Zamanı */}
-      {country.best_time_to_visit && (
+      {bestTimeToVisit && (
         <section className="card">
           <div className="mb-4 flex items-center gap-2">
             <Calendar className="h-5 w-5 text-primary" />
             <h2 className="text-xl font-bold text-slate-900">
-              {locale === 'en' ? 'Best Time to Visit' : 'En İyi Ziyaret Zamanı'}
+              {isEnglish ? 'Best Time to Visit' : 'En İyi Ziyaret Zamanı'}
             </h2>
           </div>
-          <p className="text-slate-700">{country.best_time_to_visit}</p>
+          <p className="text-slate-700">{bestTimeToVisit}</p>
         </section>
       )}
 
@@ -126,7 +146,7 @@ export function ExtendedCountryInfo({ country, locale }: ExtendedCountryInfoProp
           <div className="mb-4 flex items-center gap-2">
             <Plane className="h-5 w-5 text-primary" />
             <h2 className="text-xl font-bold text-slate-900">
-              {locale === 'en' ? 'Travel Tips' : 'Seyahat İpuçları'}
+              {isEnglish ? 'Travel Tips' : 'Seyahat İpuçları'}
             </h2>
           </div>
           <ul className="space-y-2">
@@ -146,7 +166,7 @@ export function ExtendedCountryInfo({ country, locale }: ExtendedCountryInfoProp
           <div className="mb-4 flex items-center gap-2">
             <CheckCircle2 className="h-5 w-5 text-primary" />
             <h2 className="text-xl font-bold text-slate-900">
-              {locale === 'en' ? 'Application Steps' : 'Başvuru Adımları'}
+              {isEnglish ? 'Application Steps' : 'Başvuru Adımları'}
             </h2>
           </div>
           <ol className="space-y-3">
@@ -170,11 +190,11 @@ export function ExtendedCountryInfo({ country, locale }: ExtendedCountryInfoProp
           <div className="mb-4 flex items-center gap-2">
             <AlertCircle className="h-5 w-5 text-yellow-600" />
             <h2 className="text-xl font-bold text-slate-900">
-              {locale === 'en' ? 'Important Notes' : 'Önemli Notlar'}
+              {isEnglish ? 'Important Notes' : 'Önemli Notlar'}
             </h2>
           </div>
           <ul className="space-y-2">
-            {country.important_notes.map((note: string, index: number) => (
+            {importantNotes.map((note: string, index: number) => (
               <li key={index} className="flex items-start gap-2">
                 <span className="mt-1 text-yellow-600">⚠</span>
                 <span className="flex-1 text-slate-700">{note}</span>
@@ -185,28 +205,28 @@ export function ExtendedCountryInfo({ country, locale }: ExtendedCountryInfoProp
       )}
 
       {/* Sağlık Gereksinimleri */}
-      {country.health_requirements && (
+      {healthRequirements && (
         <section className="card">
           <div className="mb-4 flex items-center gap-2">
             <Heart className="h-5 w-5 text-primary" />
             <h2 className="text-xl font-bold text-slate-900">
-              {locale === 'en' ? 'Health Requirements' : 'Sağlık Gereksinimleri'}
+              {isEnglish ? 'Health Requirements' : 'Sağlık Gereksinimleri'}
             </h2>
           </div>
-          <p className="text-slate-700 whitespace-pre-line">{country.health_requirements}</p>
+          <p className="text-slate-700 whitespace-pre-line">{healthRequirements}</p>
         </section>
       )}
 
       {/* Gümrük Kuralları */}
-      {country.customs_regulations && (
+      {customsRegulations && (
         <section className="card">
           <div className="mb-4 flex items-center gap-2">
             <FileText className="h-5 w-5 text-primary" />
             <h2 className="text-xl font-bold text-slate-900">
-              {locale === 'en' ? 'Customs Regulations' : 'Gümrük Kuralları'}
+              {isEnglish ? 'Customs Regulations' : 'Gümrük Kuralları'}
             </h2>
           </div>
-          <p className="text-slate-700 whitespace-pre-line">{country.customs_regulations}</p>
+          <p className="text-slate-700 whitespace-pre-line">{customsRegulations}</p>
         </section>
       )}
 
@@ -216,14 +236,14 @@ export function ExtendedCountryInfo({ country, locale }: ExtendedCountryInfoProp
           <div className="mb-4 flex items-center gap-2">
             <Phone className="h-5 w-5 text-red-600" />
             <h2 className="text-xl font-bold text-slate-900">
-              {locale === 'en' ? 'Emergency Contacts' : 'Acil Durum İletişim Bilgileri'}
+              {isEnglish ? 'Emergency Contacts' : 'Acil Durum İletişim Bilgileri'}
             </h2>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
             {country.emergency_contacts.embassy && (
               <div className="rounded-lg border border-red-200 bg-white p-4">
                 <div className="text-sm font-semibold text-red-600">
-                  {locale === 'en' ? 'Turkish Embassy' : 'Türk Elçiliği/Konsolosluğu'}
+                  {isEnglish ? 'Turkish Embassy' : 'Türk Elçiliği/Konsolosluğu'}
                 </div>
                 <div className="mt-1 text-slate-900">{country.emergency_contacts.embassy}</div>
               </div>
@@ -231,7 +251,7 @@ export function ExtendedCountryInfo({ country, locale }: ExtendedCountryInfoProp
             {country.emergency_contacts.emergencyNumber && (
               <div className="rounded-lg border border-red-200 bg-white p-4">
                 <div className="text-sm font-semibold text-red-600">
-                  {locale === 'en' ? 'Emergency Number' : 'Acil Durum'}
+                  {isEnglish ? 'Emergency Number' : 'Acil Durum'}
                 </div>
                 <div className="mt-1 text-lg font-bold text-slate-900">
                   {country.emergency_contacts.emergencyNumber}
@@ -241,7 +261,7 @@ export function ExtendedCountryInfo({ country, locale }: ExtendedCountryInfoProp
             {country.emergency_contacts.police && (
               <div className="rounded-lg border border-red-200 bg-white p-4">
                 <div className="text-sm font-semibold text-red-600">
-                  {locale === 'en' ? 'Police' : 'Polis'}
+                  {isEnglish ? 'Police' : 'Polis'}
                 </div>
                 <div className="mt-1 text-lg font-bold text-slate-900">
                   {country.emergency_contacts.police}
@@ -251,7 +271,7 @@ export function ExtendedCountryInfo({ country, locale }: ExtendedCountryInfoProp
             {country.emergency_contacts.ambulance && (
               <div className="rounded-lg border border-red-200 bg-white p-4">
                 <div className="text-sm font-semibold text-red-600">
-                  {locale === 'en' ? 'Ambulance' : 'Ambulans'}
+                  {isEnglish ? 'Ambulance' : 'Ambulans'}
                 </div>
                 <div className="mt-1 text-lg font-bold text-slate-900">
                   {country.emergency_contacts.ambulance}
@@ -263,15 +283,15 @@ export function ExtendedCountryInfo({ country, locale }: ExtendedCountryInfoProp
       )}
 
       {/* Neden Kolay Seyahat */}
-      {country.why_kolay_seyahat && (
+      {whyKolaySeyahat && (
         <section className="card border-2 border-primary/20 bg-primary/5">
           <div className="mb-4 flex items-center gap-2">
             <Heart className="h-5 w-5 text-primary" />
             <h2 className="text-xl font-bold text-slate-900">
-              {locale === 'en' ? 'Why Kolay Seyahat?' : 'Neden Kolay Seyahat?'}
+              {isEnglish ? 'Why Kolay Seyahat?' : 'Neden Kolay Seyahat?'}
             </h2>
           </div>
-          <p className="text-slate-700 whitespace-pre-line">{country.why_kolay_seyahat}</p>
+          <p className="text-slate-700 whitespace-pre-line">{whyKolaySeyahat}</p>
         </section>
       )}
     </div>

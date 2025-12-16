@@ -135,13 +135,20 @@ export function CountryEditForm({ country }: { country: any }) {
 
     setTranslating(true);
     try {
-      const fields = [
+      // Text fields to translate
+      const textFields = [
         { key: 'title', value: formData.title, targetKey: 'title_en' },
         { key: 'description', value: formData.description, targetKey: 'description_en' },
         { key: 'contents', value: formData.contents, targetKey: 'contents_en' },
+        { key: 'meta_title', value: formData.meta_title, targetKey: 'meta_title_en' },
+        { key: 'meta_description', value: formData.meta_description, targetKey: 'meta_description_en' },
+        { key: 'best_time_to_visit', value: formData.best_time_to_visit, targetKey: 'best_time_to_visit_en' },
+        { key: 'health_requirements', value: formData.health_requirements, targetKey: 'health_requirements_en' },
+        { key: 'customs_regulations', value: formData.customs_regulations, targetKey: 'customs_regulations_en' },
+        { key: 'why_kolay_seyahat', value: formData.why_kolay_seyahat, targetKey: 'why_kolay_seyahat_en' },
       ];
 
-      for (const field of fields) {
+      for (const field of textFields) {
         if (!field.value) continue;
 
         const response = await fetch('/api/translate', {
@@ -157,6 +164,39 @@ export function CountryEditForm({ country }: { country: any }) {
         const data = await response.json();
         if (data.success) {
           setFormData(prev => ({ ...prev, [field.targetKey]: data.translated }));
+        }
+      }
+
+      // JSON array fields to translate via dedicated API
+      const jsonArrayFields = [
+        { key: 'travel_tips', value: formData.travel_tips, targetKey: 'travel_tips_en' },
+        { key: 'application_steps', value: formData.application_steps, targetKey: 'application_steps_en' },
+        { key: 'important_notes', value: formData.important_notes, targetKey: 'important_notes_en' },
+        { key: 'popular_cities', value: formData.popular_cities, targetKey: 'popular_cities_en' },
+      ];
+
+      for (const field of jsonArrayFields) {
+        if (!field.value || field.value.length === 0) continue;
+
+        const response = await fetch('/api/admin/content/translate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text: JSON.stringify(field.value),
+            from: 'tr',
+            to: 'en',
+            type: 'content',
+          }),
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          try {
+            const translated = JSON.parse(data.translated_text);
+            setFormData(prev => ({ ...prev, [field.targetKey]: translated }));
+          } catch {
+            // If parsing fails, skip this field
+          }
         }
       }
 

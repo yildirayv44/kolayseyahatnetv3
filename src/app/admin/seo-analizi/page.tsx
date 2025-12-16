@@ -511,7 +511,7 @@ export default function SEOAnaliziPage() {
               className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-green-500 to-teal-500 px-4 py-2 text-sm font-semibold text-white hover:from-green-600 hover:to-teal-600 disabled:opacity-50"
             >
               {translating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-              Tips & Steps Çevir
+              Tüm Alanları Çevir
             </button>
           </div>
         </div>
