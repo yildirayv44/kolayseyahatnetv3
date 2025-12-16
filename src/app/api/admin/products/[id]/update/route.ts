@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 
-export async function DELETE(
+export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
     const productId = parseInt(id);
+    const body = await request.json();
 
     if (isNaN(productId)) {
       return NextResponse.json(
@@ -18,11 +19,11 @@ export async function DELETE(
 
     const { error } = await supabaseAdmin
       .from("products")
-      .delete()
+      .update(body)
       .eq("id", productId);
 
     if (error) {
-      console.error("Delete error:", error);
+      console.error("Update error:", error);
       return NextResponse.json(
         { error: error.message },
         { status: 500 }

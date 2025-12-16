@@ -1,22 +1,23 @@
 import { notFound } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 import { ProductEditForm } from "@/components/admin/ProductEditForm";
 
 export default async function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  const { data: product, error } = await supabase
+  const { data: product, error } = await supabaseAdmin
     .from("products")
     .select("*")
     .eq("id", id)
     .single();
 
   if (error || !product) {
+    console.error("Product fetch error:", error);
     notFound();
   }
 
   // Fetch countries for dropdown
-  const { data: countries } = await supabase
+  const { data: countries } = await supabaseAdmin
     .from("countries")
     .select("id, name")
     .eq("status", 1)

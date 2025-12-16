@@ -1,23 +1,18 @@
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import { createClient } from "@supabase/supabase-js";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 import { ProductsTable } from "@/components/admin/ProductsTable";
 
 export default async function ProductsPage() {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-
-  // Fetch products, countries, and users separately
+  // Fetch products, countries, and users separately using admin client
   const [
     { data: products },
     { data: countries },
     { data: users }
   ] = await Promise.all([
-    supabase.from("products").select("*").order("created_at", { ascending: false }),
-    supabase.from("countries").select("id, name"),
-    supabase.from("users").select("id, name")
+    supabaseAdmin.from("products").select("*").order("created_at", { ascending: false }),
+    supabaseAdmin.from("countries").select("id, name"),
+    supabaseAdmin.from("users").select("id, name")
   ]);
 
   // Map country and user names to products

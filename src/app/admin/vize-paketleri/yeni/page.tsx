@@ -1,9 +1,9 @@
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 import { ProductCreateForm } from "@/components/admin/ProductCreateForm";
 
 export default async function NewProductPage() {
-  // Fetch countries for dropdown
-  const { data: countries } = await supabase
+  // Fetch countries for dropdown using admin client
+  const { data: countries } = await supabaseAdmin
     .from("countries")
     .select("id, name")
     .eq("status", 1)

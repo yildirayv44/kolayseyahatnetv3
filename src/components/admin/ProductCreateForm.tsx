@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
 import { Save, ArrowLeft, ChevronDown, ChevronUp } from "lucide-react";
 import Link from "next/link";
 import { RichTextEditor } from "./RichTextEditor";
@@ -37,11 +36,17 @@ export function ProductCreateForm({ countries }: { countries: any[] }) {
     setLoading(true);
 
     try {
-      const { error } = await supabase
-        .from("products")
-        .insert([formData]);
+      const response = await fetch("/api/admin/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
 
-      if (error) throw error;
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Oluşturma işlemi başarısız");
+      }
 
       alert("Vize paketi başarıyla oluşturuldu!");
       router.push("/admin/vize-paketleri");
