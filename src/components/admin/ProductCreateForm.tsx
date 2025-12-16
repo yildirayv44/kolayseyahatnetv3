@@ -3,28 +3,33 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { Save, ArrowLeft } from "lucide-react";
+import { Save, ArrowLeft, ChevronDown, ChevronUp } from "lucide-react";
 import Link from "next/link";
 import { RichTextEditor } from "./RichTextEditor";
 
 export function ProductCreateForm({ countries }: { countries: any[] }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const [formData, setFormData] = useState({
+    // Temel alanlar (zorunlu)
     name: "",
-    description: "",
-    contents: "",
     price: "",
     currency_id: 1, // Default: TL
-    processing: "",
     country_id: 0,
     status: 1,
     online: 1,
+    // Opsiyonel alanlar
+    description: "",
+    contents: "",
+    processing: "",
     req_document: "",
     price_contents: "",
     warning_notes: "",
     offer_text: "",
     alert_text: "",
+    // user_id için varsayılan değer (admin user)
+    user_id: 1,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
