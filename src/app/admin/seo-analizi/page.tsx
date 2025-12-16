@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Search, Filter, TrendingUp, TrendingDown, AlertCircle, CheckCircle, ExternalLink, RefreshCw } from "lucide-react";
+import { Search, Filter, TrendingUp, TrendingDown, AlertCircle, CheckCircle, ExternalLink, RefreshCw, Edit3, Save, X, Globe, Languages } from "lucide-react";
 import Link from "next/link";
 
 interface SEOScore {
@@ -21,6 +21,21 @@ interface SEOScore {
   has_content: boolean;
   status: 'excellent' | 'good' | 'needs_improvement' | 'poor';
   publish_status: 'published' | 'draft';
+  locale: 'tr' | 'en';
+  tr_score?: number;
+  en_score?: number;
+  tr_issues?: string[];
+  en_issues?: string[];
+  raw_data?: {
+    meta_title?: string;
+    meta_title_en?: string;
+    description?: string;
+    description_en?: string;
+    title?: string;
+    title_en?: string;
+    contents?: string;
+    contents_en?: string;
+  };
 }
 
 interface Stats {
@@ -43,11 +58,15 @@ export default function SEOAnaliziPage() {
     average_score: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortBy, setSortBy] = useState("score_desc");
   const [selectedItem, setSelectedItem] = useState<SEOScore | null>(null);
+  const [editMode, setEditMode] = useState(false);
+  const [editData, setEditData] = useState<Record<string, string>>({});
+  const [showOnlyMissing, setShowOnlyMissing] = useState(false);
 
   const fetchAnalysis = async () => {
     setLoading(true);
@@ -77,9 +96,84 @@ export default function SEOAnaliziPage() {
     fetchAnalysis();
   }, [typeFilter, statusFilter, sortBy]);
 
-  const filteredResults = results.filter((item) =>
-    item.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filter results
+  const filteredResults = results.filter((item) => {
+    // Search filter
+    if (searchQuery && !item.title.toLowerCase().includes(searchQuery.toLowerCase())) {
+      return false;
+    }
+    
+    // Show only missing EN content filter
+    if (showOnlyMissing) {
+      const hasEnIssues = item.en_issues && item.en_issues.some(issue => issue.includes('eksik'));
+      if (!hasEnIssues) return false;
+    }
+    
+    return true;
+  });
+
+  // Start editing
+  const startEdit = (item: SEOScore) => {
+    setSelectedItem(item);
+    setEditMode(true);
+    setEditData({
+      meta_title: item.raw_data?.meta_title || '',
+      meta_title_en: item.raw_data?.meta_title_en || '',
+      description: item.raw_data?.description || '',
+      description_en: item.raw_data?.description_en || '',
+      title_en: item.raw_data?.title_en || '',
+    });
+  };
+
+  // Save changes
+  const saveChanges = async () => {
+    if (!selectedItem) return;
+    
+    setSaving(true);
+    try {
+      // Map field names for different types
+      const fieldMap: Record<string, Record<string, string>> = {
+        page: {
+          description: 'meta_description',
+          description_en: 'meta_description_en',
+        },
+      };
+      
+      const updates: Record<string, string> = {};
+      for (const [key, value] of Object.entries(editData)) {
+        if (value && value.trim()) {
+          const mappedKey = fieldMap[selectedItem.type]?.[key] || key;
+          updates[mappedKey] = value;
+        }
+      }
+      
+      const response = await fetch('/api/admin/seo/update', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: selectedItem.id,
+          type: selectedItem.type,
+          updates,
+        }),
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        alert('Değişiklikler kaydedildi!');
+        setEditMode(false);
+        setSelectedItem(null);
+        fetchAnalysis(); // Refresh data
+      } else {
+        alert(`Hata: ${data.error}`);
+      }
+    } catch (error) {
+      console.error('Save error:', error);
+      alert('Kaydetme sırasında hata oluştu');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -246,6 +340,17 @@ export default function SEOAnaliziPage() {
               <option value="title_asc">Başlık (A → Z)</option>
               <option value="title_desc">Başlık (Z → A)</option>
             </select>
+
+            <label className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm cursor-pointer hover:bg-slate-50">
+              <input
+                type="checkbox"
+                checked={showOnlyMissing}
+                onChange={(e) => setShowOnlyMissing(e.target.checked)}
+                className="rounded border-slate-300 text-primary focus:ring-primary"
+              />
+              <Languages className="h-4 w-4 text-slate-500" />
+              <span className="text-slate-700">Sadece EN Eksik</span>
+            </label>
           </div>
         </div>
       </div>
@@ -274,19 +379,16 @@ export default function SEOAnaliziPage() {
                     TİP
                   </th>
                   <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600">
-                    YAYIM
+                    TR SKOR
                   </th>
                   <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600">
-                    SKOR
+                    EN SKOR
                   </th>
                   <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600">
                     SEO DURUM
                   </th>
                   <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600">
-                    META
-                  </th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600">
-                    İÇERİK
+                    EKSİKLER
                   </th>
                   <th className="px-4 py-3 text-right text-xs font-semibold text-slate-600">
                     İŞLEMLER
@@ -294,190 +396,342 @@ export default function SEOAnaliziPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200">
-                {filteredResults.map((item) => (
-                  <tr key={`${item.type}-${item.id}`} className="hover:bg-slate-50">
-                    <td className="px-4 py-4">
-                      <div className="font-medium text-slate-900">{item.title}</div>
-                      <div className="text-xs text-slate-500">{item.url}</div>
-                    </td>
-                    <td className="px-4 py-4 text-center">
-                      <span className={`inline-block rounded-full px-2 py-1 text-xs font-semibold ${getTypeColor(item.type)}`}>
-                        {getTypeText(item.type)}
-                      </span>
-                    </td>
-                    <td className="px-4 py-4 text-center">
-                      <span className={`inline-block rounded-full px-2 py-1 text-xs font-semibold ${
-                        item.publish_status === 'published'
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-orange-100 text-orange-700'
-                      }`}>
-                        {item.publish_status === 'published' ? '✓ Yayında' : '○ Taslak'}
-                      </span>
-                    </td>
-                    <td className="px-4 py-4 text-center">
-                      <div className={`text-2xl font-bold ${getScoreColor(item.score)}`}>
-                        {item.score}
-                      </div>
-                      <div className="text-xs text-slate-500">/100</div>
-                    </td>
-                    <td className="px-4 py-4 text-center">
-                      <span className={`inline-block rounded-lg border px-3 py-1 text-xs font-semibold ${getStatusColor(item.status)}`}>
-                        {getStatusText(item.status)}
-                      </span>
-                    </td>
-                    <td className="px-4 py-4 text-center">
-                      <div className="space-y-1 text-xs">
-                        <div className={item.has_meta_title ? 'text-green-600' : 'text-red-600'}>
-                          {item.has_meta_title ? '✓' : '✗'} Title: {item.meta_title_length}
+                {filteredResults.map((item) => {
+                  const trIssueCount = item.tr_issues?.filter(i => i.includes('eksik')).length || 0;
+                  const enIssueCount = item.en_issues?.filter(i => i.includes('eksik')).length || 0;
+                  
+                  return (
+                    <tr key={`${item.type}-${item.id}`} className="hover:bg-slate-50">
+                      <td className="px-4 py-4">
+                        <div className="font-medium text-slate-900">{item.title}</div>
+                        <div className="text-xs text-slate-500">{item.url}</div>
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        <span className={`inline-block rounded-full px-2 py-1 text-xs font-semibold ${getTypeColor(item.type)}`}>
+                          {getTypeText(item.type)}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        <div className={`text-xl font-bold ${getScoreColor(item.tr_score || 0)}`}>
+                          {item.tr_score || 0}
                         </div>
-                        <div className={item.has_meta_description ? 'text-green-600' : 'text-red-600'}>
-                          {item.has_meta_description ? '✓' : '✗'} Desc: {item.meta_description_length}
+                        <div className="text-xs text-slate-500">🇹🇷 TR</div>
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        <div className={`text-xl font-bold ${getScoreColor(item.en_score || 0)}`}>
+                          {item.en_score || 0}
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-4 text-center">
-                      <div className={`text-sm font-semibold ${item.content_word_count >= 1000 ? 'text-green-600' : item.content_word_count >= 300 ? 'text-yellow-600' : 'text-red-600'}`}>
-                        {item.content_word_count} kelime
-                      </div>
-                    </td>
-                    <td className="px-4 py-4">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => setSelectedItem(item)}
-                          className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 hover:text-primary"
-                          title="Detayları Gör"
-                        >
-                          <AlertCircle className="h-4 w-4" />
-                        </button>
-                        <Link
-                          href={item.url}
-                          target="_blank"
-                          className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 hover:text-primary"
-                          title="Sayfayı Görüntüle"
-                        >
-                          <ExternalLink className="h-4 w-4" />
-                        </Link>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                        <div className="text-xs text-slate-500">🇬🇧 EN</div>
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        <span className={`inline-block rounded-lg border px-3 py-1 text-xs font-semibold ${getStatusColor(item.status)}`}>
+                          {getStatusText(item.status)}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        <div className="space-y-1 text-xs">
+                          {trIssueCount > 0 && (
+                            <div className="text-orange-600">
+                              🇹🇷 {trIssueCount} eksik
+                            </div>
+                          )}
+                          {enIssueCount > 0 && (
+                            <div className="text-red-600">
+                              🇬🇧 {enIssueCount} eksik
+                            </div>
+                          )}
+                          {trIssueCount === 0 && enIssueCount === 0 && (
+                            <div className="text-green-600">✓ Tamam</div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => startEdit(item)}
+                            className="rounded-lg p-2 text-slate-600 hover:bg-blue-100 hover:text-blue-600"
+                            title="Düzenle"
+                          >
+                            <Edit3 className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => { setSelectedItem(item); setEditMode(false); }}
+                            className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 hover:text-primary"
+                            title="Detayları Gör"
+                          >
+                            <AlertCircle className="h-4 w-4" />
+                          </button>
+                          <Link
+                            href={item.url}
+                            target="_blank"
+                            className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 hover:text-primary"
+                            title="Sayfayı Görüntüle"
+                          >
+                            <ExternalLink className="h-4 w-4" />
+                          </Link>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
         )}
       </div>
 
-      {/* Detail Modal */}
+      {/* Detail/Edit Modal */}
       {selectedItem && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-          onClick={() => setSelectedItem(null)}
+          onClick={() => { setSelectedItem(null); setEditMode(false); }}
         >
           <div
-            className="w-full max-w-2xl rounded-xl bg-white p-6 shadow-xl max-h-[90vh] overflow-y-auto"
+            className="w-full max-w-4xl rounded-xl bg-white p-6 shadow-xl max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-4 flex items-start justify-between">
               <div>
-                <h2 className="text-xl font-bold text-slate-900">{selectedItem.title}</h2>
+                <h2 className="text-xl font-bold text-slate-900">
+                  {editMode ? '✏️ Düzenle: ' : ''}{selectedItem.title}
+                </h2>
                 <p className="text-sm text-slate-600">{selectedItem.url}</p>
               </div>
               <button
-                onClick={() => setSelectedItem(null)}
+                onClick={() => { setSelectedItem(null); setEditMode(false); }}
                 className="rounded-lg p-2 hover:bg-slate-100"
               >
-                ✕
+                <X className="h-5 w-5" />
               </button>
             </div>
 
-            {/* Score */}
-            <div className="mb-6 rounded-lg bg-gradient-to-r from-purple-50 to-blue-50 p-6 text-center">
-              <div className={`text-5xl font-bold ${getScoreColor(selectedItem.score)}`}>
-                {selectedItem.score}/100
+            {/* TR/EN Score Comparison */}
+            <div className="mb-6 grid gap-4 sm:grid-cols-2">
+              <div className="rounded-lg bg-gradient-to-r from-red-50 to-orange-50 p-4 text-center">
+                <div className="text-xs text-slate-600 mb-1">🇹🇷 Türkçe Skor</div>
+                <div className={`text-4xl font-bold ${getScoreColor(selectedItem.tr_score || 0)}`}>
+                  {selectedItem.tr_score || 0}/100
+                </div>
               </div>
-              <div className={`mt-2 inline-block rounded-lg border px-4 py-2 text-sm font-semibold ${getStatusColor(selectedItem.status)}`}>
-                {getStatusText(selectedItem.status)}
+              <div className="rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 p-4 text-center">
+                <div className="text-xs text-slate-600 mb-1">🇬🇧 İngilizce Skor</div>
+                <div className={`text-4xl font-bold ${getScoreColor(selectedItem.en_score || 0)}`}>
+                  {selectedItem.en_score || 0}/100
+                </div>
               </div>
             </div>
 
-            {/* Metrics */}
-            <div className="mb-6 grid gap-4 sm:grid-cols-3">
-              <div className="rounded-lg border border-slate-200 p-4">
-                <div className="text-xs text-slate-600">Meta Title</div>
-                <div className={`text-lg font-bold ${selectedItem.meta_title_length >= 30 && selectedItem.meta_title_length <= 60 ? 'text-green-600' : 'text-yellow-600'}`}>
-                  {selectedItem.meta_title_length} karakter
+            {editMode ? (
+              /* Edit Form */
+              <div className="space-y-6">
+                {/* Meta Title */}
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="mb-1 block text-sm font-semibold text-slate-700">
+                      🇹🇷 Meta Title ({editData.meta_title?.length || 0}/60)
+                    </label>
+                    <input
+                      type="text"
+                      value={editData.meta_title || ''}
+                      onChange={(e) => setEditData({ ...editData, meta_title: e.target.value })}
+                      className={`w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 ${
+                        (editData.meta_title?.length || 0) >= 30 && (editData.meta_title?.length || 0) <= 60
+                          ? 'border-green-300 bg-green-50'
+                          : 'border-slate-200'
+                      }`}
+                      placeholder="Meta title (50-60 karakter)"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-semibold text-slate-700">
+                      🇬🇧 Meta Title EN ({editData.meta_title_en?.length || 0}/60)
+                    </label>
+                    <input
+                      type="text"
+                      value={editData.meta_title_en || ''}
+                      onChange={(e) => setEditData({ ...editData, meta_title_en: e.target.value })}
+                      className={`w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 ${
+                        (editData.meta_title_en?.length || 0) >= 30 && (editData.meta_title_en?.length || 0) <= 60
+                          ? 'border-green-300 bg-green-50'
+                          : (editData.meta_title_en?.length || 0) === 0
+                          ? 'border-red-300 bg-red-50'
+                          : 'border-slate-200'
+                      }`}
+                      placeholder="Meta title in English (50-60 chars)"
+                    />
+                  </div>
                 </div>
-                <div className="text-xs text-slate-500">İdeal: 50-60</div>
-              </div>
-              <div className="rounded-lg border border-slate-200 p-4">
-                <div className="text-xs text-slate-600">Meta Description</div>
-                <div className={`text-lg font-bold ${selectedItem.meta_description_length >= 100 && selectedItem.meta_description_length <= 160 ? 'text-green-600' : 'text-yellow-600'}`}>
-                  {selectedItem.meta_description_length} karakter
-                </div>
-                <div className="text-xs text-slate-500">İdeal: 150-160</div>
-              </div>
-              <div className="rounded-lg border border-slate-200 p-4">
-                <div className="text-xs text-slate-600">İçerik</div>
-                <div className={`text-lg font-bold ${selectedItem.content_word_count >= 1000 ? 'text-green-600' : selectedItem.content_word_count >= 300 ? 'text-yellow-600' : 'text-red-600'}`}>
-                  {selectedItem.content_word_count} kelime
-                </div>
-                <div className="text-xs text-slate-500">İdeal: 1000+</div>
-              </div>
-            </div>
 
-            {/* Issues */}
-            {selectedItem.issues.length > 0 && (
-              <div className="mb-6">
-                <h3 className="mb-3 flex items-center gap-2 text-sm font-bold text-slate-900">
-                  <AlertCircle className="h-4 w-4 text-red-600" />
-                  Sorunlar ({selectedItem.issues.length})
-                </h3>
-                <div className="space-y-2">
-                  {selectedItem.issues.map((issue, idx) => (
-                    <div key={idx} className="flex items-start gap-2 rounded-lg bg-red-50 p-3 text-sm text-red-700">
-                      <span className="text-red-600">•</span>
-                      <span>{issue}</span>
+                {/* Description */}
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="mb-1 block text-sm font-semibold text-slate-700">
+                      🇹🇷 Description ({editData.description?.length || 0}/160)
+                    </label>
+                    <textarea
+                      value={editData.description || ''}
+                      onChange={(e) => setEditData({ ...editData, description: e.target.value })}
+                      rows={3}
+                      className={`w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 ${
+                        (editData.description?.length || 0) >= 100 && (editData.description?.length || 0) <= 160
+                          ? 'border-green-300 bg-green-50'
+                          : 'border-slate-200'
+                      }`}
+                      placeholder="Meta description (150-160 karakter)"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-semibold text-slate-700">
+                      🇬🇧 Description EN ({editData.description_en?.length || 0}/160)
+                    </label>
+                    <textarea
+                      value={editData.description_en || ''}
+                      onChange={(e) => setEditData({ ...editData, description_en: e.target.value })}
+                      rows={3}
+                      className={`w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 ${
+                        (editData.description_en?.length || 0) >= 100 && (editData.description_en?.length || 0) <= 160
+                          ? 'border-green-300 bg-green-50'
+                          : (editData.description_en?.length || 0) === 0
+                          ? 'border-red-300 bg-red-50'
+                          : 'border-slate-200'
+                      }`}
+                      placeholder="Meta description in English (150-160 chars)"
+                    />
+                  </div>
+                </div>
+
+                {/* Title EN (for content) */}
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-slate-700">
+                    🇬🇧 Title EN (İçerik Başlığı)
+                  </label>
+                  <input
+                    type="text"
+                    value={editData.title_en || ''}
+                    onChange={(e) => setEditData({ ...editData, title_en: e.target.value })}
+                    className={`w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 ${
+                      (editData.title_en?.length || 0) === 0
+                        ? 'border-red-300 bg-red-50'
+                        : 'border-green-300 bg-green-50'
+                    }`}
+                    placeholder="Content title in English"
+                  />
+                </div>
+
+                {/* Actions */}
+                <div className="flex justify-end gap-3 pt-4 border-t">
+                  <button
+                    onClick={() => { setEditMode(false); }}
+                    className="rounded-lg border border-slate-200 px-4 py-2 font-semibold text-slate-700 hover:bg-slate-50"
+                  >
+                    İptal
+                  </button>
+                  <button
+                    onClick={saveChanges}
+                    disabled={saving}
+                    className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 font-semibold text-white hover:bg-primary/90 disabled:opacity-50"
+                  >
+                    <Save className="h-4 w-4" />
+                    {saving ? 'Kaydediliyor...' : 'Kaydet'}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* View Mode */
+              <>
+                {/* TR Issues */}
+                {selectedItem.tr_issues && selectedItem.tr_issues.length > 0 && (
+                  <div className="mb-4">
+                    <h3 className="mb-2 flex items-center gap-2 text-sm font-bold text-slate-900">
+                      🇹🇷 Türkçe Sorunlar ({selectedItem.tr_issues.length})
+                    </h3>
+                    <div className="space-y-1">
+                      {selectedItem.tr_issues.map((issue, idx) => (
+                        <div key={idx} className="flex items-start gap-2 rounded-lg bg-orange-50 p-2 text-sm text-orange-700">
+                          <span>•</span>
+                          <span>{issue.replace('[TR] ', '')}</span>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
+                  </div>
+                )}
 
-            {/* Suggestions */}
-            {selectedItem.suggestions.length > 0 && (
-              <div className="mb-6">
-                <h3 className="mb-3 flex items-center gap-2 text-sm font-bold text-slate-900">
-                  <CheckCircle className="h-4 w-4 text-blue-600" />
-                  Öneriler ({selectedItem.suggestions.length})
-                </h3>
-                <div className="space-y-2">
-                  {selectedItem.suggestions.map((suggestion, idx) => (
-                    <div key={idx} className="flex items-start gap-2 rounded-lg bg-blue-50 p-3 text-sm text-blue-700">
-                      <span className="text-blue-600">💡</span>
-                      <span>{suggestion}</span>
+                {/* EN Issues */}
+                {selectedItem.en_issues && selectedItem.en_issues.length > 0 && (
+                  <div className="mb-4">
+                    <h3 className="mb-2 flex items-center gap-2 text-sm font-bold text-slate-900">
+                      🇬🇧 İngilizce Sorunlar ({selectedItem.en_issues.length})
+                    </h3>
+                    <div className="space-y-1">
+                      {selectedItem.en_issues.map((issue, idx) => (
+                        <div key={idx} className="flex items-start gap-2 rounded-lg bg-red-50 p-2 text-sm text-red-700">
+                          <span>•</span>
+                          <span>{issue.replace('[EN] ', '')}</span>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
+                  </div>
+                )}
 
-            {/* Actions */}
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setSelectedItem(null)}
-                className="rounded-lg border border-slate-200 px-4 py-2 font-semibold text-slate-700 hover:bg-slate-50"
-              >
-                Kapat
-              </button>
-              <Link
-                href={selectedItem.url}
-                target="_blank"
-                className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 font-semibold text-white hover:bg-primary/90"
-              >
-                <ExternalLink className="h-4 w-4" />
-                Sayfayı Görüntüle
-              </Link>
-            </div>
+                {/* Current Values */}
+                {selectedItem.raw_data && (
+                  <div className="mb-4 rounded-lg border border-slate-200 p-4">
+                    <h3 className="mb-3 text-sm font-bold text-slate-900">Mevcut Değerler</h3>
+                    <div className="space-y-3 text-sm">
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        <div>
+                          <span className="text-slate-500">🇹🇷 Meta Title:</span>
+                          <p className="font-medium text-slate-900 truncate">{selectedItem.raw_data.meta_title || '(boş)'}</p>
+                        </div>
+                        <div>
+                          <span className="text-slate-500">🇬🇧 Meta Title EN:</span>
+                          <p className={`font-medium truncate ${selectedItem.raw_data.meta_title_en ? 'text-slate-900' : 'text-red-600'}`}>
+                            {selectedItem.raw_data.meta_title_en || '(boş - EKSİK!)'}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        <div>
+                          <span className="text-slate-500">🇹🇷 Description:</span>
+                          <p className="font-medium text-slate-900 line-clamp-2">{selectedItem.raw_data.description || '(boş)'}</p>
+                        </div>
+                        <div>
+                          <span className="text-slate-500">🇬🇧 Description EN:</span>
+                          <p className={`font-medium line-clamp-2 ${selectedItem.raw_data.description_en ? 'text-slate-900' : 'text-red-600'}`}>
+                            {selectedItem.raw_data.description_en || '(boş - EKSİK!)'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Actions */}
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={() => { setSelectedItem(null); setEditMode(false); }}
+                    className="rounded-lg border border-slate-200 px-4 py-2 font-semibold text-slate-700 hover:bg-slate-50"
+                  >
+                    Kapat
+                  </button>
+                  <button
+                    onClick={() => startEdit(selectedItem)}
+                    className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700"
+                  >
+                    <Edit3 className="h-4 w-4" />
+                    Düzenle
+                  </button>
+                  <Link
+                    href={selectedItem.url}
+                    target="_blank"
+                    className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 font-semibold text-white hover:bg-primary/90"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    Görüntüle
+                  </Link>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

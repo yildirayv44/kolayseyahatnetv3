@@ -30,6 +30,23 @@ interface SEOScore {
   has_content: boolean;
   status: 'excellent' | 'good' | 'needs_improvement' | 'poor';
   publish_status: 'published' | 'draft';
+  // TR/EN comparison fields
+  locale: 'tr' | 'en';
+  tr_score?: number;
+  en_score?: number;
+  tr_issues?: string[];
+  en_issues?: string[];
+  // Raw data for editing
+  raw_data?: {
+    meta_title?: string;
+    meta_title_en?: string;
+    description?: string;
+    description_en?: string;
+    title?: string;
+    title_en?: string;
+    contents?: string;
+    contents_en?: string;
+  };
 }
 
 function analyzeContent(content: string): {
@@ -44,116 +61,121 @@ function analyzeContent(content: string): {
   return { word_count, has_headings, has_images };
 }
 
-function calculateSEOScore(item: any, type: string): SEOScore {
+function calculateSingleScore(
+  meta_title: string,
+  description: string,
+  content: string,
+  locale: 'tr' | 'en'
+): { score: number; issues: string[]; suggestions: string[] } {
   let score = 0;
   const issues: string[] = [];
   const suggestions: string[] = [];
+  const prefix = locale === 'en' ? '[EN] ' : '[TR] ';
 
   // Title analysis
-  const title = item.title || item.name || '';
-  const meta_title = item.meta_title || title;
   const meta_title_length = meta_title.length;
-  const has_meta_title = meta_title_length > 0;
 
   if (meta_title_length === 0) {
-    issues.push('Meta title eksik');
-    suggestions.push('Meta title ekleyin (50-60 karakter)');
+    issues.push(`${prefix}Meta title eksik`);
+    suggestions.push(`${prefix}Meta title ekleyin (50-60 karakter)`);
   } else if (meta_title_length < 30) {
     score += 5;
-    issues.push('Meta title çok kısa');
-    suggestions.push(`Meta title uzunluğunu artırın (şu an: ${meta_title_length}, ideal: 50-60)`);
+    issues.push(`${prefix}Meta title çok kısa (${meta_title_length})`);
+    suggestions.push(`${prefix}Meta title uzunluğunu artırın (ideal: 50-60)`);
   } else if (meta_title_length >= 30 && meta_title_length <= 60) {
     score += 25;
   } else if (meta_title_length > 60 && meta_title_length <= 70) {
     score += 20;
-    issues.push('Meta title biraz uzun');
-    suggestions.push(`Meta title kısaltın (şu an: ${meta_title_length}, ideal: 50-60)`);
+    issues.push(`${prefix}Meta title biraz uzun (${meta_title_length})`);
   } else {
     score += 10;
-    issues.push('Meta title çok uzun');
-    suggestions.push(`Meta title kısaltın (şu an: ${meta_title_length}, ideal: 50-60)`);
+    issues.push(`${prefix}Meta title çok uzun (${meta_title_length})`);
   }
 
   // Description analysis
-  const description = item.description || item.meta_description || '';
   const meta_description_length = description.length;
-  const has_meta_description = meta_description_length > 0;
 
   if (meta_description_length === 0) {
-    issues.push('Meta description eksik');
-    suggestions.push('Meta description ekleyin (150-160 karakter)');
+    issues.push(`${prefix}Meta description eksik`);
+    suggestions.push(`${prefix}Meta description ekleyin (150-160 karakter)`);
   } else if (meta_description_length < 100) {
     score += 5;
-    issues.push('Meta description çok kısa');
-    suggestions.push(`Meta description uzunluğunu artırın (şu an: ${meta_description_length}, ideal: 150-160)`);
+    issues.push(`${prefix}Meta description çok kısa (${meta_description_length})`);
+    suggestions.push(`${prefix}Meta description uzunluğunu artırın (ideal: 150-160)`);
   } else if (meta_description_length >= 100 && meta_description_length <= 160) {
     score += 25;
   } else if (meta_description_length > 160 && meta_description_length <= 180) {
     score += 20;
-    issues.push('Meta description biraz uzun');
-    suggestions.push(`Meta description kısaltın (şu an: ${meta_description_length}, ideal: 150-160)`);
+    issues.push(`${prefix}Meta description biraz uzun (${meta_description_length})`);
   } else {
     score += 10;
-    issues.push('Meta description çok uzun');
-    suggestions.push(`Meta description kısaltın (şu an: ${meta_description_length}, ideal: 150-160)`);
+    issues.push(`${prefix}Meta description çok uzun (${meta_description_length})`);
   }
 
   // Content analysis
-  const content = item.contents || item.content || '';
-  const has_content = content.length > 0;
   const { word_count, has_headings, has_images } = analyzeContent(content);
 
   if (word_count === 0) {
-    issues.push('İçerik eksik');
-    suggestions.push('İçerik ekleyin (minimum 300 kelime)');
+    issues.push(`${prefix}İçerik eksik`);
+    suggestions.push(`${prefix}İçerik ekleyin (minimum 300 kelime)`);
   } else if (word_count < 300) {
     score += 5;
-    issues.push('İçerik çok kısa');
-    suggestions.push(`İçerik uzunluğunu artırın (şu an: ${word_count}, ideal: 1000+)`);
+    issues.push(`${prefix}İçerik çok kısa (${word_count} kelime)`);
   } else if (word_count >= 300 && word_count < 600) {
     score += 15;
-    issues.push('İçerik kısa');
-    suggestions.push(`Daha detaylı içerik ekleyin (şu an: ${word_count}, ideal: 1000+)`);
+    issues.push(`${prefix}İçerik kısa (${word_count} kelime)`);
   } else if (word_count >= 600 && word_count < 1000) {
     score += 25;
-    suggestions.push(`İçerik iyi, daha da geliştirilebilir (şu an: ${word_count}, ideal: 1000+)`);
   } else {
     score += 30;
   }
 
   // Heading structure
-  if (word_count > 0) {
-    if (!has_headings) {
-      score += 5;
-      issues.push('Başlık yapısı eksik');
-      suggestions.push('H2 ve H3 başlıkları ekleyin');
-    } else {
-      score += 10;
-    }
+  if (word_count > 0 && !has_headings) {
+    score += 5;
+    issues.push(`${prefix}Başlık yapısı eksik`);
+  } else if (word_count > 0) {
+    score += 10;
   }
 
-  // Images
-  if (word_count > 0) {
-    if (!has_images) {
-      score += 5;
-      issues.push('Görsel eksik');
-      suggestions.push('İçeriğe görseller ekleyin');
-    } else {
-      score += 10;
-    }
-  }
+  return { score, issues, suggestions };
+}
+
+function calculateSEOScore(item: any, type: string, locale: 'tr' | 'en' = 'tr'): SEOScore {
+  const title = item.title || item.name || '';
+  
+  // Get TR values
+  const tr_meta_title = item.meta_title || title;
+  const tr_description = item.description || item.meta_description || '';
+  const tr_content = item.contents || item.content || '';
+  
+  // Get EN values
+  const en_meta_title = item.meta_title_en || item.title_en || '';
+  const en_description = item.description_en || item.meta_description_en || '';
+  const en_content = item.contents_en || item.content_en || '';
+  
+  // Calculate scores for both locales
+  const trResult = calculateSingleScore(tr_meta_title, tr_description, tr_content, 'tr');
+  const enResult = calculateSingleScore(en_meta_title, en_description, en_content, 'en');
+  
+  // Use requested locale for main score
+  const mainResult = locale === 'en' ? enResult : trResult;
+  const meta_title = locale === 'en' ? en_meta_title : tr_meta_title;
+  const description = locale === 'en' ? en_description : tr_description;
+  const content = locale === 'en' ? en_content : tr_content;
+  
+  const { word_count } = analyzeContent(content);
 
   // Determine status
   let status: 'excellent' | 'good' | 'needs_improvement' | 'poor';
-  if (score >= 80) status = 'excellent';
-  else if (score >= 60) status = 'good';
-  else if (score >= 40) status = 'needs_improvement';
+  if (mainResult.score >= 80) status = 'excellent';
+  else if (mainResult.score >= 60) status = 'good';
+  else if (mainResult.score >= 40) status = 'needs_improvement';
   else status = 'poor';
 
   // Generate URL
   let url = '';
   if (type === 'blog') {
-    // Use slug if available, otherwise use ID
     url = item.slug ? `/blog/${item.slug}` : `/blog/${item.id}`;
   } else if (type === 'country') {
     const slug = item.slug || item.name?.toLowerCase().replace(/\s+/g, '-');
@@ -176,17 +198,32 @@ function calculateSEOScore(item: any, type: string): SEOScore {
     title: title,
     slug: item.slug,
     url,
-    score,
-    issues,
-    suggestions,
-    meta_title_length,
-    meta_description_length,
+    score: mainResult.score,
+    issues: mainResult.issues,
+    suggestions: mainResult.suggestions,
+    meta_title_length: meta_title.length,
+    meta_description_length: description.length,
     content_word_count: word_count,
-    has_meta_title,
-    has_meta_description,
-    has_content,
+    has_meta_title: meta_title.length > 0,
+    has_meta_description: description.length > 0,
+    has_content: content.length > 0,
     status,
     publish_status,
+    locale,
+    tr_score: trResult.score,
+    en_score: enResult.score,
+    tr_issues: trResult.issues,
+    en_issues: enResult.issues,
+    raw_data: {
+      meta_title: tr_meta_title,
+      meta_title_en: en_meta_title,
+      description: tr_description,
+      description_en: en_description,
+      title: title,
+      title_en: item.title_en || '',
+      contents: tr_content,
+      contents_en: en_content,
+    },
   };
 }
 
@@ -203,7 +240,7 @@ export async function GET(request: NextRequest) {
     if (!type || type === 'all' || type === 'blog') {
       const { data: blogs, error: blogsError } = await supabase
         .from('blogs')
-        .select('id, title, slug, meta_title, description, contents, status');
+        .select('id, title, title_en, slug, meta_title, meta_title_en, description, description_en, contents, contents_en, status');
         // Removed status filter to show all blogs
 
       if (blogsError) {
@@ -221,7 +258,7 @@ export async function GET(request: NextRequest) {
     if (!type || type === 'all' || type === 'country') {
       const { data: countries, error: countriesError } = await supabase
         .from('countries')
-        .select('id, name, slug, title, meta_title, description, contents, status');
+        .select('id, name, slug, title, title_en, meta_title, meta_title_en, description, description_en, contents, contents_en, status');
         // Removed status filter to show all countries
 
       if (countriesError) {
@@ -239,7 +276,7 @@ export async function GET(request: NextRequest) {
     if (!type || type === 'all' || type === 'page') {
       const { data: pages, error: pagesError } = await supabase
         .from('custom_pages')
-        .select('id, slug, title, meta_description, content, is_published');
+        .select('id, slug, title, title_en, meta_description, meta_description_en, content, content_en, is_published');
         // Removed is_published filter to show all pages
 
       if (pagesError) {
