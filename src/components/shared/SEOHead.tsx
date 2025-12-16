@@ -233,3 +233,32 @@ export function generateHowToSchema({
     })),
   };
 }
+
+// ItemList Schema for country listings
+export function generateItemListSchema(items: Array<{
+  name: string;
+  url: string;
+  image?: string;
+  description?: string;
+}>) {
+  if (!items || items.length === 0) {
+    return null;
+  }
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    itemListElement: items.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      item: {
+        "@type": "Country",
+        name: item.name,
+        url: item.url.startsWith('http') ? item.url : `https://www.kolayseyahat.net${item.url}`,
+        ...(item.image && { image: item.image }),
+        ...(item.description && { description: item.description }),
+      },
+    })),
+    numberOfItems: items.length,
+  };
+}

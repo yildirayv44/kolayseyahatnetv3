@@ -28,7 +28,7 @@ import { GenericCommentSection } from "@/components/comments/GenericCommentSecti
 import { getLocalizedFields } from "@/lib/locale-content";
 import { getLocalizedUrl } from "@/lib/locale-link";
 import { supabase } from "@/lib/supabase";
-import { generateFAQSchema, generateBreadcrumbSchema, generateHowToSchema } from "@/components/shared/SEOHead";
+import { generateFAQSchema, generateBreadcrumbSchema, generateHowToSchema, generateOrganizationSchema } from "@/components/shared/SEOHead";
 import { fixHtmlImageUrls } from "@/lib/image-helpers";
 import { generateCountryMetaDescription, generateMenuMetaDescription, truncateAtWord } from "@/lib/meta-helpers";
 
@@ -649,6 +649,10 @@ export default async function CountryPage({ params }: CountryPageParams) {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
         />
       ))}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(generateOrganizationSchema()) }}
+      />
 
       {/* BREADCRUMB */}
       <Breadcrumb
