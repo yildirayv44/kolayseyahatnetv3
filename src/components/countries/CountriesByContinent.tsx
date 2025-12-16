@@ -17,6 +17,8 @@ interface Country {
   country_code: string | null;
   price: number | null;
   currency_id?: number;
+  visa_labels?: string[];
+  visa_label?: string;
 }
 
 // Para birimi sembolü helper fonksiyonu
@@ -57,36 +59,32 @@ export function CountriesByContinent({ countries, visaData }: Props) {
     ? countries 
     : continentGroups[selectedContinent] || [];
 
-  const getVisaStatusBadge = (countryCode: string | null) => {
-    if (!countryCode) return null;
-    const visa = visaData[countryCode];
-    if (!visa) return null;
+  // Vize durumu badge'leri - artık country'den gelen visa_labels kullanılıyor
+  const getVisaStatusBadges = (country: Country) => {
+    if (!country.visa_labels || country.visa_labels.length === 0) return null;
 
-    // Vize durumunu normalize et
-    const status = visa.visaStatus?.toLowerCase() || "";
-    
-    let label = "Vize Gerekli";
-    let className = "bg-orange-100 text-orange-700 border-orange-200";
-    let Icon = XCircle;
-
-    if (status === "visa-free" || status === "visa_free") {
-      label = "Vizesiz";
-      className = "bg-green-100 text-green-700 border-green-200";
-      Icon = CheckCircle;
-    } else if (status === "visa-on-arrival" || status === "visa_on_arrival") {
-      label = "Varışta Vize";
-      className = "bg-blue-100 text-blue-700 border-blue-200";
-      Icon = Clock;
-    } else if (status.includes("eta") || status.includes("esta")) {
-      label = "E-vize";
-      className = "bg-purple-100 text-purple-700 border-purple-200";
-      Icon = Globe2;
-    }
+    const getLabelStyle = (label: string) => {
+      if (label === "Vizesiz") {
+        return { className: "bg-green-100 text-green-700 border-green-200", Icon: CheckCircle };
+      } else if (label === "Varışta Vize") {
+        return { className: "bg-blue-100 text-blue-700 border-blue-200", Icon: Clock };
+      } else if (label === "E-vize") {
+        return { className: "bg-purple-100 text-purple-700 border-purple-200", Icon: Globe2 };
+      }
+      return { className: "bg-orange-100 text-orange-700 border-orange-200", Icon: XCircle };
+    };
 
     return (
-      <div className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium ${className}`}>
-        <Icon className="h-3 w-3" />
-        {label}
+      <div className="flex flex-wrap gap-1">
+        {country.visa_labels.map((label, idx) => {
+          const { className, Icon } = getLabelStyle(label);
+          return (
+            <div key={idx} className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium ${className}`}>
+              <Icon className="h-3 w-3" />
+              {label}
+            </div>
+          );
+        })}
       </div>
     );
   };
@@ -187,7 +185,7 @@ export function CountriesByContinent({ countries, visaData }: Props) {
                             </h3>
                           </div>
 
-                          {getVisaStatusBadge(country.country_code)}
+                          {getVisaStatusBadges(country)}
 
                           {country.description && (
                             <p className="line-clamp-2 text-sm text-slate-600">
@@ -252,7 +250,7 @@ export function CountriesByContinent({ countries, visaData }: Props) {
                     </h3>
                   </div>
 
-                  {getVisaStatusBadge(country.country_code)}
+                  {getVisaStatusBadges(country)}
 
                   {country.description && (
                     <p className="line-clamp-2 text-sm text-slate-600">

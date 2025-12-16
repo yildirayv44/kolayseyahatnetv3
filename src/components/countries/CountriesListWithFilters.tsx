@@ -19,6 +19,9 @@ interface Country {
   visa_required: boolean;
   price: number | null;
   currency_id?: number;
+  visa_labels?: string[];
+  visa_label?: string;
+  visa_status?: string;
 }
 
 // Para birimi sembolü helper fonksiyonu
@@ -37,10 +40,8 @@ interface VisaRequirement {
 }
 
 export function CountriesListWithFilters({ initialCountries }: { initialCountries: Country[] }) {
-  const [countries, setCountries] = useState<Country[]>(initialCountries);
+  const [countries] = useState<Country[]>(initialCountries);
   const [filteredCountries, setFilteredCountries] = useState<Country[]>(initialCountries);
-  const [visaData, setVisaData] = useState<Record<string, VisaRequirement>>({});
-  const [loading, setLoading] = useState(false);
   
   // View mode - default to continent view
   const [viewMode, setViewMode] = useState<'grid' | 'continent'>('continent');
@@ -49,25 +50,7 @@ export function CountriesListWithFilters({ initialCountries }: { initialCountrie
   const [searchQuery, setSearchQuery] = useState("");
   const [visaStatusFilter, setVisaStatusFilter] = useState<"all" | "visa-free" | "visa-on-arrival" | "eta" | "visa-required">("all");
 
-  // Load visa requirements
-  useEffect(() => {
-    fetch('/api/admin/visa-requirements/fetch-passportindex')
-      .then(res => res.json())
-      .then(data => {
-        const visaMap: Record<string, VisaRequirement> = {};
-        data.data?.forEach((v: any) => {
-          visaMap[v.countryCode] = {
-            countryCode: v.countryCode,
-            visaStatus: v.visaStatus,
-            allowedStay: v.allowedStay
-          };
-        });
-        setVisaData(visaMap);
-      })
-      .catch(console.error);
-  }, []);
-
-  // Apply filters
+  // Apply filters - artık getCountries'den gelen visa_labels kullanılıyor
   useEffect(() => {
     let filtered = [...countries];
 
@@ -80,52 +63,53 @@ export function CountriesListWithFilters({ initialCountries }: { initialCountrie
       );
     }
 
-    // Visa status filter
+    // Visa status filter - visa_labels kullan
     if (visaStatusFilter !== "all") {
       filtered = filtered.filter(c => {
-        if (!c.country_code) return false;
-        const visa = visaData[c.country_code];
-        return visa?.visaStatus === visaStatusFilter;
+        if (!c.visa_labels || c.visa_labels.length === 0) return false;
+        
+        if (visaStatusFilter === "visa-free") {
+          return c.visa_labels.includes("Vizesiz");
+        } else if (visaStatusFilter === "visa-on-arrival") {
+          return c.visa_labels.includes("Varışta Vize");
+        } else if (visaStatusFilter === "eta") {
+          return c.visa_labels.includes("E-vize");
+        } else if (visaStatusFilter === "visa-required") {
+          return c.visa_labels.includes("Vize Gerekli");
+        }
+        return false;
       });
     }
 
     setFilteredCountries(filtered);
-  }, [searchQuery, visaStatusFilter, countries, visaData]);
+  }, [searchQuery, visaStatusFilter, countries]);
 
-  const getVisaStatusBadge = (countryCode: string | null) => {
-    if (!countryCode) return null;
+  // Vize durumu badge'i - artık country'den gelen visa_labels kullanılıyor
+  const getVisaStatusBadges = (country: Country) => {
+    if (!country.visa_labels || country.visa_labels.length === 0) return null;
 
-    const visa = visaData[countryCode];
-    if (!visa) return null;
-
-    // Vize durumunu normalize et
-    const status = visa.visaStatus?.toLowerCase() || "";
-    
-    let label = "Vize Gerekli";
-    let className = "bg-orange-100 text-orange-700 border-orange-200";
-    let Icon = XCircle;
-
-    if (status === "visa-free" || status === "visa_free") {
-      label = "Vizesiz";
-      className = "bg-green-100 text-green-700 border-green-200";
-      Icon = CheckCircle;
-    } else if (status === "visa-on-arrival" || status === "visa_on_arrival") {
-      label = "Varışta Vize";
-      className = "bg-blue-100 text-blue-700 border-blue-200";
-      Icon = Clock;
-    } else if (status.includes("eta") || status.includes("esta")) {
-      label = "E-vize";
-      className = "bg-purple-100 text-purple-700 border-purple-200";
-      Icon = Globe;
-    }
+    const getLabelStyle = (label: string) => {
+      if (label === "Vizesiz") {
+        return { className: "bg-green-100 text-green-700 border-green-200", Icon: CheckCircle };
+      } else if (label === "Varışta Vize") {
+        return { className: "bg-blue-100 text-blue-700 border-blue-200", Icon: Clock };
+      } else if (label === "E-vize") {
+        return { className: "bg-purple-100 text-purple-700 border-purple-200", Icon: Globe };
+      }
+      return { className: "bg-orange-100 text-orange-700 border-orange-200", Icon: XCircle };
+    };
 
     return (
-      <div className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold ${className}`}>
-        <Icon className="h-3.5 w-3.5" />
-        <span>{label}</span>
-        {visa.allowedStay && (
-          <span className="text-[10px] opacity-75">• {visa.allowedStay}</span>
-        )}
+      <div className="flex flex-wrap gap-1">
+        {country.visa_labels.map((label, idx) => {
+          const { className, Icon } = getLabelStyle(label);
+          return (
+            <div key={idx} className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold ${className}`}>
+              <Icon className="h-3.5 w-3.5" />
+              <span>{label}</span>
+            </div>
+          );
+        })}
       </div>
     );
   };
@@ -142,8 +126,7 @@ export function CountriesListWithFilters({ initialCountries }: { initialCountrie
         </p>
       </section>
 
-      {/* Visa Statistics */}
-      <VisaMap visaData={visaData} totalCountries={countries.length} />
+      {/* Visa Statistics - visa_labels kullanılıyor */}
 
       {/* View Mode Toggle & Filters */}
       <div className="card space-y-4">
@@ -249,7 +232,7 @@ export function CountriesListWithFilters({ initialCountries }: { initialCountrie
           </p>
         </div>
       ) : viewMode === 'continent' ? (
-        <CountriesByContinent countries={filteredCountries} visaData={visaData} />
+        <CountriesByContinent countries={filteredCountries} visaData={{}} />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filteredCountries.map((country) => {
@@ -281,8 +264,8 @@ export function CountriesListWithFilters({ initialCountries }: { initialCountrie
                     </h2>
                   </div>
 
-                  {/* Visa Status Badge */}
-                  {getVisaStatusBadge(country.country_code)}
+                  {/* Visa Status Badges */}
+                  {getVisaStatusBadges(country)}
 
                   {country.description && (
                     <p className="line-clamp-2 text-sm text-slate-600">

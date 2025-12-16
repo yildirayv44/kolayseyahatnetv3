@@ -2,6 +2,9 @@ import { getCountries } from "@/lib/queries";
 import { generateSEOMetadata } from "@/components/shared/SEOHead";
 import { CountriesListWithFilters } from "@/components/countries/CountriesListWithFilters";
 
+// Cache'i 5 dakikada bir yenile
+export const revalidate = 300;
+
 export const metadata = generateSEOMetadata({
   title: "Vize Başvurusu Yapılabilecek Ülkeler",
   description:

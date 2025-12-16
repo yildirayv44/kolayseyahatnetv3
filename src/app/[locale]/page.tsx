@@ -12,6 +12,9 @@ import { ComparisonTable } from "@/components/home/ComparisonTable";
 import { translateArray } from "@/lib/translation";
 import { type Locale } from "@/i18n/config";
 
+// Cache'i 5 dakikada bir yenile
+export const revalidate = 300;
+
 // Para birimi sembolü helper fonksiyonu
 const getCurrencySymbol = (currencyId: number = 1) => {
   switch (currencyId) {
@@ -201,7 +204,7 @@ export default async function Home({ params }: HomePageProps) {
                 <div className="mt-4 flex items-center justify-between text-xs text-slate-500">
                   <span className="inline-flex items-center gap-1">
                     <ShieldCheck className="h-3 w-3 text-emerald-500" />
-                    {country.visa_required === false ? t.popular.visaFreeEntry : t.popular.secureApplication}
+                    {t.popular.secureApplication}
                   </span>
                   <Link
                     href={getLocalizedUrl(country.slug || "", locale)}
