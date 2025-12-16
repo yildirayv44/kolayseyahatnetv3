@@ -127,6 +127,32 @@ export function CountriesListWithFilters({ initialCountries }: { initialCountrie
       </section>
 
       {/* Visa Statistics - visa_labels kullanılıyor */}
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div className="card text-center">
+          <div className="text-3xl font-bold text-green-600">
+            {countries.filter(c => c.visa_labels?.includes("Vizesiz")).length}
+          </div>
+          <div className="mt-1 text-sm text-slate-600">Vizesiz Giriş</div>
+        </div>
+        <div className="card text-center">
+          <div className="text-3xl font-bold text-blue-600">
+            {countries.filter(c => c.visa_labels?.includes("Varışta Vize")).length}
+          </div>
+          <div className="mt-1 text-sm text-slate-600">Varışta Vize</div>
+        </div>
+        <div className="card text-center">
+          <div className="text-3xl font-bold text-purple-600">
+            {countries.filter(c => c.visa_labels?.includes("E-vize")).length}
+          </div>
+          <div className="mt-1 text-sm text-slate-600">E-vize</div>
+        </div>
+        <div className="card text-center">
+          <div className="text-3xl font-bold text-orange-600">
+            {countries.filter(c => c.visa_labels?.includes("Vize Gerekli")).length}
+          </div>
+          <div className="mt-1 text-sm text-slate-600">Vize Gerekli</div>
+        </div>
+      </div>
 
       {/* View Mode Toggle & Filters */}
       <div className="card space-y-4">
