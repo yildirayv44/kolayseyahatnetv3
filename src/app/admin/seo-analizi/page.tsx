@@ -4,6 +4,12 @@ import { useEffect, useState } from "react";
 import { Search, Filter, TrendingUp, TrendingDown, AlertCircle, CheckCircle, ExternalLink, RefreshCw, Edit3, Save, X, Globe, Languages } from "lucide-react";
 import Link from "next/link";
 
+interface RichSnippet {
+  type: string;
+  available: boolean;
+  fields?: string[];
+}
+
 interface SEOScore {
   id: number;
   type: 'blog' | 'country' | 'page';
@@ -26,6 +32,7 @@ interface SEOScore {
   en_score?: number;
   tr_issues?: string[];
   en_issues?: string[];
+  rich_snippets?: RichSnippet[];
   raw_data?: {
     meta_title?: string;
     meta_title_en?: string;
@@ -390,6 +397,9 @@ export default function SEOAnaliziPage() {
                   <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600">
                     EKSİKLER
                   </th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600">
+                    RICH SNIPPETS
+                  </th>
                   <th className="px-4 py-3 text-right text-xs font-semibold text-slate-600">
                     İŞLEMLER
                   </th>
@@ -444,6 +454,28 @@ export default function SEOAnaliziPage() {
                             <div className="text-green-600">✓ Tamam</div>
                           )}
                         </div>
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        {item.rich_snippets && (
+                          <div className="flex flex-wrap justify-center gap-1">
+                            {item.rich_snippets.slice(0, 4).map((snippet, idx) => (
+                              <span
+                                key={idx}
+                                className={`inline-block rounded px-1.5 py-0.5 text-[10px] font-medium ${
+                                  snippet.available
+                                    ? 'bg-green-100 text-green-700'
+                                    : 'bg-slate-100 text-slate-400'
+                                }`}
+                                title={snippet.available ? `✓ ${snippet.type}: ${snippet.fields?.join(', ')}` : `✗ ${snippet.type}: Eksik`}
+                              >
+                                {snippet.available ? '✓' : '✗'} {snippet.type}
+                              </span>
+                            ))}
+                            {item.rich_snippets.length > 4 && (
+                              <span className="text-[10px] text-slate-500">+{item.rich_snippets.length - 4}</span>
+                            )}
+                          </div>
+                        )}
                       </td>
                       <td className="px-4 py-4">
                         <div className="flex items-center justify-end gap-2">
@@ -667,6 +699,44 @@ export default function SEOAnaliziPage() {
                         <div key={idx} className="flex items-start gap-2 rounded-lg bg-red-50 p-2 text-sm text-red-700">
                           <span>•</span>
                           <span>{issue.replace('[EN] ', '')}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Rich Snippets */}
+                {selectedItem.rich_snippets && selectedItem.rich_snippets.length > 0 && (
+                  <div className="mb-4 rounded-lg border border-slate-200 p-4">
+                    <h3 className="mb-3 text-sm font-bold text-slate-900">🎯 Rich Snippets (Structured Data)</h3>
+                    <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                      {selectedItem.rich_snippets.map((snippet, idx) => (
+                        <div
+                          key={idx}
+                          className={`rounded-lg border p-3 ${
+                            snippet.available
+                              ? 'border-green-200 bg-green-50'
+                              : 'border-slate-200 bg-slate-50'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className={`text-lg ${snippet.available ? 'text-green-600' : 'text-slate-400'}`}>
+                              {snippet.available ? '✓' : '✗'}
+                            </span>
+                            <span className={`font-semibold ${snippet.available ? 'text-green-700' : 'text-slate-500'}`}>
+                              {snippet.type}
+                            </span>
+                          </div>
+                          {snippet.available && snippet.fields && snippet.fields.length > 0 && (
+                            <div className="text-xs text-slate-600">
+                              {snippet.fields.join(' • ')}
+                            </div>
+                          )}
+                          {!snippet.available && (
+                            <div className="text-xs text-slate-400">
+                              Veri eksik - aktif değil
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>

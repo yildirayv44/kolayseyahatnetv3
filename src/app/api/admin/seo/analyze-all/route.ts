@@ -13,6 +13,12 @@ const supabase = createClient(
   }
 );
 
+interface RichSnippet {
+  type: string;
+  available: boolean;
+  fields?: string[];
+}
+
 interface SEOScore {
   id: number;
   type: 'blog' | 'country' | 'page';
@@ -36,6 +42,8 @@ interface SEOScore {
   en_score?: number;
   tr_issues?: string[];
   en_issues?: string[];
+  // Rich Snippets
+  rich_snippets?: RichSnippet[];
   // Raw data for editing
   raw_data?: {
     meta_title?: string;
@@ -59,6 +67,98 @@ function analyzeContent(content: string): {
   const has_images = /!\[.*?\]\(.*?\)/.test(content);
   
   return { word_count, has_headings, has_images };
+}
+
+// Analyze Rich Snippets availability for different content types
+function analyzeRichSnippets(item: any, type: string): RichSnippet[] {
+  const snippets: RichSnippet[] = [];
+  
+  if (type === 'country') {
+    // Breadcrumb Schema - always available for countries
+    snippets.push({
+      type: 'Breadcrumb',
+      available: true,
+      fields: ['Ana Sayfa', 'Ülke Adı'],
+    });
+    
+    // FAQ Schema - requires questions
+    const hasFAQ = item.has_faq || false; // Will be set from questions count
+    snippets.push({
+      type: 'FAQ',
+      available: hasFAQ,
+      fields: hasFAQ ? ['Sorular', 'Cevaplar'] : [],
+    });
+    
+    // HowTo Schema - always generated for visa process
+    snippets.push({
+      type: 'HowTo',
+      available: true,
+      fields: ['Vize Başvuru Adımları'],
+    });
+    
+    // Product Schema - requires products/packages
+    const hasProducts = item.has_products || false;
+    snippets.push({
+      type: 'Product',
+      available: hasProducts,
+      fields: hasProducts ? ['Paket Adı', 'Fiyat', 'Rating'] : [],
+    });
+    
+    // Review Schema - requires comments
+    const hasReviews = item.has_reviews || false;
+    snippets.push({
+      type: 'Review',
+      available: hasReviews,
+      fields: hasReviews ? ['Yorumlar', 'Puanlar'] : [],
+    });
+    
+    // Organization Schema - always available
+    snippets.push({
+      type: 'Organization',
+      available: true,
+      fields: ['Şirket Bilgileri', 'İletişim'],
+    });
+  } else if (type === 'blog') {
+    // Article Schema
+    const hasImage = item.image_url || item.image;
+    const hasDate = item.created_at || item.published_at;
+    snippets.push({
+      type: 'Article',
+      available: !!(hasImage && hasDate),
+      fields: hasImage && hasDate ? ['Başlık', 'Görsel', 'Tarih', 'Yazar'] : [],
+    });
+    
+    // Breadcrumb Schema
+    snippets.push({
+      type: 'Breadcrumb',
+      available: true,
+      fields: ['Ana Sayfa', 'Blog', 'Yazı'],
+    });
+    
+    // FAQ Schema - if content has Q&A format
+    const contentHasFAQ = (item.contents || '').includes('?') && (item.contents || '').length > 500;
+    snippets.push({
+      type: 'FAQ',
+      available: contentHasFAQ,
+      fields: contentHasFAQ ? ['İçerikten çıkarılabilir'] : [],
+    });
+  } else if (type === 'page') {
+    // WebPage Schema
+    snippets.push({
+      type: 'WebPage',
+      available: true,
+      fields: ['Başlık', 'Açıklama'],
+    });
+    
+    // Breadcrumb Schema
+    snippets.push({
+      type: 'Breadcrumb',
+      available: true,
+      fields: ['Ana Sayfa', 'Sayfa'],
+    });
+  }
+  
+  return snippets;
 }
 
 function calculateSingleScore(
@@ -192,6 +292,9 @@ function calculateSEOScore(item: any, type: string, locale: 'tr' | 'en' = 'tr'):
     publish_status = item.is_published ? 'published' : 'draft';
   }
 
+  // Analyze Rich Snippets
+  const rich_snippets = analyzeRichSnippets(item, type);
+
   return {
     id: item.id,
     type: type as any,
@@ -214,6 +317,7 @@ function calculateSEOScore(item: any, type: string, locale: 'tr' | 'en' = 'tr'):
     en_score: enResult.score,
     tr_issues: trResult.issues,
     en_issues: enResult.issues,
+    rich_snippets,
     raw_data: {
       meta_title: tr_meta_title,
       meta_title_en: en_meta_title,
