@@ -161,12 +161,30 @@ export async function generateMetadata({ params }: CountryPageParams): Promise<M
       visaRequirement = visaReqs?.[0];
     }
 
-    const rawTitle = country.meta_title || countryTax?.title || country.title || `${country.name} Vizesi - Kolay Seyahat`;
-    const title = truncateTitle(rawTitle, 60);
+    // Title: Veritabanında varsa olduğu gibi kullan (indekslenen içeriği koru)
+    // Sadece fallback için truncate uygula
+    const dbTitle = country.meta_title || countryTax?.title || country.title;
+    const isEnglish = locale === 'en';
     
-    // Generate optimized meta description (max 155 chars)
-    const description = countryTax?.description 
-      ? truncateAtWord(countryTax.description, 155)
+    // İngilizce için title_en varsa kullan
+    const localizedTitle = isEnglish && country.title_en ? country.title_en : dbTitle;
+    
+    // Eğer veritabanında title varsa olduğu gibi kullan, yoksa fallback oluştur ve truncate et
+    const title = localizedTitle || truncateTitle(
+      isEnglish 
+        ? `${country.name} Visa - Kolay Seyahat`
+        : `${country.name} Vizesi - Kolay Seyahat`, 
+      60
+    );
+    
+    // Description: Veritabanında varsa olduğu gibi kullan (indekslenen içeriği koru)
+    // İngilizce için description_en varsa kullan
+    const dbDescription = isEnglish && country.description_en 
+      ? country.description_en 
+      : countryTax?.description;
+    
+    const description = dbDescription 
+      ? truncateAtWord(dbDescription, 155)
       : generateCountryMetaDescription(country, visaRequirement, locale as 'tr' | 'en');
     
     const imageUrl = country.image_url || '/default-country.jpg';
