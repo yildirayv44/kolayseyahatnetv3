@@ -274,7 +274,7 @@ export async function GET(request: Request) {
     // Get visa requirements from visa_requirements table (accurate data)
     const { data: visaReqs } = await supabase
       .from('visa_requirements')
-      .select('country_code, visa_status, allowed_stay')
+      .select('country_code, visa_status, allowed_stay, available_methods')
       .in('country_code', countryCodes);
 
     const visaReqMap = new Map<string, any>();
@@ -294,11 +294,31 @@ export async function GET(request: Request) {
     // Continent counters
     const continentCounts: Record<string, number> = {};
 
+    // Helper function to convert visa method to Turkish label
+    const getVisaLabel = (method: string): string => {
+      switch (method) {
+        case 'visa-free': return 'Vizesiz';
+        case 'visa-on-arrival': return 'Varışta Vize';
+        case 'evisa': return 'E-vize';
+        case 'eta': return 'E-vize';
+        case 'embassy': return 'Vize Gerekli';
+        case 'visa-required': return 'Vize Gerekli';
+        default: return 'Vize Gerekli';
+      }
+    };
+
     // Format response
     let formattedCountries = countries?.map(country => {
       // Get visa status from visa_requirements table first, fallback to visa_type
       const visaReq = visaReqMap.get(country.country_code);
       const visaStatus = visaReq?.visa_status || normalizeVisaType(country.visa_type);
+      
+      // Get available methods array
+      const availableMethods: string[] = visaReq?.available_methods || [];
+      
+      // Generate visa labels from available_methods or fallback to visaStatus
+      const methodsToProcess = availableMethods.length > 0 ? availableMethods : (visaStatus ? [visaStatus] : []);
+      const visaLabels = [...new Set(methodsToProcess.map(getVisaLabel))]; // Remove duplicates
       
       const continent = CONTINENT_MAP[country.country_code] || { name: 'Diğer', nameEn: 'Other' };
       
@@ -322,6 +342,9 @@ export async function GET(request: Request) {
         visaRequired: country.visa_required,
         visaType: country.visa_type,
         visaStatus: visaStatus,
+        availableMethods: availableMethods,
+        visaLabels: visaLabels,
+        visaLabel: visaLabels.join(' / '),
         maxStayDuration: visaReq?.allowed_stay || country.max_stay_duration,
         continent: continent.name,
         continentEn: continent.nameEn,
