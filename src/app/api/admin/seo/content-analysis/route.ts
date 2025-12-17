@@ -147,13 +147,23 @@ export async function POST(request: NextRequest) {
       visaRequirement = visaReq;
     }
 
-    // Fetch FAQs
-    const { data: faqs } = await supabase
-      .from("questions")
-      .select("question, answer")
-      .eq("country_id", countryId)
-      .eq("status", 1)
-      .limit(10);
+    // Fetch FAQs via question_to_countries relation table
+    const { data: questionRelations } = await supabase
+      .from("question_to_countries")
+      .select("question_id")
+      .eq("country_id", countryId);
+    
+    let faqs: any[] = [];
+    if (questionRelations && questionRelations.length > 0) {
+      const questionIds = questionRelations.map((r: { question_id: number }) => r.question_id);
+      const { data: questionData } = await supabase
+        .from("questions")
+        .select("question, answer")
+        .in("id", questionIds)
+        .eq("status", 1)
+        .limit(20);
+      faqs = questionData || [];
+    }
 
     // Fetch comments count
     const { count: commentsCount } = await supabase
@@ -162,20 +172,40 @@ export async function POST(request: NextRequest) {
       .eq("country_id", countryId)
       .eq("status", 1);
 
-    // Fetch related blogs
-    const { data: blogs } = await supabase
-      .from("blogs")
-      .select("title, slug")
-      .eq("country_id", countryId)
-      .eq("status", 1)
-      .limit(5);
+    // Fetch related blogs via country_to_blogs relation table
+    const { data: blogRelations } = await supabase
+      .from("country_to_blogs")
+      .select("blog_id")
+      .eq("country_id", countryId);
+    
+    let blogs: any[] = [];
+    if (blogRelations && blogRelations.length > 0) {
+      const blogIds = blogRelations.map((r: { blog_id: number }) => r.blog_id);
+      const { data: blogData } = await supabase
+        .from("blogs")
+        .select("title, slug")
+        .in("id", blogIds)
+        .eq("status", 1)
+        .limit(5);
+      blogs = blogData || [];
+    }
 
-    // Fetch country menus (sub-pages)
-    const { data: menus } = await supabase
-      .from("country_menus")
-      .select("name, slug")
-      .eq("country_id", countryId)
-      .eq("status", 1);
+    // Fetch country menus (sub-pages) via country_to_menus relation table
+    const { data: menuRelations } = await supabase
+      .from("country_to_menus")
+      .select("country_menu_id")
+      .eq("country_id", countryId);
+    
+    let menus: any[] = [];
+    if (menuRelations && menuRelations.length > 0) {
+      const menuIds = menuRelations.map((r: { country_menu_id: number }) => r.country_menu_id);
+      const { data: menuData } = await supabase
+        .from("country_menus")
+        .select("name, slug, parent_id")
+        .in("id", menuIds)
+        .eq("status", 1);
+      menus = menuData || [];
+    }
 
     // Prepare content summary for analysis
     const contentSummary = {
