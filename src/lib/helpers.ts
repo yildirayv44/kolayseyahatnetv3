@@ -69,18 +69,18 @@ export function getConsultantSlug(consultant: any): string {
 export function getBlogSlug(blog: any): string {
   // Blog'un taxonomy slug'ı varsa kullan
   if (blog.taxonomy_slug) {
-    return `/${blog.taxonomy_slug}`;
+    return `/blog/${blog.taxonomy_slug}`;
   }
   
   // Fallback: blog.slug veya blog.url
   if (blog.slug) {
     const slug = blog.slug.trim();
-    return slug.startsWith('/') ? slug : `/blog/${slug}`;
+    return slug.startsWith('/blog/') ? slug : `/blog/${slug}`;
   }
   
   if (blog.url) {
     const url = blog.url.trim();
-    return url.startsWith('/') ? url : url;
+    return url.startsWith('/blog/') ? url : `/blog/${url}`;
   }
   
   // Son çare: ID kullan
