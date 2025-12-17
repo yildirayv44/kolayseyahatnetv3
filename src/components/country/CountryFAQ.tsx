@@ -89,23 +89,25 @@ export function CountryFAQ({ questions, locale = 'tr' }: CountryFAQProps) {
               >
                 <div className="overflow-hidden">
                   <div className="border-t border-slate-200 p-5">
-                    {/* Soru İçeriği */}
-                    <div className="mb-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600">
-                          {locale === 'en' ? 'Question' : 'Soru'}
-                        </span>
+                    {/* Soru İçeriği - sadece içerik varsa göster */}
+                    {q.contents && q.contents.trim() && (
+                      <div className="mb-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600">
+                            {locale === 'en' ? 'Question Details' : 'Soru Detayı'}
+                          </span>
+                        </div>
+                        <div
+                          className="prose prose-sm max-w-none text-slate-700"
+                          dangerouslySetInnerHTML={{ __html: q.contents }}
+                        />
                       </div>
-                      <div
-                        className="prose prose-sm max-w-none text-slate-700"
-                        dangerouslySetInnerHTML={{ __html: q.contents }}
-                      />
-                    </div>
+                    )}
                     {/* Cevaplar */}
                     {q.answers && q.answers.length > 0 && q.answers.map((a: FAQItem) => (
                       <div
                         key={a.id}
-                        className="mt-4 rounded-lg border-l-4 border-primary bg-blue-50/50 p-4"
+                        className="rounded-lg border-l-4 border-primary bg-blue-50/50 p-4"
                       >
                         <div className="flex items-center gap-2 mb-2">
                           <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">

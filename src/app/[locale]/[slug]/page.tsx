@@ -551,11 +551,20 @@ export default async function CountryPage({ params }: CountryPageParams) {
     return currency?.symbol || "₺";
   };
 
-  const faqParents = questions.filter((q: any) => q.parent_id === 0);
+  // Questions now come with answers already attached from getCountryQuestions
+  const faqParents = questions.filter((q: any) => !q.parent_id || q.parent_id === 0);
+  
+  // Legacy support: if answers not attached, filter from children
   const faqChildren = questions.filter((q: any) => q.parent_id > 0);
 
-  const getAnswersForQuestion = (id: number) =>
-    faqChildren.filter((q: any) => q.parent_id === id);
+  const getAnswersForQuestion = (id: number, question: any) => {
+    // First check if answers are already attached (new method)
+    if (question.answers && question.answers.length > 0) {
+      return question.answers;
+    }
+    // Fallback to old method (filter from children)
+    return faqChildren.filter((q: any) => q.parent_id === id);
+  };
 
   // Fix image URLs in content
   const fixedContents = country.contents ? fixHtmlImageUrls(country.contents, country.name) : null;
@@ -581,7 +590,7 @@ export default async function CountryPage({ params }: CountryPageParams) {
   // Generate FAQ Schema for SEO
   const faqSchema = faqParents.length > 0 ? generateFAQSchema(
     faqParents.map((q: any) => {
-      const answers = getAnswersForQuestion(q.id);
+      const answers = getAnswersForQuestion(q.id, q);
       const answerText = answers.length > 0 
         ? answers.map((a: any) => stripHtml(a.contents || a.title)).filter(Boolean).join(' ') 
         : stripHtml(q.contents || q.title); // Use contents or title as fallback
@@ -866,7 +875,7 @@ export default async function CountryPage({ params }: CountryPageParams) {
           <CountryFAQ
             questions={faqParents.map((q: any) => ({
               ...q,
-              answers: getAnswersForQuestion(q.id),
+              answers: getAnswersForQuestion(q.id, q),
             }))}
             locale={locale as 'tr' | 'en'}
           />

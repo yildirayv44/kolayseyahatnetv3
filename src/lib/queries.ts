@@ -391,7 +391,26 @@ export async function getCountryQuestions(countryId: number) {
     return [];
   }
 
-  return data || [];
+  if (!data || data.length === 0) return [];
+
+  // Fetch answers for each question (answers are stored in questions table with parent_id)
+  const questionsWithAnswers = await Promise.all(
+    data.map(async (question) => {
+      const { data: answers, error: ansErr } = await supabase
+        .from("questions")
+        .select("id, title, contents, status")
+        .eq("parent_id", question.id);
+      
+      console.log(`[FAQ] Question ${question.id} answers:`, answers, ansErr);
+      
+      return {
+        ...question,
+        answers: answers || []
+      };
+    })
+  );
+
+  return questionsWithAnswers;
 }
 
 export async function getCountryBlogs(countryId: number) {
