@@ -165,11 +165,11 @@ async function fetchUrlContent(url: string): Promise<string> {
 
 export async function POST(request: NextRequest) {
   try {
-    const { countryId, sourceUrls } = await request.json();
+    const { countryId, sourceUrls, additionalContent } = await request.json();
 
-    if (!countryId || !sourceUrls || !Array.isArray(sourceUrls)) {
+    if (!countryId || (!sourceUrls?.length && !additionalContent)) {
       return NextResponse.json(
-        { error: "countryId and sourceUrls array required" },
+        { error: "countryId and either sourceUrls or additionalContent required" },
         { status: 400 }
       );
     }
@@ -190,7 +190,7 @@ export async function POST(request: NextRequest) {
 
     // Fetch content from all source URLs
     const sourceContents: { url: string; content: string }[] = [];
-    for (const url of sourceUrls) {
+    for (const url of (sourceUrls || [])) {
       if (url && url.trim()) {
         const content = await fetchUrlContent(url.trim());
         console.log(`📄 Fetched content from ${url}:`);
@@ -205,9 +205,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    if (sourceContents.length === 0) {
+    if (sourceContents.length === 0 && !additionalContent) {
       return NextResponse.json(
-        { error: "No valid source URLs provided" },
+        { error: "No valid source URLs or additional content provided" },
         { status: 400 }
       );
     }
@@ -254,8 +254,15 @@ MEVCUT FİYAT İÇERİĞİ (price_contents alanı - HTML):
 ${stripHtml(currentData.price_contents).slice(0, 1500)}
 
 KAYNAK SAYFALAR (Resmi Kaynaklar):
-${sourceTexts}
+${sourceTexts || "(URL'lerden içerik alınamadı)"}
 
+${additionalContent ? `KULLANICI TARAFINDAN GİRİLEN EK İÇERİK (ÇOK ÖNEMLİ - MUTLAKA DİKKATE AL):
+--- Kullanıcı Girişi ---
+${additionalContent}
+--- Kullanıcı Girişi Sonu ---
+
+NOT: Yukarıdaki kullanıcı tarafından girilen içerik, kaynak sayfalardan kopyalanmış önemli bilgiler içermektedir. Bu içeriği MUTLAKA dikkate al ve analiz et. Bu içerikteki bilgiler güvenilir kabul edilmelidir.
+` : ''}
 GÖREV:
 1. Kaynak sayfalardan vize ile ilgili TÜM güncel bilgileri çıkar
 2. Mevcut verilerimizle DETAYLI karşılaştır
@@ -267,6 +274,13 @@ GÖREV:
    - İşlem süresi güncel mi?
    - Önemli notlarda eksik bilgi var mı?
    - Ana içerikte (contents) güncel olmayan veya eksik bilgi var mı?
+5. KAYNAK SAYFALARDA BULUNAN FAYDALI EK BİLGİLERİ de öner:
+   - Başvuru prosedürleri ve adımları
+   - Özel durumlar ve istisnalar
+   - Konsolosluk/büyükelçilik bilgileri
+   - Vize türleri ve farklılıkları
+   - Sık sorulan sorular ve cevapları
+   - Kullanıcılar için faydalı ipuçları
 
 ÖNEMLİ KURALLAR:
 - SADECE kaynak sayfalarda AÇIKÇA YAZILI olan bilgileri kullan
@@ -277,6 +291,8 @@ GÖREV:
 - Güncel olmayan veya YANLIŞ bilgileri tespit et
 - JSON array alanları için (required_documents, important_notes, application_steps) tam liste öner
 - Ana içerik (contents) için eklenecek paragrafları HTML formatında öner
+- contents alanı için suggestions dizisine field_name: "contents" olarak öneri ekle
+- contents önerisi için suggested_value alanına eklenecek HTML içeriği yaz (mevcut içeriğe EKLENECEk yeni bölümler)
 
 KRİTİK - BİLGİ KAYNAĞI KURALI:
 - Vize ücreti, kalış süresi, işlem süresi gibi bilgiler SADECE kaynak sayfadan alınmalı

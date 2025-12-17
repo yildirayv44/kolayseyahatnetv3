@@ -37,6 +37,7 @@ interface SourceUrlManagerProps {
   lastSourceCheck?: string;
   sourceCheckNotes?: string;
   onSourceUrlsChange?: (urls: string[]) => void;
+  onSuggestionApplied?: () => void;
 }
 
 export function SourceUrlManager({
@@ -46,10 +47,12 @@ export function SourceUrlManager({
   lastSourceCheck,
   sourceCheckNotes,
   onSourceUrlsChange,
+  onSuggestionApplied,
 }: SourceUrlManagerProps) {
   const [sourceUrls, setSourceUrls] = useState<string[]>(
     initialSourceUrls.length > 0 ? initialSourceUrls : [""]
   );
+  const [additionalContent, setAdditionalContent] = useState<string>("");
   const [analyzing, setAnalyzing] = useState(false);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [analysisResult, setAnalysisResult] = useState<any>(null);
@@ -110,6 +113,7 @@ export function SourceUrlManager({
         body: JSON.stringify({
           countryId,
           sourceUrls: validUrls,
+          additionalContent: additionalContent.trim() || undefined,
         }),
       });
 
@@ -165,7 +169,9 @@ export function SourceUrlManager({
       );
 
       if (applyChanges && data.applied) {
-        alert("✅ Değişiklik başarıyla uygulandı! Güncel verileri görmek için sayfayı yenileyebilirsiniz.");
+        alert("✅ Değişiklik başarıyla uygulandı! Sayfa yenileniyor...");
+        // Reload page to show updated data
+        window.location.reload();
       } else if (applyChanges && !data.applied) {
         alert("⚠️ Öneri onaylandı ancak değişiklik uygulanamadı. Lütfen sayfayı yenileyip tekrar deneyin.");
       }
@@ -297,6 +303,29 @@ export function SourceUrlManager({
               </div>
             ))}
 
+            {/* Additional Content Textarea */}
+            <div className="mt-4 space-y-2">
+              <label className="block text-sm font-semibold text-slate-900">
+                📝 Ek İçerik (Opsiyonel)
+              </label>
+              <p className="text-xs text-slate-600">
+                Kaynak sayfalardan kopyaladığınız önemli metinleri buraya yapıştırın. AI bu içeriği mutlaka dikkate alacaktır.
+              </p>
+              <textarea
+                value={additionalContent}
+                onChange={(e) => setAdditionalContent(e.target.value)}
+                placeholder="Kaynak sayfalardan önemli bilgileri buraya yapıştırın...&#10;&#10;Örnek:&#10;- Vize ücreti: 90 EUR&#10;- İşlem süresi: 15 iş günü&#10;- Gerekli belgeler: Pasaport, fotoğraf, banka hesap özeti..."
+                rows={6}
+                className="w-full rounded-lg border border-slate-200 px-4 py-3 text-sm focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 resize-y"
+              />
+              {additionalContent.trim() && (
+                <p className="text-xs text-green-600 flex items-center gap-1">
+                  <CheckCircle className="h-3 w-3" />
+                  {additionalContent.length} karakter ek içerik girildi - AI analizi sırasında dikkate alınacak
+                </p>
+              )}
+            </div>
+
             <div className="flex gap-3">
               <button
                 type="button"
@@ -310,7 +339,7 @@ export function SourceUrlManager({
               <button
                 type="button"
                 onClick={analyzeSourceUrls}
-                disabled={analyzing || sourceUrls.every(u => !u.trim())}
+                disabled={analyzing || (sourceUrls.every(u => !u.trim()) && !additionalContent.trim())}
                 className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-2 text-sm font-semibold text-white hover:from-purple-700 hover:to-indigo-700 disabled:opacity-50"
               >
                 {analyzing ? (

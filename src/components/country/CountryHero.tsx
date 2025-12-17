@@ -53,6 +53,13 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
     return visaReq?.visa_status || 'visa-required';
   });
 
+  // Track if component is mounted (for hydration safety)
+  const [isMounted, setIsMounted] = useState(false);
+  
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   // Auto-select first package
   useEffect(() => {
     if (products.length > 0 && !selectedPackage) {
@@ -279,7 +286,7 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
                   <span className="text-sm font-bold text-slate-900">
                     {country.process_time || (locale === 'en' ? "7-14 Days" : "7-14 Gün")}
                   </span>
-                  {getProcessTimeTooltip() && (
+                  {isMounted && getProcessTimeTooltip() && (
                     <div className="group relative">
                       <Info className="h-3.5 w-3.5 text-slate-400 cursor-help hover:text-primary transition-colors" />
                       <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-2 bg-slate-800 text-white text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 w-64 z-50 shadow-lg">

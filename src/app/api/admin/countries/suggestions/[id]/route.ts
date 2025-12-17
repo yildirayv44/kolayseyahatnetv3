@@ -75,19 +75,25 @@ export async function PATCH(
         }
       }
 
-      console.log("Applying suggestion:", {
+      console.log("🔄 Applying suggestion:", {
         countryId: suggestion.country_id,
         fieldName: suggestion.field_name,
-        valueToApply: typeof valueToApply === 'object' ? JSON.stringify(valueToApply).slice(0, 200) : valueToApply?.slice?.(0, 200),
+        valueToApply: typeof valueToApply === 'object' ? JSON.stringify(valueToApply).slice(0, 500) : valueToApply?.slice?.(0, 500),
+        valueType: typeof valueToApply,
+        isArray: Array.isArray(valueToApply),
       });
 
       const { data: updateData, error: countryUpdateError } = await supabaseAdmin
         .from("countries")
         .update({ [suggestion.field_name]: valueToApply })
         .eq("id", suggestion.country_id)
-        .select();
+        .select(suggestion.field_name);
 
-      console.log("Update result:", { updateData, countryUpdateError });
+      console.log("✅ Update result:", { 
+        success: !countryUpdateError && updateData && updateData.length > 0,
+        updatedValue: updateData?.[0]?.[suggestion.field_name],
+        error: countryUpdateError?.message,
+      });
 
       if (countryUpdateError) {
         console.error("Error applying suggestion to country:", countryUpdateError);
@@ -102,16 +108,24 @@ export async function PATCH(
         console.error("No rows updated - country not found with id:", suggestion.country_id);
         return NextResponse.json({
           success: false,
+          applied: false,
           warning: "Suggestion approved but no country found to update",
           countryId: suggestion.country_id,
         });
       }
+      
+      // Successfully applied
+      return NextResponse.json({
+        success: true,
+        status: newStatus,
+        applied: true,
+      });
     }
 
     return NextResponse.json({
       success: true,
       status: newStatus,
-      applied: action === "approve" && applyChanges,
+      applied: false,
     });
   } catch (error: any) {
     console.error("Suggestion update error:", error);
