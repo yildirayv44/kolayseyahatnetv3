@@ -10,7 +10,7 @@ ALTER TABLE countries ADD COLUMN IF NOT EXISTS source_check_notes text;
 -- Create a table for storing content update suggestions from AI
 CREATE TABLE IF NOT EXISTS content_suggestions (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  country_id uuid REFERENCES countries(id) ON DELETE CASCADE,
+  country_id bigint REFERENCES countries(id) ON DELETE CASCADE,
   suggestion_type text NOT NULL, -- 'visa_fee', 'requirements', 'documents', 'general', 'visa_status'
   field_name text, -- which field to update (e.g., 'visa_fee', 'required_documents', 'contents')
   current_value text,
