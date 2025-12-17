@@ -12,6 +12,7 @@ import { ImageUpload } from "./ImageUpload";
 import { AIToolsQuickAccess } from "./AIToolsQuickAccess";
 import { ArrayInput } from "./ArrayInput";
 import { AIRegenerateModal } from "./AIRegenerateModal";
+import { SourceUrlManager } from "./SourceUrlManager";
 import { generateSlug } from "@/lib/helpers";
 import { getCountryCode, getAllCountryCodes } from "@/lib/country-codes";
 
@@ -69,6 +70,8 @@ export function CountryEditForm({ country }: { country: any }) {
     currency: country.currency || "",
     language: country.language || "",
     timezone: country.timezone || "",
+    // Source URL fields
+    source_urls: country.source_urls || [],
   });
 
   // Load visa requirements on mount
@@ -267,6 +270,16 @@ export function CountryEditForm({ country }: { country: any }) {
           }}
         />
       )}
+
+      {/* Source URL Manager - AI ile kaynak analizi */}
+      <SourceUrlManager
+        countryId={country.id}
+        countryName={formData.name}
+        initialSourceUrls={formData.source_urls}
+        lastSourceCheck={country.last_source_check}
+        sourceCheckNotes={country.source_check_notes}
+        onSourceUrlsChange={(urls) => setFormData({ ...formData, source_urls: urls })}
+      />
 
       {/* Language Selector & Translation */}
       <div className="rounded-lg border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-6">
