@@ -176,7 +176,12 @@ Bu bilgileri MUTLAKA kullan ve içeriğe yansıt. Vize durumu ve kalış süresi
 RESMİ KAYNAK SAYFALAR (Bu bilgileri baz al ve içeriğe yansıt):
 ${sourceContents.join('\n\n')}
 
-ÖNEMLİ: Yukarıdaki kaynak sayfalardan elde edilen bilgileri kullanarak içerik oluştur. Vize ücreti, gerekli belgeler, işlem süresi gibi bilgileri bu kaynaklardan al.`;
+KRİTİK - KAYNAK KULLANIM KURALLARI:
+- Vize ücreti, kalış süresi, işlem süresi gibi SAYISAL bilgileri SADECE yukarıdaki kaynak sayfalardan al
+- Kaynak sayfada "30 USD" yazıyorsa "30 USD" yaz, başka bir değer UYDURMA
+- Para birimi kaynak sayfadaki ile AYNI olmalı (USD ise USD, EUR ise EUR)
+- Kaynak sayfada belirli bir bilgi YOKSA, o alanı boş bırak veya "Belirtilmemiş" yaz
+- Kendi eğitim verinden veya genel bilginden SAYISAL değer EKLEME`;
         console.log(`✅ Fetched ${sourceContents.length} source URLs`);
       }
     }
@@ -188,6 +193,7 @@ ${sourceContents.join('\n\n')}
 2. Ücret bilgilerinde "Danışmanlık hizmet bedelleri hariçtir" notunu ekle
 3. SEO için optimize edilmiş içerik oluştur
 4. Profesyonel ve güvenilir bir dil kullan
+5. Vize ücreti, kalış süresi gibi SAYISAL bilgileri SADECE kaynak sayfalardan al, UYDURMA
 
 Aşağıdaki JSON formatında yanıt ver (SADECE seçili alanlar):
 

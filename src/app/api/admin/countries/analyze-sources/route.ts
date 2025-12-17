@@ -210,19 +210,29 @@ GÖREV:
    - Ana içerikte (contents) güncel olmayan veya eksik bilgi var mı?
 
 ÖNEMLİ KURALLAR:
-- Kaynak sayfalarda bulunan HER ÖNEMLİ BİLGİYİ tespit et
+- SADECE kaynak sayfalarda AÇIKÇA YAZILI olan bilgileri kullan
+- Kaynak sayfada OLMAYAN bilgileri KESİNLİKLE UYDURMA
+- Eğer bir bilgi kaynak sayfada yoksa "Kaynak sayfada belirtilmemiş" yaz
+- Kendi eğitim verinden veya genel bilginden BİLGİ EKLEME
 - Mevcut içeriğimizde OLMAYAN bilgileri mutlaka belirt
 - Güncel olmayan veya YANLIŞ bilgileri tespit et
 - JSON array alanları için (required_documents, important_notes, application_steps) tam liste öner
 - Ana içerik (contents) için eklenecek paragrafları HTML formatında öner
 
+KRİTİK - BİLGİ KAYNAĞI KURALI:
+- Vize ücreti, kalış süresi, işlem süresi gibi bilgiler SADECE kaynak sayfadan alınmalı
+- Kaynak sayfada "30 USD" yazıyorsa "30 USD" yaz, "90 EUR" gibi farklı bir değer UYDURMA
+- Para birimi kaynak sayfadaki ile AYNI olmalı (USD ise USD, EUR ise EUR)
+- Eğer kaynak sayfada belirli bir bilgi yoksa, o alanı "Kaynak sayfada bulunamadı" olarak işaretle
+
 SOMUT ÖNERİ KURALLARI (ÇOK ÖNEMLİ):
 - "Kalıp bilgilerin güncellenmesi" gibi GENEL öneriler YASAK
 - Her öneri SOMUT ve UYGULANABILIR olmalı
 - Örnek KÖTÜ öneri: "Eksik bilgilerin eklenmesi" 
-- Örnek İYİ öneri: "Vize ücreti 90 EUR olarak güncellenmeli (mevcut: belirtilmemiş)"
+- Örnek İYİ öneri: "Vize ücreti 30 USD olarak güncellenmeli (kaynak: immigration.gov.np)"
 - content_improvements içinde html_content alanına GERÇEK HTML içerik yaz
 - Kaynaklarda bulduğun bilgileri doğrudan öner, soyut kalma
+- Kaynak sayfada olmayan bilgileri ÖNERİ OLARAK DA SUNMA
 
 YANIT FORMAT (JSON):
 {
