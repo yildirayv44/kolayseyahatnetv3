@@ -161,7 +161,10 @@ export async function POST(request: NextRequest) {
       processing_time: country.processing_time || country.process_time || "Belirtilmemiş",
       required_documents: country.required_documents || [],
       important_notes: country.important_notes || [],
-      contents_summary: country.contents?.slice(0, 500) || "İçerik yok",
+      application_steps: country.application_steps || [],
+      contents: country.contents || "İçerik yok",
+      req_document: country.req_document || "",
+      price_contents: country.price_contents || "",
     };
 
     // Build prompt for AI analysis
@@ -169,35 +172,63 @@ export async function POST(request: NextRequest) {
       .map((s, i) => `--- Kaynak ${i + 1}: ${s.url} ---\n${s.content}`)
       .join("\n\n");
 
-    const prompt = `Sen bir vize danışmanlık uzmanısın. Aşağıdaki resmi kaynak sayfalarını analiz ederek ${country.name} vizesi hakkında güncel bilgileri çıkar.
+    // Strip HTML tags from contents for analysis
+    const stripHtml = (html: string) => html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+
+    const prompt = `Sen bir vize danışmanlık uzmanısın. Aşağıdaki resmi kaynak sayfalarını analiz ederek ${country.name} vizesi hakkında güncel bilgileri çıkar ve mevcut içeriğimizi değerlendir.
 
 MEVCUT VERİLERİMİZ:
 - Vize Ücreti: ${currentData.visa_fee}
 - Maksimum Kalış Süresi: ${currentData.max_stay_duration}
 - İşlem Süresi: ${currentData.processing_time}
-- Gerekli Belgeler: ${JSON.stringify(currentData.required_documents)}
+- Gerekli Belgeler (Liste): ${JSON.stringify(currentData.required_documents)}
 - Önemli Notlar: ${JSON.stringify(currentData.important_notes)}
+- Başvuru Adımları: ${JSON.stringify(currentData.application_steps)}
+
+MEVCUT SAYFA İÇERİĞİ (contents alanı - HTML):
+${stripHtml(currentData.contents).slice(0, 3000)}
+
+MEVCUT GEREKLİ BELGELER İÇERİĞİ (req_document alanı - HTML):
+${stripHtml(currentData.req_document).slice(0, 1500)}
+
+MEVCUT FİYAT İÇERİĞİ (price_contents alanı - HTML):
+${stripHtml(currentData.price_contents).slice(0, 1000)}
 
 KAYNAK SAYFALAR:
 ${sourceTexts}
 
 GÖREV:
 1. Kaynak sayfalardan vize ile ilgili güncel bilgileri çıkar
-2. Mevcut verilerimizle karşılaştır
+2. Mevcut verilerimizle ve sayfa içeriğiyle karşılaştır
 3. Değişiklik veya güncelleme önerileri sun
+4. Sayfa içeriğinde (contents) eksik veya güncellenecek bilgiler varsa belirt
+5. Gerekli belgeler listesinde eksik veya fazla belge varsa belirt
+
+ÖNEMLİ: 
+- Kaynak sayfalarda bulunan ancak bizim içeriğimizde olmayan önemli bilgileri tespit et
+- Güncel olmayan veya yanlış bilgileri tespit et
+- İçerik iyileştirme önerileri sun (örn: eksik bilgiler, güncellenecek ücretler, değişen kurallar)
 
 YANIT FORMAT (JSON):
 {
   "analysis_summary": "Genel analiz özeti (Türkçe)",
   "suggestions": [
     {
-      "type": "visa_fee|requirements|documents|visa_status|processing_time|stay_duration|general",
-      "field_name": "güncellenecek alan adı (visa_fee, required_documents, vb.)",
-      "current_value": "mevcut değer",
-      "suggested_value": "önerilen yeni değer",
+      "type": "visa_fee|requirements|documents|visa_status|processing_time|stay_duration|content|general",
+      "field_name": "güncellenecek alan adı (visa_fee, required_documents, contents, req_document, vb.)",
+      "current_value": "mevcut değer veya özet",
+      "suggested_value": "önerilen yeni değer veya eklenmesi gereken içerik",
       "source_url": "bilginin alındığı kaynak URL",
       "confidence": 0.0-1.0 arası güven skoru,
       "reason": "değişiklik nedeni (Türkçe)"
+    }
+  ],
+  "content_improvements": [
+    {
+      "section": "hangi bölüm (genel içerik, gerekli belgeler, fiyatlar vb.)",
+      "issue": "tespit edilen sorun veya eksiklik",
+      "suggestion": "önerilen düzeltme veya ekleme",
+      "priority": "high|medium|low"
     }
   ],
   "no_changes_needed": true/false,

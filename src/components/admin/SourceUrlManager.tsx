@@ -201,6 +201,7 @@ export function SourceUrlManager({
       visa_status: "🛂 Vize Durumu",
       processing_time: "⏱️ İşlem Süresi",
       stay_duration: "📅 Kalış Süresi",
+      content: "📝 İçerik",
       general: "ℹ️ Genel",
     };
     return labels[type] || type;
@@ -320,7 +321,7 @@ export function SourceUrlManager({
 
           {/* Analysis Result */}
           {analysisResult && (
-            <div className="rounded-lg border border-purple-200 bg-white p-4 space-y-3">
+            <div className="rounded-lg border border-purple-200 bg-white p-4 space-y-4">
               <h4 className="font-semibold text-slate-900">📊 Analiz Sonucu</h4>
               <p className="text-sm text-slate-700">{analysisResult.analysis_summary}</p>
               
@@ -344,6 +345,54 @@ export function SourceUrlManager({
                       <span>{analysisResult.extracted_info.processing_time}</span>
                     </div>
                   )}
+                  {analysisResult.extracted_info.documents && analysisResult.extracted_info.documents.length > 0 && (
+                    <div className="mt-2">
+                      <span className="font-medium text-slate-600">Tespit Edilen Belgeler:</span>
+                      <ul className="mt-1 list-disc list-inside text-slate-700">
+                        {analysisResult.extracted_info.documents.map((doc: string, i: number) => (
+                          <li key={i}>{doc}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Content Improvements */}
+              {analysisResult.content_improvements && analysisResult.content_improvements.length > 0 && (
+                <div className="mt-4 border-t border-purple-100 pt-4">
+                  <h5 className="font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                    📝 İçerik İyileştirme Önerileri
+                  </h5>
+                  <div className="space-y-2">
+                    {analysisResult.content_improvements.map((improvement: any, index: number) => (
+                      <div 
+                        key={index} 
+                        className={`rounded-lg p-3 text-sm ${
+                          improvement.priority === 'high' 
+                            ? 'bg-red-50 border border-red-200' 
+                            : improvement.priority === 'medium'
+                            ? 'bg-amber-50 border border-amber-200'
+                            : 'bg-blue-50 border border-blue-200'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className={`text-xs font-semibold px-2 py-0.5 rounded ${
+                            improvement.priority === 'high' 
+                              ? 'bg-red-100 text-red-700' 
+                              : improvement.priority === 'medium'
+                              ? 'bg-amber-100 text-amber-700'
+                              : 'bg-blue-100 text-blue-700'
+                          }`}>
+                            {improvement.priority === 'high' ? '🔴 Yüksek' : improvement.priority === 'medium' ? '🟡 Orta' : '🔵 Düşük'}
+                          </span>
+                          <span className="font-medium text-slate-700">{improvement.section}</span>
+                        </div>
+                        <p className="text-slate-600 mb-1"><strong>Sorun:</strong> {improvement.issue}</p>
+                        <p className="text-slate-800"><strong>Öneri:</strong> {improvement.suggestion}</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
