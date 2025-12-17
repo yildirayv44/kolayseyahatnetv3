@@ -173,71 +173,61 @@ const COUNTRY_SLUG_FALLBACK: Record<string, number> = {
 };
 
 export async function getCountryBySlug(slug: string) {
-  // ⚡ OPTIMIZATION: Try country_slugs first (multi-locale, most specific)
-  let { data: countrySlug } = await supabase
-    .from("country_slugs")
-    .select("country_id")
-    .eq("slug", slug)
-    .eq("locale", "tr")
-    .maybeSingle();
-
-  let country = null;
-
-  if (countrySlug) {
-    const { data: foundCountry } = await supabase
-      .from("countries")
-      .select("*")
-      .eq("id", countrySlug.country_id)
-      .eq("status", 1)
-      .maybeSingle();
-    
-    if (foundCountry) {
-      country = foundCountry;
-    }
-  }
-
-  // FALLBACK 1: Try countries.slug (direct match)
-  if (!country) {
-    const { data: directCountry } = await supabase
+  // ⚡ OPTIMIZATION: Run all lookups in parallel to reduce latency
+  const [countrySlugResult, directCountryResult, taxonomyResult] = await Promise.all([
+    // Try country_slugs (multi-locale)
+    supabase
+      .from("country_slugs")
+      .select("country_id")
+      .eq("slug", slug)
+      .eq("locale", "tr")
+      .maybeSingle(),
+    // Try direct slug match
+    supabase
       .from("countries")
       .select("*")
       .eq("slug", slug)
       .eq("status", 1)
-      .maybeSingle();
-    
-    if (directCountry) {
-      country = directCountry;
-    }
-  }
-
-  // FALLBACK 2: Try taxonomies table (canonical slugs)
-  if (!country) {
-    const { data: taxonomy } = await supabase
+      .maybeSingle(),
+    // Try taxonomies
+    supabase
       .from("taxonomies")
       .select("model_id")
       .eq("slug", slug)
       .eq("type", "Country\\CountryController@detail")
+      .maybeSingle(),
+  ]);
+
+  let country = null;
+
+  // Priority 1: Direct slug match (fastest)
+  if (directCountryResult.data) {
+    country = directCountryResult.data;
+  }
+  // Priority 2: country_slugs lookup
+  else if (countrySlugResult.data) {
+    const { data: foundCountry } = await supabase
+      .from("countries")
+      .select("*")
+      .eq("id", countrySlugResult.data.country_id)
+      .eq("status", 1)
       .maybeSingle();
-
-    if (taxonomy) {
-      const { data: foundCountry } = await supabase
-        .from("countries")
-        .select("*")
-        .eq("id", taxonomy.model_id)
-        .eq("status", 1)
-        .maybeSingle();
-      
-      if (foundCountry) {
-        country = foundCountry;
-      }
-    }
+    if (foundCountry) country = foundCountry;
+  }
+  // Priority 3: taxonomies lookup
+  else if (taxonomyResult.data) {
+    const { data: foundCountry } = await supabase
+      .from("countries")
+      .select("*")
+      .eq("id", taxonomyResult.data.model_id)
+      .eq("status", 1)
+      .maybeSingle();
+    if (foundCountry) country = foundCountry;
   }
 
-  if (!country) {
-    return null;
-  }
+  if (!country) return null;
 
-  // Then get visa requirements by country_code (for Turkish citizens)
+  // Get visa requirements (only if country found)
   if (country.country_code) {
     const { data: visaReqs } = await supabase
       .from("visa_requirements")
@@ -245,7 +235,6 @@ export async function getCountryBySlug(slug: string) {
       .eq("country_code", country.country_code)
       .limit(1);
 
-    // Attach visa requirement to country
     if (visaReqs && visaReqs.length > 0) {
       (country as any).visa_requirement = visaReqs;
     }
@@ -853,4 +842,155 @@ export async function submitApplication(formData: any) {
   }
 
   return true;
+}
+
+/**
+ * ⚡ OPTIMIZED: Get all country page data in parallel
+ * Reduces database round-trips from ~10 to ~3
+ */
+export async function getCountryPageData(countryId: number) {
+  // Run all queries in parallel
+  const [
+    productsResult,
+    menuRelationsResult,
+    questionRelationsResult,
+    blogRelationsResult,
+    commentsResult,
+  ] = await Promise.all([
+    // Products
+    supabase
+      .from("products")
+      .select("*")
+      .eq("country_id", countryId)
+      .eq("status", 1)
+      .order("price", { ascending: true }),
+    // Menu relations
+    supabase
+      .from("country_to_menus")
+      .select("country_menu_id")
+      .eq("country_id", countryId),
+    // Question relations
+    supabase
+      .from("question_to_countries")
+      .select("question_id")
+      .eq("country_id", countryId),
+    // Blog relations
+    supabase
+      .from("country_to_blogs")
+      .select("blog_id")
+      .eq("country_id", countryId),
+    // Comments
+    supabase
+      .from("comments")
+      .select("*")
+      .eq("country_id", countryId)
+      .eq("status", 1)
+      .order("created_at", { ascending: false })
+      .limit(10),
+  ]);
+
+  const products = productsResult.data || [];
+  const comments = commentsResult.data || [];
+
+  // Second batch: Get actual data from relations (in parallel)
+  const menuIds = menuRelationsResult.data?.map((r: any) => r.country_menu_id) || [];
+  const questionIds = questionRelationsResult.data?.map((r: any) => r.question_id) || [];
+  const blogIds = blogRelationsResult.data?.map((r: any) => r.blog_id) || [];
+
+  const [menusResult, questionsResult, blogsResult] = await Promise.all([
+    // Menus
+    menuIds.length > 0
+      ? supabase
+          .from("country_menus")
+          .select("*")
+          .in("id", menuIds)
+          .eq("status", 1)
+          .order("sorted", { ascending: true })
+      : Promise.resolve({ data: [] }),
+    // Questions
+    questionIds.length > 0
+      ? supabase
+          .from("questions")
+          .select("*")
+          .in("id", questionIds)
+          .eq("status", 1)
+      : Promise.resolve({ data: [] }),
+    // Blogs
+    blogIds.length > 0
+      ? supabase
+          .from("blogs")
+          .select("*")
+          .in("id", blogIds)
+          .eq("status", 1)
+          .limit(5)
+      : Promise.resolve({ data: [] }),
+  ]);
+
+  const menus = menusResult.data || [];
+  const questions = questionsResult.data || [];
+  const blogs = blogsResult.data || [];
+
+  // Third batch: Get answers for questions and taxonomy slugs for menus (in parallel)
+  const [answersResults, taxonomyResults] = await Promise.all([
+    // Get all answers for all questions in one query
+    questions.length > 0
+      ? supabase
+          .from("questions")
+          .select("id, title, contents, parent_id")
+          .in("parent_id", questions.map((q: any) => q.id))
+          .eq("status", 1)
+      : Promise.resolve({ data: [] }),
+    // Get all taxonomy slugs for menus in one query
+    menus.length > 0
+      ? supabase
+          .from("taxonomies")
+          .select("model_id, slug")
+          .in("model_id", menus.map((m: any) => m.id))
+          .eq("type", "Country\\CountryController@menuDetail")
+      : Promise.resolve({ data: [] }),
+  ]);
+
+  const allAnswers = answersResults.data || [];
+  const menuTaxonomies = taxonomyResults.data || [];
+
+  // Map answers to questions
+  const questionsWithAnswers = questions.map((q: any) => ({
+    ...q,
+    answers: allAnswers.filter((a: any) => a.parent_id === q.id),
+  }));
+
+  // Map taxonomy slugs to menus
+  const menusWithSlugs = menus.map((menu: any) => {
+    const taxonomy = menuTaxonomies.find((t: any) => t.model_id === menu.id);
+    return {
+      ...menu,
+      taxonomy_slug: taxonomy?.slug || null,
+    };
+  });
+
+  // Get blog taxonomy slugs
+  let blogsWithSlugs = blogs;
+  if (blogs.length > 0) {
+    const { data: blogTaxonomies } = await supabase
+      .from("taxonomies")
+      .select("model_id, slug")
+      .in("model_id", blogs.map((b: any) => b.id))
+      .eq("type", "Blog\\BlogController@detail");
+
+    blogsWithSlugs = blogs.map((blog: any) => {
+      const taxonomy = blogTaxonomies?.find((t: any) => t.model_id === blog.id);
+      return {
+        ...blog,
+        taxonomy_slug: taxonomy?.slug || null,
+      };
+    });
+  }
+
+  return {
+    products,
+    menus: menusWithSlugs,
+    questions: questionsWithAnswers,
+    blogs: blogsWithSlugs,
+    comments,
+  };
 }

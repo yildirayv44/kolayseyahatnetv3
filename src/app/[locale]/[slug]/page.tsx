@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { cache } from "react";
+import { unstable_cache } from "next/cache";
 import { ArrowRight, ArrowLeft, PhoneCall, CheckCircle2, MessageSquare } from "lucide-react";
 import {
   getCountryBySlug,
@@ -11,7 +12,8 @@ import {
   getCountryQuestions,
   getCountryBlogs,
   getCountryComments,
-  getBlogBySlug
+  getBlogBySlug,
+  getCountryPageData
 } from "@/lib/queries";
 import { createClient } from "@supabase/supabase-js";
 import { Breadcrumb } from "@/components/shared/Breadcrumb";
@@ -65,32 +67,45 @@ interface CountryPageParams {
   params: Promise<{ slug: string; locale: string }>;
 }
 
-// ⚡ OPTIMIZATION: Cached data fetchers - shared between generateMetadata and page()
-const getCachedPageData = cache(async (slug: string) => {
-  const supabaseClient = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+// ⚡ OPTIMIZATION: Cached data fetchers with edge caching
+const getCachedPageData = unstable_cache(
+  async (slug: string) => {
+    const supabaseClient = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
 
-  const [
-    { data: customPageData },
-    blog,
-    country,
-    menu
-  ] = await Promise.all([
-    supabaseClient
-      .from("custom_pages")
-      .select("*")
-      .eq("slug", slug)
-      .eq("is_published", true)
-      .maybeSingle(),
-    getBlogBySlug(slug),
-    getCountryBySlug(slug),
-    getCountryMenuBySlug(slug)
-  ]);
+    const [
+      { data: customPageData },
+      blog,
+      country,
+      menu
+    ] = await Promise.all([
+      supabaseClient
+        .from("custom_pages")
+        .select("*")
+        .eq("slug", slug)
+        .eq("is_published", true)
+        .maybeSingle(),
+      getBlogBySlug(slug),
+      getCountryBySlug(slug),
+      getCountryMenuBySlug(slug)
+    ]);
 
-  return { customPageData, blog, country, menu };
-});
+    return { customPageData, blog, country, menu };
+  },
+  ["page-data"],
+  { revalidate: 3600, tags: ["page-data"] } // Cache for 1 hour
+);
+
+// ⚡ OPTIMIZATION: Cache country page data with edge caching
+const getCachedCountryPageData = unstable_cache(
+  async (countryId: number) => {
+    return getCountryPageData(countryId);
+  },
+  ["country-page-data"],
+  { revalidate: 3600, tags: ["country-page-data"] } // Cache for 1 hour
+);
 
 export async function generateMetadata({ params }: CountryPageParams): Promise<Metadata> {
   const { slug, locale } = await params;
@@ -407,9 +422,6 @@ export default async function CountryPage({ params }: CountryPageParams) {
   if (country) {
     country = getLocalizedFields(country, locale as 'tr' | 'en');
   }
-  
-  // Get comments if country found
-  const comments = country ? await getCountryComments(country.id) : [];
 
   // Ülke bulunamadı - duyuru olarak dene
   if (!country) {
@@ -527,15 +539,9 @@ export default async function CountryPage({ params }: CountryPageParams) {
     notFound();
   }
 
-  const [menus, productsRaw, questions, blogs] = await Promise.all([
-    getCountryMenus(country.id),
-    getCountryProducts(country.id),
-    getCountryQuestions(country.id),
-    getCountryBlogs(country.id),
-  ]);
-  
-  // Ensure products is always an array
-  const products = Array.isArray(productsRaw) ? productsRaw : [];
+  // ⚡ OPTIMIZED: Get all country page data with edge caching (reduces DB round-trips)
+  const pageData = await getCachedCountryPageData(country.id);
+  const { menus, products, questions, blogs, comments } = pageData;
 
   // Currency mapping (hardcoded for performance)
   const currencies = [
