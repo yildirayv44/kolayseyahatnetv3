@@ -13,16 +13,19 @@ interface ArrayInputProps {
 
 export function ArrayInput({ label, value, onChange, placeholder, helpText }: ArrayInputProps) {
   const [newItem, setNewItem] = useState("");
+  
+  // Ensure value is always an array
+  const safeValue = Array.isArray(value) ? value : [];
 
   const addItem = () => {
     if (newItem.trim()) {
-      onChange([...value, newItem.trim()]);
+      onChange([...safeValue, newItem.trim()]);
       setNewItem("");
     }
   };
 
   const removeItem = (index: number) => {
-    onChange(value.filter((_, i) => i !== index));
+    onChange(safeValue.filter((_, i) => i !== index));
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -37,9 +40,9 @@ export function ArrayInput({ label, value, onChange, placeholder, helpText }: Ar
       <label className="block text-sm font-semibold text-slate-900">{label}</label>
       
       {/* Existing items */}
-      {value.length > 0 && (
+      {safeValue.length > 0 && (
         <div className="space-y-2">
-          {value.map((item, index) => (
+          {safeValue.map((item, index) => (
             <div
               key={index}
               className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2"
