@@ -234,13 +234,43 @@ SADECE JSON yanıtı ver, başka açıklama ekleme.`;
 
     console.log(`✅ Generated data for ${fields.length} fields`);
 
-    // Update only selected fields
+    // Array fields that must be stored as arrays
+    const arrayFields = [
+      'application_steps',
+      'required_documents', 
+      'important_notes',
+      'travel_tips',
+      'popular_cities',
+    ];
+
+    // Update only selected fields with proper type handling
     const updateData: any = {};
     fields.forEach((field: string) => {
       if (generatedData[field] !== undefined) {
-        updateData[field] = generatedData[field];
+        let value = generatedData[field];
+        
+        // Ensure array fields are actually arrays
+        if (arrayFields.includes(field)) {
+          if (typeof value === 'string') {
+            // Try to parse if it's a JSON string
+            try {
+              value = JSON.parse(value);
+            } catch {
+              // If parsing fails, split by newlines or commas
+              value = value.split(/[\n,]/).map((s: string) => s.trim()).filter(Boolean);
+            }
+          }
+          // Ensure it's an array
+          if (!Array.isArray(value)) {
+            value = value ? [value] : [];
+          }
+        }
+        
+        updateData[field] = value;
       }
     });
+    
+    console.log(`📦 Update data types:`, Object.entries(updateData).map(([k, v]) => `${k}: ${Array.isArray(v) ? 'array' : typeof v}`));
 
     const { error: updateError } = await supabase
       .from("countries")

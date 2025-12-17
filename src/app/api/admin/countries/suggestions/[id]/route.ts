@@ -55,14 +55,23 @@ export async function PATCH(
     if (action === "approve" && applyChanges && suggestion.field_name && suggestion.country_id) {
       let valueToApply = suggestion.suggested_value;
       
-      // Try to parse JSON if it's an array field
-      const jsonFields = ["required_documents", "important_notes", "application_steps", "travel_tips", "popular_cities"];
-      if (jsonFields.includes(suggestion.field_name)) {
-        try {
-          valueToApply = JSON.parse(suggestion.suggested_value);
-        } catch (parseError) {
-          console.error("JSON parse error for field:", suggestion.field_name, parseError);
-          // Keep as string if parsing fails
+      // Array fields that must be stored as arrays
+      const arrayFields = ["required_documents", "important_notes", "application_steps", "travel_tips", "popular_cities"];
+      
+      if (arrayFields.includes(suggestion.field_name)) {
+        // Try to parse JSON if it's a string
+        if (typeof valueToApply === 'string') {
+          try {
+            valueToApply = JSON.parse(valueToApply);
+          } catch (parseError) {
+            console.error("JSON parse error for field:", suggestion.field_name, parseError);
+            // If parsing fails, try to split by newlines or commas
+            valueToApply = valueToApply.split(/[\n,]/).map((s: string) => s.trim()).filter(Boolean);
+          }
+        }
+        // Ensure it's an array
+        if (!Array.isArray(valueToApply)) {
+          valueToApply = valueToApply ? [valueToApply] : [];
         }
       }
 
