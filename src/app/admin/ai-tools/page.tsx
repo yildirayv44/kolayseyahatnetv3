@@ -111,6 +111,17 @@ export default function AIToolsPage() {
       features: ['4 niyet türü', 'CTA önerileri', 'İçerik yapısı'],
       href: '/admin/ai-tools/intent',
     },
+    {
+      id: 'seo-content-analysis',
+      name: 'SEO İçerik Analizi',
+      description: 'Ülke sayfalarının detaylı SEO ve içerik yeterliliği analizi',
+      icon: Target,
+      color: 'cyan',
+      category: 'analytics',
+      features: ['E-E-A-T analizi', 'İçerik yeterliliği', 'Aksiyon planı'],
+      href: '/admin/ai-tools/seo-content-analysis',
+      badge: 'Yeni',
+    },
   ];
 
   const filteredTools = activeTab === 'all' 
@@ -118,10 +129,10 @@ export default function AIToolsPage() {
     : tools.filter(tool => tool.category === activeTab);
 
   const stats = [
-    { label: 'Toplam Araç', value: '9', icon: Zap, color: 'purple' },
+    { label: 'Toplam Araç', value: '10', icon: Zap, color: 'purple' },
     { label: 'İçerik Araçları', value: '3', icon: FileText, color: 'blue' },
     { label: 'Medya Araçları', value: '2', icon: ImageIcon, color: 'green' },
-    { label: 'Analiz Araçları', value: '4', icon: TrendingUp, color: 'orange' },
+    { label: 'Analiz Araçları', value: '5', icon: TrendingUp, color: 'orange' },
   ];
 
   return (
