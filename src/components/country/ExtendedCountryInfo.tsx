@@ -11,21 +11,30 @@ export function ExtendedCountryInfo({ country, locale }: ExtendedCountryInfoProp
   const isEnglish = locale === 'en';
   const hasCountryInfo = country.capital || country.currency || country.language || country.timezone;
   
+  // Helper to ensure array type
+  const ensureArray = (val: any): string[] => Array.isArray(val) ? val : [];
+  
   // Use English versions if available and locale is 'en'
-  const popularCities = isEnglish && country.popular_cities_en?.length > 0 
+  const popularCitiesRaw = isEnglish && country.popular_cities_en?.length > 0 
     ? country.popular_cities_en 
     : country.popular_cities;
-  const hasPopularCities = popularCities && popularCities.length > 0;
+  const popularCities = ensureArray(popularCitiesRaw);
+  const hasPopularCities = popularCities.length > 0;
   
-  const travelTips = isEnglish && country.travel_tips_en?.length > 0 
+  const travelTipsRaw = isEnglish && country.travel_tips_en?.length > 0 
     ? country.travel_tips_en 
     : country.travel_tips;
-  const applicationSteps = isEnglish && country.application_steps_en?.length > 0 
+  const travelTips = ensureArray(travelTipsRaw);
+  
+  const applicationStepsRaw = isEnglish && country.application_steps_en?.length > 0 
     ? country.application_steps_en 
     : country.application_steps;
-  const importantNotes = isEnglish && country.important_notes_en?.length > 0 
+  const applicationSteps = ensureArray(applicationStepsRaw);
+  
+  const importantNotesRaw = isEnglish && country.important_notes_en?.length > 0 
     ? country.important_notes_en 
     : country.important_notes;
+  const importantNotes = ensureArray(importantNotesRaw);
   const bestTimeToVisit = isEnglish && country.best_time_to_visit_en 
     ? country.best_time_to_visit_en 
     : country.best_time_to_visit;
@@ -39,11 +48,11 @@ export function ExtendedCountryInfo({ country, locale }: ExtendedCountryInfoProp
     ? country.why_kolay_seyahat_en 
     : country.why_kolay_seyahat;
   
-  const hasTravelTips = travelTips && travelTips.length > 0;
-  const hasApplicationSteps = applicationSteps && applicationSteps.length > 0;
+  const hasTravelTips = travelTips.length > 0;
+  const hasApplicationSteps = applicationSteps.length > 0;
   // Check both new array format and old HTML format for backward compatibility
   const hasRequiredDocs = (country.required_documents && country.required_documents.length > 0) || country.req_document;
-  const hasImportantNotes = importantNotes && importantNotes.length > 0;
+  const hasImportantNotes = importantNotes.length > 0;
   const hasEmergencyContacts = country.emergency_contacts && 
     (country.emergency_contacts.embassy || country.emergency_contacts.emergencyNumber || 
      country.emergency_contacts.police || country.emergency_contacts.ambulance);

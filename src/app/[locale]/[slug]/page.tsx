@@ -527,12 +527,15 @@ export default async function CountryPage({ params }: CountryPageParams) {
     notFound();
   }
 
-  const [menus, products, questions, blogs] = await Promise.all([
+  const [menus, productsRaw, questions, blogs] = await Promise.all([
     getCountryMenus(country.id),
     getCountryProducts(country.id),
     getCountryQuestions(country.id),
     getCountryBlogs(country.id),
   ]);
+  
+  // Ensure products is always an array
+  const products = Array.isArray(productsRaw) ? productsRaw : [];
 
   // Currency mapping (hardcoded for performance)
   const currencies = [
@@ -830,7 +833,7 @@ export default async function CountryPage({ params }: CountryPageParams) {
       {hasRequiredDocs && (
         <section id="gerekli-belgeler" className="scroll-mt-20 space-y-3">
           <h2 className="text-2xl font-bold text-slate-900">{t.requiredDocuments}</h2>
-          {country.required_documents && country.required_documents.length > 0 ? (
+          {country.required_documents && Array.isArray(country.required_documents) && country.required_documents.length > 0 ? (
             <div className="card">
               <ul className="space-y-3">
                 {country.required_documents.map((doc: string, index: number) => (
