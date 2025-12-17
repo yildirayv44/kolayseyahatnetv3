@@ -56,11 +56,11 @@ export function CountryEditForm({ country }: { country: any }) {
     max_stay_duration: country.max_stay_duration || "",
     visa_fee: country.visa_fee || "",
     processing_time: country.processing_time || "",
-    application_steps: country.application_steps || [],
-    required_documents: country.required_documents || [],
-    important_notes: country.important_notes || [],
-    travel_tips: country.travel_tips || [],
-    popular_cities: country.popular_cities || [],
+    application_steps: Array.isArray(country.application_steps) ? country.application_steps : [],
+    required_documents: Array.isArray(country.required_documents) ? country.required_documents : [],
+    important_notes: Array.isArray(country.important_notes) ? country.important_notes : [],
+    travel_tips: Array.isArray(country.travel_tips) ? country.travel_tips : [],
+    popular_cities: Array.isArray(country.popular_cities) ? country.popular_cities : [],
     best_time_to_visit: country.best_time_to_visit || "",
     health_requirements: country.health_requirements || "",
     customs_regulations: country.customs_regulations || "",
@@ -71,7 +71,7 @@ export function CountryEditForm({ country }: { country: any }) {
     language: country.language || "",
     timezone: country.timezone || "",
     // Source URL fields
-    source_urls: country.source_urls || [],
+    source_urls: Array.isArray(country.source_urls) ? country.source_urls : [],
   });
 
   // Load visa requirements on mount
