@@ -144,9 +144,15 @@ export function SourceUrlManager({
       });
 
       const data = await response.json();
+      console.log("Suggestion action response:", data);
 
       if (!response.ok) {
         throw new Error(data.error || "İşlem başarısız");
+      }
+
+      // Check if the operation was actually successful
+      if (data.success === false) {
+        throw new Error(data.warning || data.error || "İşlem başarısız");
       }
 
       // Update local state
@@ -158,10 +164,15 @@ export function SourceUrlManager({
         )
       );
 
-      if (applyChanges) {
-        alert("✅ Değişiklik uygulandı!");
+      if (applyChanges && data.applied) {
+        alert("✅ Değişiklik başarıyla uygulandı!");
+        // Sayfayı yenile
+        window.location.reload();
+      } else if (applyChanges && !data.applied) {
+        alert("⚠️ Öneri onaylandı ancak değişiklik uygulanamadı. Lütfen sayfayı yenileyip tekrar deneyin.");
       }
     } catch (error: any) {
+      console.error("Suggestion action error:", error);
       alert("Hata: " + error.message);
     }
   };

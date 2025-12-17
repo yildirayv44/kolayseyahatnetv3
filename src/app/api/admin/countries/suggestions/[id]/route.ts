@@ -56,25 +56,45 @@ export async function PATCH(
       let valueToApply = suggestion.suggested_value;
       
       // Try to parse JSON if it's an array field
-      if (["required_documents", "important_notes", "application_steps", "travel_tips", "popular_cities"].includes(suggestion.field_name)) {
+      const jsonFields = ["required_documents", "important_notes", "application_steps", "travel_tips", "popular_cities"];
+      if (jsonFields.includes(suggestion.field_name)) {
         try {
           valueToApply = JSON.parse(suggestion.suggested_value);
-        } catch {
+        } catch (parseError) {
+          console.error("JSON parse error for field:", suggestion.field_name, parseError);
           // Keep as string if parsing fails
         }
       }
 
-      const { error: countryUpdateError } = await supabaseAdmin
+      console.log("Applying suggestion:", {
+        countryId: suggestion.country_id,
+        fieldName: suggestion.field_name,
+        valueToApply: typeof valueToApply === 'object' ? JSON.stringify(valueToApply).slice(0, 200) : valueToApply?.slice?.(0, 200),
+      });
+
+      const { data: updateData, error: countryUpdateError } = await supabaseAdmin
         .from("countries")
         .update({ [suggestion.field_name]: valueToApply })
-        .eq("id", suggestion.country_id);
+        .eq("id", suggestion.country_id)
+        .select();
+
+      console.log("Update result:", { updateData, countryUpdateError });
 
       if (countryUpdateError) {
         console.error("Error applying suggestion to country:", countryUpdateError);
         return NextResponse.json({
-          success: true,
+          success: false,
           warning: "Suggestion approved but failed to apply changes",
           error: countryUpdateError.message,
+        });
+      }
+
+      if (!updateData || updateData.length === 0) {
+        console.error("No rows updated - country not found with id:", suggestion.country_id);
+        return NextResponse.json({
+          success: false,
+          warning: "Suggestion approved but no country found to update",
+          countryId: suggestion.country_id,
         });
       }
     }

@@ -177,72 +177,83 @@ export async function POST(request: NextRequest) {
 
     const prompt = `Sen bir vize danışmanlık uzmanısın. Aşağıdaki resmi kaynak sayfalarını analiz ederek ${country.name} vizesi hakkında güncel bilgileri çıkar ve mevcut içeriğimizi değerlendir.
 
-MEVCUT VERİLERİMİZ:
-- Vize Ücreti: ${currentData.visa_fee}
-- Maksimum Kalış Süresi: ${currentData.max_stay_duration}
-- İşlem Süresi: ${currentData.processing_time}
-- Gerekli Belgeler (Liste): ${JSON.stringify(currentData.required_documents)}
-- Önemli Notlar: ${JSON.stringify(currentData.important_notes)}
-- Başvuru Adımları: ${JSON.stringify(currentData.application_steps)}
+MEVCUT VERİLERİMİZ (JSON Alanları):
+- Vize Ücreti (visa_fee): ${currentData.visa_fee}
+- Maksimum Kalış Süresi (max_stay_duration): ${currentData.max_stay_duration}
+- İşlem Süresi (processing_time): ${currentData.processing_time}
+- Gerekli Belgeler Listesi (required_documents - JSON array): ${JSON.stringify(currentData.required_documents)}
+- Önemli Notlar (important_notes - JSON array): ${JSON.stringify(currentData.important_notes)}
+- Başvuru Adımları (application_steps - JSON array): ${JSON.stringify(currentData.application_steps)}
 
-MEVCUT SAYFA İÇERİĞİ (contents alanı - HTML):
-${stripHtml(currentData.contents).slice(0, 3000)}
+MEVCUT SAYFA İÇERİĞİ (contents alanı - Ana HTML içerik):
+${stripHtml(currentData.contents).slice(0, 4000)}
 
 MEVCUT GEREKLİ BELGELER İÇERİĞİ (req_document alanı - HTML):
-${stripHtml(currentData.req_document).slice(0, 1500)}
+${stripHtml(currentData.req_document).slice(0, 2000)}
 
 MEVCUT FİYAT İÇERİĞİ (price_contents alanı - HTML):
-${stripHtml(currentData.price_contents).slice(0, 1000)}
+${stripHtml(currentData.price_contents).slice(0, 1500)}
 
-KAYNAK SAYFALAR:
+KAYNAK SAYFALAR (Resmi Kaynaklar):
 ${sourceTexts}
 
 GÖREV:
-1. Kaynak sayfalardan vize ile ilgili güncel bilgileri çıkar
-2. Mevcut verilerimizle ve sayfa içeriğiyle karşılaştır
-3. Değişiklik veya güncelleme önerileri sun
-4. Sayfa içeriğinde (contents) eksik veya güncellenecek bilgiler varsa belirt
-5. Gerekli belgeler listesinde eksik veya fazla belge varsa belirt
+1. Kaynak sayfalardan vize ile ilgili TÜM güncel bilgileri çıkar
+2. Mevcut verilerimizle DETAYLI karşılaştır
+3. HER ALAN için değişiklik veya güncelleme önerileri sun
+4. Özellikle şunları kontrol et:
+   - Vize ücreti değişmiş mi?
+   - Gerekli belgeler listesi güncel mi? Eksik veya fazla belge var mı?
+   - Kalış süresi doğru mu?
+   - İşlem süresi güncel mi?
+   - Önemli notlarda eksik bilgi var mı?
+   - Ana içerikte (contents) güncel olmayan veya eksik bilgi var mı?
 
-ÖNEMLİ: 
-- Kaynak sayfalarda bulunan ancak bizim içeriğimizde olmayan önemli bilgileri tespit et
-- Güncel olmayan veya yanlış bilgileri tespit et
-- İçerik iyileştirme önerileri sun (örn: eksik bilgiler, güncellenecek ücretler, değişen kurallar)
+ÖNEMLİ KURALLAR:
+- Kaynak sayfalarda bulunan HER ÖNEMLİ BİLGİYİ tespit et
+- Mevcut içeriğimizde OLMAYAN bilgileri mutlaka belirt
+- Güncel olmayan veya YANLIŞ bilgileri tespit et
+- İçerik iyileştirme önerileri sun
+- JSON array alanları için (required_documents, important_notes, application_steps) tam liste öner
+- Ana içerik (contents) için eklenecek paragrafları HTML formatında öner
 
 YANIT FORMAT (JSON):
 {
-  "analysis_summary": "Genel analiz özeti (Türkçe)",
+  "analysis_summary": "Genel analiz özeti - kaynaklarda ne bulundu, mevcut içerikle farklar neler (Türkçe, detaylı)",
   "suggestions": [
     {
       "type": "visa_fee|requirements|documents|visa_status|processing_time|stay_duration|content|general",
-      "field_name": "güncellenecek alan adı (visa_fee, required_documents, contents, req_document, vb.)",
-      "current_value": "mevcut değer veya özet",
-      "suggested_value": "önerilen yeni değer veya eklenmesi gereken içerik",
+      "field_name": "güncellenecek alan adı (visa_fee, max_stay_duration, processing_time, required_documents, important_notes, application_steps, contents, req_document, price_contents)",
+      "current_value": "mevcut değer (kısa özet)",
+      "suggested_value": "önerilen yeni değer - JSON array için tam array, HTML için HTML içerik",
       "source_url": "bilginin alındığı kaynak URL",
       "confidence": 0.0-1.0 arası güven skoru,
-      "reason": "değişiklik nedeni (Türkçe)"
+      "reason": "değişiklik nedeni (Türkçe, detaylı)"
     }
   ],
   "content_improvements": [
     {
-      "section": "hangi bölüm (genel içerik, gerekli belgeler, fiyatlar vb.)",
-      "issue": "tespit edilen sorun veya eksiklik",
-      "suggestion": "önerilen düzeltme veya ekleme",
-      "priority": "high|medium|low"
+      "section": "hangi bölüm (Ana İçerik, Gerekli Belgeler Bölümü, Fiyat Bölümü, Başvuru Adımları vb.)",
+      "issue": "tespit edilen sorun veya eksiklik (detaylı)",
+      "suggestion": "önerilen düzeltme veya ekleme (somut öneri)",
+      "priority": "high|medium|low",
+      "html_content": "Eğer HTML içerik öneriyorsan, buraya yaz (opsiyonel)"
     }
   ],
-  "no_changes_needed": true/false,
-  "visa_required": true/false/null (eğer tespit edilebildiyse),
+  "no_changes_needed": false,
+  "visa_required": true/false/null,
   "extracted_info": {
-    "visa_fee": "tespit edilen ücret veya null",
-    "stay_duration": "tespit edilen kalış süresi veya null",
-    "processing_time": "tespit edilen işlem süresi veya null",
-    "documents": ["tespit edilen belgeler listesi"],
-    "important_notes": ["tespit edilen önemli notlar"]
+    "visa_fee": "tespit edilen ücret",
+    "stay_duration": "tespit edilen kalış süresi",
+    "processing_time": "tespit edilen işlem süresi",
+    "documents": ["tespit edilen TÜM belgeler listesi"],
+    "important_notes": ["tespit edilen TÜM önemli notlar"],
+    "application_steps": ["tespit edilen başvuru adımları"]
   }
 }
 
-Sadece JSON formatında yanıt ver, başka açıklama ekleme.`;
+NOT: En az 1 öneri sun. Hiç değişiklik gerekmese bile extracted_info'yu doldur. Sadece JSON formatında yanıt ver.`;
+
 
     // Call OpenAI API
     const completion = await openai.chat.completions.create({
@@ -258,7 +269,7 @@ Sadece JSON formatında yanıt ver, başka açıklama ekleme.`;
         },
       ],
       temperature: 0.3,
-      max_tokens: 2000,
+      max_tokens: 4000,
       response_format: { type: "json_object" },
     });
 
