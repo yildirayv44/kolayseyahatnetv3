@@ -88,24 +88,43 @@ async function fetchUrlContent(url: string): Promise<string> {
 
     const html = await response.text();
     
-    // Basic HTML to text conversion - remove scripts, styles, and tags
+    // Better HTML to text conversion - preserve table structure and important content
     const text = html
+      // Remove scripts, styles, nav, footer, header
       .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
       .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
       .replace(/<nav[^>]*>[\s\S]*?<\/nav>/gi, "")
       .replace(/<footer[^>]*>[\s\S]*?<\/footer>/gi, "")
       .replace(/<header[^>]*>[\s\S]*?<\/header>/gi, "")
+      // Convert table cells to readable format
+      .replace(/<\/th>/gi, " | ")
+      .replace(/<\/td>/gi, " | ")
+      .replace(/<\/tr>/gi, "\n")
+      // Convert list items to readable format
+      .replace(/<li[^>]*>/gi, "• ")
+      .replace(/<\/li>/gi, "\n")
+      // Convert paragraphs and breaks to newlines
+      .replace(/<\/p>/gi, "\n")
+      .replace(/<br\s*\/?>/gi, "\n")
+      .replace(/<\/div>/gi, "\n")
+      // Remove remaining tags
       .replace(/<[^>]+>/g, " ")
+      // Decode HTML entities
       .replace(/&nbsp;/g, " ")
+      .replace(/&ndash;/g, "–")
+      .replace(/&mdash;/g, "—")
       .replace(/&amp;/g, "&")
       .replace(/&lt;/g, "<")
       .replace(/&gt;/g, ">")
       .replace(/&quot;/g, '"')
-      .replace(/\s+/g, " ")
+      .replace(/&#39;/g, "'")
+      // Clean up whitespace but preserve newlines
+      .replace(/[ \t]+/g, " ")
+      .replace(/\n\s*\n/g, "\n\n")
       .trim();
 
     // Limit content length for API
-    return text.slice(0, 15000);
+    return text.slice(0, 20000);
   } catch (error: any) {
     console.error(`Error fetching ${url}:`, error.message);
     return `[Error fetching content: ${error.message}]`;

@@ -47,13 +47,36 @@ async function fetchUrlContent(url: string): Promise<string> {
     
     const html = await response.text();
     return html
+      // Remove scripts, styles, nav, footer, header
       .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
       .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
+      .replace(/<nav[^>]*>[\s\S]*?<\/nav>/gi, "")
+      .replace(/<footer[^>]*>[\s\S]*?<\/footer>/gi, "")
+      .replace(/<header[^>]*>[\s\S]*?<\/header>/gi, "")
+      // Convert table cells to readable format
+      .replace(/<\/th>/gi, " | ")
+      .replace(/<\/td>/gi, " | ")
+      .replace(/<\/tr>/gi, "\n")
+      // Convert list items to readable format
+      .replace(/<li[^>]*>/gi, "• ")
+      .replace(/<\/li>/gi, "\n")
+      // Convert paragraphs and breaks to newlines
+      .replace(/<\/p>/gi, "\n")
+      .replace(/<br\s*\/?>/gi, "\n")
+      // Remove remaining tags
       .replace(/<[^>]+>/g, " ")
+      // Decode HTML entities
       .replace(/&nbsp;/g, " ")
-      .replace(/\s+/g, " ")
+      .replace(/&ndash;/g, "–")
+      .replace(/&amp;/g, "&")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&quot;/g, '"')
+      // Clean up whitespace but preserve newlines
+      .replace(/[ \t]+/g, " ")
+      .replace(/\n\s*\n/g, "\n\n")
       .trim()
-      .slice(0, 15000);
+      .slice(0, 20000);
   } catch (error: any) {
     return `[Hata: ${error.message}]`;
   }
