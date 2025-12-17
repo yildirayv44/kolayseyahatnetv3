@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, Globe2, ShieldCheck, Users, Clock4, PhoneCall } from "lucide-react";
 import { getCountries, getBlogs, getConsultants } from "@/lib/queries";
@@ -14,6 +15,33 @@ import { type Locale } from "@/i18n/config";
 
 // Cache'i 5 dakikada bir yenile
 export const revalidate = 300;
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: Locale }> }): Promise<Metadata> {
+  const { locale } = await params;
+  const isEnglish = locale === 'en';
+  
+  const title = isEnglish 
+    ? 'Professional Visa Consultancy - Kolay Seyahat'
+    : 'Profesyonel Vize Danışmanlığı - Kolay Seyahat';
+  const description = isEnglish
+    ? 'Professional visa consultancy for USA, UK, Schengen and more. 98% approval rate with 10,000+ successful applications.'
+    : 'Amerika, İngiltere, Schengen ve daha birçok ülke için profesyonel vize danışmanlık hizmeti. %98 onay oranı ile 10,000+ başarılı başvuru.';
+  
+  const url = `https://www.kolayseyahat.net${isEnglish ? '/en' : ''}`;
+  
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: url,
+      languages: {
+        'tr': 'https://www.kolayseyahat.net',
+        'en': 'https://www.kolayseyahat.net/en',
+        'x-default': 'https://www.kolayseyahat.net',
+      },
+    },
+  };
+}
 
 // Para birimi sembolü helper fonksiyonu
 const getCurrencySymbol = (currencyId: number = 1) => {

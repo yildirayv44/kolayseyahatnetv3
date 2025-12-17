@@ -135,6 +135,7 @@ export async function generateMetadata({ params }: CountryPageParams): Promise<M
         languages: {
           'tr': `https://www.kolayseyahat.net/${decodedSlug}`,
           'en': `https://www.kolayseyahat.net/en/${decodedSlug}`,
+          'x-default': `https://www.kolayseyahat.net/${decodedSlug}`,
         },
       },
     };
@@ -222,6 +223,7 @@ export async function generateMetadata({ params }: CountryPageParams): Promise<M
         languages: {
           'tr': `https://www.kolayseyahat.net/${decodedSlug}`,
           'en': `https://www.kolayseyahat.net/en/${decodedSlug}`,
+          'x-default': `https://www.kolayseyahat.net/${decodedSlug}`,
         },
       },
     };
@@ -255,9 +257,18 @@ export async function generateMetadata({ params }: CountryPageParams): Promise<M
       ? truncateAtWord(menuTax.description, 155)
       : generateMenuMetaDescription(menu.name, countryName, menu.description);
 
+    const menuUrl = `https://www.kolayseyahat.net/${locale === 'en' ? 'en/' : ''}${decodedSlug}`;
     return {
       title: menuTax?.title || menu.name || "Vize Hizmeti - Kolay Seyahat",
       description,
+      alternates: {
+        canonical: menuUrl,
+        languages: {
+          'tr': `https://www.kolayseyahat.net/${decodedSlug}`,
+          'en': `https://www.kolayseyahat.net/en/${decodedSlug}`,
+          'x-default': `https://www.kolayseyahat.net/${decodedSlug}`,
+        },
+      },
     };
   }
 
@@ -277,10 +288,19 @@ export async function generateMetadata({ params }: CountryPageParams): Promise<M
       isEnglish && customPage.meta_description_en
         ? customPage.meta_description_en
         : customPage.meta_description;
+    const customUrl = `https://www.kolayseyahat.net/${locale === 'en' ? 'en/' : ''}${decodedSlug}`;
 
     return {
       title: `${title} - Kolay Seyahat`,
       description: description || title,
+      alternates: {
+        canonical: customUrl,
+        languages: {
+          'tr': `https://www.kolayseyahat.net/${decodedSlug}`,
+          'en': `https://www.kolayseyahat.net/en/${decodedSlug}`,
+          'x-default': `https://www.kolayseyahat.net/${decodedSlug}`,
+        },
+      },
     };
   }
 

@@ -125,10 +125,7 @@ export default async function LocaleLayout({
           src="https://analytics.ahrefs.com/analytics.js"
           data-key="Nom01ct23vxfXr8cZgauIg"
         />
-        {/* Hreflang Tags for Multi-language SEO */}
-        <link rel="alternate" hrefLang="tr" href={`https://www.kolayseyahat.net`} />
-        <link rel="alternate" hrefLang="en" href={`https://www.kolayseyahat.net/en`} />
-        <link rel="alternate" hrefLang="x-default" href={`https://www.kolayseyahat.net`} />
+        {/* Hreflang Tags - Dynamic tags are added in individual page metadata */}
       </head>
       <body className={`${inter.className} antialiased pb-16 md:pb-0`}>
         <WebVitals />

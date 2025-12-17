@@ -3,10 +3,25 @@ import Link from "next/link";
 import { Users, TrendingUp, DollarSign, Gift, CheckCircle, ArrowRight } from "lucide-react";
 import { AffiliateForm } from "@/components/forms/AffiliateForm";
 
-export const metadata: Metadata = {
-  title: "Affiliate Programı | Kolay Seyahat",
-  description: "Kolay Seyahat affiliate programına katılın ve kazanmaya başlayın. Vize hizmetlerini tanıtarak komisyon kazanın.",
-};
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  const isEnglish = locale === 'en';
+  
+  return {
+    title: isEnglish ? "Affiliate Program | Kolay Seyahat" : "Affiliate Programı | Kolay Seyahat",
+    description: isEnglish 
+      ? "Join Kolay Seyahat affiliate program and start earning. Earn commission by promoting visa services."
+      : "Kolay Seyahat affiliate programına katılın ve kazanmaya başlayın. Vize hizmetlerini tanıtarak komisyon kazanın.",
+    alternates: {
+      canonical: `https://www.kolayseyahat.net${isEnglish ? '/en' : ''}/affiliate`,
+      languages: {
+        'tr': 'https://www.kolayseyahat.net/affiliate',
+        'en': 'https://www.kolayseyahat.net/en/affiliate',
+        'x-default': 'https://www.kolayseyahat.net/affiliate',
+      },
+    },
+  };
+}
 
 export default function AffiliatePage() {
   const benefits = [

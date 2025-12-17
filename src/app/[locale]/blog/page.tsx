@@ -20,6 +20,14 @@ export async function generateMetadata({ params }: BlogPageProps): Promise<Metad
     description: isEnglish
       ? "Travel tips, visa application guides, country guides and practical information for travelers. Everything you need to explore the world."
       : "Seyahat ipuçları, vize başvuru süreçleri, ülke rehberleri ve gezginler için pratik bilgiler. Dünya'yı keşfetmek için ihtiyacınız olan her şey.",
+    alternates: {
+      canonical: `https://www.kolayseyahat.net${isEnglish ? '/en' : ''}/blog`,
+      languages: {
+        'tr': 'https://www.kolayseyahat.net/blog',
+        'en': 'https://www.kolayseyahat.net/en/blog',
+        'x-default': 'https://www.kolayseyahat.net/blog',
+      },
+    },
   };
 }
 

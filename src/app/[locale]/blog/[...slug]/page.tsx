@@ -38,6 +38,8 @@ export async function generateMetadata({ params }: BlogPageProps): Promise<Metad
 
   const title = blog.meta_title || blog.title;
   const description = blog.meta_description || blog.description || blog.title;
+  const blogSlug = slug.join("/");
+  const blogUrl = `https://www.kolayseyahat.net/${locale === 'en' ? 'en/' : ''}blog/${blogSlug}`;
 
   return {
     title: `${title} - Kolay Seyahat`,
@@ -46,7 +48,16 @@ export async function generateMetadata({ params }: BlogPageProps): Promise<Metad
       title: `${title} - Kolay Seyahat`,
       description: description,
       type: "article",
+      url: blogUrl,
       images: blog.image_url ? [getCleanImageUrl(blog.image_url, "blog") || getBlogCategoryImage(blog.category)] : [],
+    },
+    alternates: {
+      canonical: blogUrl,
+      languages: {
+        'tr': `https://www.kolayseyahat.net/blog/${blogSlug}`,
+        'en': `https://www.kolayseyahat.net/en/blog/${blogSlug}`,
+        'x-default': `https://www.kolayseyahat.net/blog/${blogSlug}`,
+      },
     },
   };
 }
