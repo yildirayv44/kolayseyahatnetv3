@@ -50,6 +50,49 @@ async function fetchPdfContent(url: string): Promise<string> {
   }
 }
 
+// Fetch URL using Node.js https module (more reliable for some servers)
+async function fetchWithHttps(url: string): Promise<string> {
+  const https = require('https');
+  const http = require('http');
+  
+  return new Promise((resolve) => {
+    const isHttps = url.startsWith('https');
+    const client = isHttps ? https : http;
+    
+    const options = {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+      },
+      rejectUnauthorized: false,
+      timeout: 30000,
+    };
+    
+    const req = client.get(url, options, (res: any) => {
+      // Handle redirects
+      if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+        fetchWithHttps(res.headers.location).then(resolve);
+        return;
+      }
+      
+      let data = '';
+      res.on('data', (chunk: any) => data += chunk);
+      res.on('end', () => resolve(data));
+    });
+    
+    req.on('error', (err: any) => {
+      console.error(`HTTPS fetch error: ${err.message}`);
+      resolve('');
+    });
+    
+    req.on('timeout', () => {
+      req.destroy();
+      resolve('');
+    });
+  });
+}
+
 // Fetch and extract text content from a URL (HTML or PDF)
 async function fetchUrlContent(url: string): Promise<string> {
   // Check if it's a PDF
@@ -58,37 +101,24 @@ async function fetchUrlContent(url: string): Promise<string> {
   }
 
   try {
-    const response = await fetch(url, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-        "Accept-Language": "en-US,en;q=0.9,tr;q=0.8",
-        "Accept-Encoding": "gzip, deflate, br",
-        "Cache-Control": "no-cache",
-      },
-      signal: AbortSignal.timeout(15000), // 15 second timeout
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
+    // Use Node.js https module directly for better compatibility
+    const html = await fetchWithHttps(url);
+    
+    if (!html || html.length < 100) {
+      throw new Error("Empty or invalid response");
     }
 
-    // Check content type for PDF
-    const contentType = response.headers.get('content-type') || '';
-    if (contentType.includes('application/pdf')) {
-      const arrayBuffer = await response.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-      
+    // Check if it's a PDF response
+    if (html.startsWith('%PDF')) {
       try {
         const pdfParse = require('pdf-parse');
+        const buffer = Buffer.from(html, 'binary');
         const pdfData = await pdfParse(buffer);
         return `[PDF İçeriği - ${pdfData.numpages} sayfa]\n${pdfData.text.replace(/\s+/g, " ").trim().slice(0, 20000)}`;
       } catch (pdfError: any) {
         return `[PDF dosyası algılandı ancak okunamadı: ${pdfError.message}]`;
       }
     }
-
-    const html = await response.text();
     
     // Better HTML to text conversion - preserve table structure and important content
     const text = html
@@ -165,7 +195,12 @@ export async function POST(request: NextRequest) {
         const content = await fetchUrlContent(url.trim());
         console.log(`📄 Fetched content from ${url}:`);
         console.log(`   Length: ${content.length} chars`);
-        console.log(`   Preview: ${content.slice(0, 500)}...`);
+        console.log(`   Preview: ${content.slice(0, 1000)}...`);
+        
+        // Check if USD prices are in content
+        const usdMatches = content.match(/USD\s*\d+|\d+\s*USD/gi);
+        console.log(`   USD fiyatları: ${usdMatches ? usdMatches.slice(0, 10).join(', ') : 'Bulunamadı'}`);
+        
         sourceContents.push({ url: url.trim(), content });
       }
     }
