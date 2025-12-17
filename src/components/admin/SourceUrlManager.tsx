@@ -400,7 +400,25 @@ export function SourceUrlManager({
                           <span className="font-medium text-slate-700">{improvement.section}</span>
                         </div>
                         <p className="text-slate-600 mb-1"><strong>Sorun:</strong> {improvement.issue}</p>
-                        <p className="text-slate-800"><strong>Öneri:</strong> {improvement.suggestion}</p>
+                        <p className="text-slate-800 mb-2"><strong>Öneri:</strong> {improvement.suggestion}</p>
+                        {improvement.html_content && (
+                          <div className="mt-2 p-2 bg-white rounded border border-slate-200">
+                            <p className="text-xs text-slate-500 mb-1">Önerilen HTML İçerik:</p>
+                            <pre className="text-xs text-slate-700 whitespace-pre-wrap overflow-x-auto max-h-32 overflow-y-auto">
+                              {improvement.html_content}
+                            </pre>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                navigator.clipboard.writeText(improvement.html_content);
+                                alert("HTML içerik panoya kopyalandı!");
+                              }}
+                              className="mt-2 text-xs text-purple-600 hover:text-purple-800 underline"
+                            >
+                              📋 Kopyala
+                            </button>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>

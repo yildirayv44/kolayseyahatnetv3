@@ -213,9 +213,16 @@ GÖREV:
 - Kaynak sayfalarda bulunan HER ÖNEMLİ BİLGİYİ tespit et
 - Mevcut içeriğimizde OLMAYAN bilgileri mutlaka belirt
 - Güncel olmayan veya YANLIŞ bilgileri tespit et
-- İçerik iyileştirme önerileri sun
 - JSON array alanları için (required_documents, important_notes, application_steps) tam liste öner
 - Ana içerik (contents) için eklenecek paragrafları HTML formatında öner
+
+SOMUT ÖNERİ KURALLARI (ÇOK ÖNEMLİ):
+- "Kalıp bilgilerin güncellenmesi" gibi GENEL öneriler YASAK
+- Her öneri SOMUT ve UYGULANABILIR olmalı
+- Örnek KÖTÜ öneri: "Eksik bilgilerin eklenmesi" 
+- Örnek İYİ öneri: "Vize ücreti 90 EUR olarak güncellenmeli (mevcut: belirtilmemiş)"
+- content_improvements içinde html_content alanına GERÇEK HTML içerik yaz
+- Kaynaklarda bulduğun bilgileri doğrudan öner, soyut kalma
 
 YANIT FORMAT (JSON):
 {
@@ -234,10 +241,10 @@ YANIT FORMAT (JSON):
   "content_improvements": [
     {
       "section": "hangi bölüm (Ana İçerik, Gerekli Belgeler Bölümü, Fiyat Bölümü, Başvuru Adımları vb.)",
-      "issue": "tespit edilen sorun veya eksiklik (detaylı)",
-      "suggestion": "önerilen düzeltme veya ekleme (somut öneri)",
+      "issue": "tespit edilen SOMUT sorun - örn: 'Vize ücreti 80 EUR yazıyor ama kaynaklarda 90 EUR'",
+      "suggestion": "SOMUT düzeltme - örn: 'Vize ücretini 90 EUR olarak güncelleyin'",
       "priority": "high|medium|low",
-      "html_content": "Eğer HTML içerik öneriyorsan, buraya yaz (opsiyonel)"
+      "html_content": "Eklenecek veya değiştirilecek HTML içerik - örn: '<p>Bulgaristan vizesi için güncel ücret 90 EUR'dir.</p>'"
     }
   ],
   "no_changes_needed": false,
