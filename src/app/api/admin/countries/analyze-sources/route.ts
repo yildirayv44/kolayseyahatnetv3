@@ -142,6 +142,9 @@ export async function POST(request: NextRequest) {
     for (const url of sourceUrls) {
       if (url && url.trim()) {
         const content = await fetchUrlContent(url.trim());
+        console.log(`📄 Fetched content from ${url}:`);
+        console.log(`   Length: ${content.length} chars`);
+        console.log(`   Preview: ${content.slice(0, 500)}...`);
         sourceContents.push({ url: url.trim(), content });
       }
     }

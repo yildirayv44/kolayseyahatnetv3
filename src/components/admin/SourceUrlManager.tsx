@@ -165,9 +165,7 @@ export function SourceUrlManager({
       );
 
       if (applyChanges && data.applied) {
-        alert("✅ Değişiklik başarıyla uygulandı!");
-        // Sayfayı yenile
-        window.location.reload();
+        alert("✅ Değişiklik başarıyla uygulandı! Güncel verileri görmek için sayfayı yenileyebilirsiniz.");
       } else if (applyChanges && !data.applied) {
         alert("⚠️ Öneri onaylandı ancak değişiklik uygulanamadı. Lütfen sayfayı yenileyip tekrar deneyin.");
       }
@@ -458,6 +456,7 @@ export function SourceUrlManager({
                         )}
                       </div>
                       <button
+                        type="button"
                         onClick={() => deleteSuggestion(suggestion.id)}
                         className="text-slate-400 hover:text-red-500"
                       >
@@ -494,6 +493,7 @@ export function SourceUrlManager({
 
                     <div className="flex gap-2 pt-2 border-t border-amber-200">
                       <button
+                        type="button"
                         onClick={() => handleSuggestionAction(suggestion.id, "approve", true)}
                         className="inline-flex items-center gap-1 rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700"
                       >
@@ -501,12 +501,14 @@ export function SourceUrlManager({
                         Onayla ve Uygula
                       </button>
                       <button
+                        type="button"
                         onClick={() => handleSuggestionAction(suggestion.id, "approve", false)}
                         className="inline-flex items-center gap-1 rounded-lg border border-green-600 px-4 py-2 text-sm font-semibold text-green-600 hover:bg-green-50"
                       >
                         Sadece Onayla
                       </button>
                       <button
+                        type="button"
                         onClick={() => handleSuggestionAction(suggestion.id, "reject")}
                         className="inline-flex items-center gap-1 rounded-lg border border-red-300 px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-50"
                       >
