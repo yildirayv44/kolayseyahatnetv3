@@ -1,0 +1,33 @@
+# Kolay Seyahat - LLMs.txt
+
+> Kolay Seyahat is a professional visa consultancy service based in Turkey.
+
+## About
+Kolay Seyahat provides visa application assistance for Turkish citizens traveling abroad. We offer consultancy services for USA, UK, Schengen, and 50+ other countries with a 98% approval rate.
+
+## Services
+- Visa application consultancy
+- Document preparation
+- Appointment scheduling
+- Application tracking
+- Customer support
+
+## Contact
+- Website: https://www.kolayseyahat.net
+- Email: vize@kolayseyahat.net
+- Phone: +90 212 909 99 71
+
+## Links
+- Home: https://www.kolayseyahat.net
+- Visa Application: https://www.kolayseyahat.net/vize-basvuru-formu
+- Countries: https://www.kolayseyahat.net/ulkeler
+- Blog: https://www.kolayseyahat.net/blog
+- Contact: https://www.kolayseyahat.net/iletisim
+- FAQ: https://www.kolayseyahat.net/sikca-sorulan-sorular
+
+## Popular Destinations
+- USA Visa: https://www.kolayseyahat.net/amerika
+- UK Visa: https://www.kolayseyahat.net/ingiltere
+- Schengen Visa: https://www.kolayseyahat.net/schengen
+- Canada Visa: https://www.kolayseyahat.net/kanada
+- Dubai Visa: https://www.kolayseyahat.net/dubai
