@@ -28,6 +28,28 @@ export function ContentWithIds({ html }: ContentWithIdsProps) {
         h2.classList.add("scroll-mt-20");
       }
     });
+
+    // External linkler için SEO düzenlemesi
+    const links = contentRef.current.querySelectorAll("a");
+    links.forEach((link) => {
+      const href = link.getAttribute("href") || "";
+      const isExternal = href.startsWith("http") && !href.includes("kolayseyahat.net");
+      
+      if (isExternal) {
+        link.setAttribute("target", "_blank");
+        link.setAttribute("rel", "noopener noreferrer nofollow");
+        
+        // Anchor text yoksa, domain adını ekle
+        if (!link.textContent?.trim()) {
+          try {
+            const url = new URL(href);
+            link.textContent = url.hostname.replace("www.", "");
+          } catch {
+            link.textContent = "Dış Bağlantı";
+          }
+        }
+      }
+    });
   }, [html]);
 
   return (

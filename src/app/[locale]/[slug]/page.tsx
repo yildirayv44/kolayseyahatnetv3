@@ -258,8 +258,10 @@ export async function generateMetadata({ params }: CountryPageParams): Promise<M
       : generateMenuMetaDescription(menu.name, countryName, menu.description);
 
     const menuUrl = `https://www.kolayseyahat.net/${locale === 'en' ? 'en/' : ''}${decodedSlug}`;
+    const menuTitle = menuTax?.title || menu.name || "Vize Hizmeti";
+    const fullMenuTitle = menuTitle.includes('Kolay Seyahat') ? menuTitle : `${menuTitle} - Kolay Seyahat`;
     return {
-      title: menuTax?.title || menu.name || "Vize Hizmeti - Kolay Seyahat",
+      title: fullMenuTitle,
       description,
       alternates: {
         canonical: menuUrl,
