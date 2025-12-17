@@ -992,6 +992,7 @@ export function CountryEditForm({ country }: { country: any }) {
         <AIRegenerateModal
           countryId={country.id}
           countryName={country.name}
+          sourceUrls={formData.source_urls}
           onClose={() => setShowRegenerateModal(false)}
           onSuccess={() => {
             // Refresh page to load new data

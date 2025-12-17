@@ -6,34 +6,50 @@ import { X, Sparkles, Loader2, CheckCircle2 } from "lucide-react";
 interface AIRegenerateModalProps {
   countryId: number;
   countryName: string;
+  sourceUrls?: string[];
   onClose: () => void;
   onSuccess: () => void;
 }
 
 const AVAILABLE_FIELDS = [
+  // İçerik
   { id: "contents", label: "Ana İçerik (Genel Bilgiler)", category: "content" },
+  { id: "description", label: "Kısa Açıklama", category: "content" },
+  { id: "why_kolay_seyahat", label: "Neden Kolay Seyahat", category: "content" },
+  { id: "req_document", label: "Gerekli Belgeler (HTML)", category: "content" },
+  { id: "price_contents", label: "Fiyat İçeriği (HTML)", category: "content" },
+  // SEO
+  { id: "meta_title", label: "Meta Title (SEO)", category: "seo" },
   { id: "meta_description", label: "Meta Description (SEO)", category: "seo" },
+  // Vize Bilgileri
+  { id: "visa_fee", label: "Vize Ücreti", category: "visa" },
+  { id: "max_stay_duration", label: "Maksimum Kalış Süresi", category: "visa" },
+  { id: "processing_time", label: "İşlem Süresi", category: "visa" },
   { id: "application_steps", label: "Başvuru Adımları", category: "visa" },
-  { id: "required_documents", label: "Gerekli Belgeler", category: "visa" },
+  { id: "required_documents", label: "Gerekli Belgeler (Liste)", category: "visa" },
   { id: "important_notes", label: "Önemli Notlar", category: "visa" },
+  // Seyahat Bilgileri
   { id: "travel_tips", label: "Seyahat İpuçları", category: "travel" },
   { id: "popular_cities", label: "Popüler Şehirler", category: "travel" },
   { id: "best_time_to_visit", label: "En İyi Ziyaret Zamanı", category: "travel" },
   { id: "health_requirements", label: "Sağlık Gereksinimleri", category: "travel" },
   { id: "customs_regulations", label: "Gümrük Kuralları", category: "travel" },
   { id: "emergency_contacts", label: "Acil Durum Bilgileri", category: "travel" },
-  { id: "why_kolay_seyahat", label: "Neden Kolay Seyahat", category: "content" },
+  // Ülke Bilgileri
   { id: "capital", label: "Başkent", category: "info" },
   { id: "currency", label: "Para Birimi", category: "info" },
   { id: "language", label: "Dil", category: "info" },
   { id: "timezone", label: "Saat Dilimi", category: "info" },
 ];
 
-export function AIRegenerateModal({ countryId, countryName, onClose, onSuccess }: AIRegenerateModalProps) {
+export function AIRegenerateModal({ countryId, countryName, sourceUrls = [], onClose, onSuccess }: AIRegenerateModalProps) {
   const [selectedFields, setSelectedFields] = useState<string[]>([]);
   const [aiProvider, setAiProvider] = useState<'openai' | 'gemini'>('openai');
+  const [useSourceUrls, setUseSourceUrls] = useState(sourceUrls.length > 0);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
+  
+  const validSourceUrls = sourceUrls.filter(url => url && url.trim());
 
   const toggleField = (fieldId: string) => {
     setSelectedFields(prev =>
@@ -68,6 +84,7 @@ export function AIRegenerateModal({ countryId, countryName, onClose, onSuccess }
           countryId,
           fields: selectedFields,
           aiProvider,
+          sourceUrls: useSourceUrls ? validSourceUrls : [],
         }),
       });
 
@@ -149,6 +166,35 @@ export function AIRegenerateModal({ countryId, countryName, onClose, onSuccess }
               </button>
             </div>
           </div>
+
+          {/* Source URLs Option */}
+          {validSourceUrls.length > 0 && (
+            <div className="mb-6 rounded-lg border-2 border-purple-200 bg-purple-50 p-4">
+              <label className="flex cursor-pointer items-center gap-3">
+                <input
+                  type="checkbox"
+                  checked={useSourceUrls}
+                  onChange={(e) => setUseSourceUrls(e.target.checked)}
+                  className="h-5 w-5 rounded border-purple-300 text-purple-600 focus:ring-2 focus:ring-purple-500/20"
+                />
+                <div>
+                  <span className="font-semibold text-purple-900">🔗 Kaynak URL'leri Kullan</span>
+                  <p className="text-sm text-purple-700">
+                    AI, içerik oluştururken aşağıdaki resmi kaynak sayfalarını baz alacak:
+                  </p>
+                </div>
+              </label>
+              {useSourceUrls && (
+                <ul className="mt-3 space-y-1 pl-8">
+                  {validSourceUrls.map((url, index) => (
+                    <li key={index} className="text-xs text-purple-600 truncate">
+                      • {url}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
 
           {/* Field Selection */}
           <div className="mb-4 flex items-center justify-between">
