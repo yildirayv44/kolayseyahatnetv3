@@ -30,9 +30,10 @@ export function StickyCTA({ countryName }: StickyCTAProps) {
 
   return (
     <div
-      className={`fixed bottom-0 left-0 right-0 z-50 mb-16 transition-transform duration-300 md:mb-0 ${
-        isVisible ? "translate-y-0" : "translate-y-[200%]"
+      className={`fixed bottom-0 left-0 right-0 z-50 mb-16 transition-all duration-300 md:mb-0 ${
+        isVisible ? "opacity-100 translate-y-0" : "opacity-0 pointer-events-none translate-y-full"
       }`}
+      style={{ containIntrinsicSize: "0 80px", contentVisibility: "auto" }}
     >
       <div className="bg-white shadow-2xl border-t-2 border-primary relative">
         <div className="mx-auto max-w-6xl px-4 py-4">

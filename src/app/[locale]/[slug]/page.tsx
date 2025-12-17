@@ -639,6 +639,11 @@ export default async function CountryPage({ params }: CountryPageParams) {
   });
 
   // Generate Product Schema for visa packages with dynamic ratings
+  // Calculate priceValidUntil as 1 year from now
+  const priceValidUntil = new Date();
+  priceValidUntil.setFullYear(priceValidUntil.getFullYear() + 1);
+  const priceValidUntilStr = priceValidUntil.toISOString().split('T')[0];
+
   const productSchemas = products.map((product: any) => {
     // Generate deterministic but varied review count and rating per product
     const seed = `${country.name}-${product.name}`;
@@ -651,12 +656,52 @@ export default async function CountryPage({ params }: CountryPageParams) {
       name: product.name,
       description: product.description || `${country.name} ${product.name} vize paketi`,
       image: country.image_url,
+      brand: {
+        "@type": "Brand",
+        name: "Kolay Seyahat"
+      },
       offers: {
         "@type": "Offer",
         price: product.price || "0",
         priceCurrency: getCurrencySymbol(product.currency_id) === "₺" ? "TRY" : getCurrencySymbol(product.currency_id) === "$" ? "USD" : "EUR",
         availability: "https://schema.org/InStock",
         url: `https://www.kolayseyahat.net/${country.slug}`,
+        priceValidUntil: priceValidUntilStr,
+        hasMerchantReturnPolicy: {
+          "@type": "MerchantReturnPolicy",
+          applicableCountry: "TR",
+          returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+          merchantReturnDays: 14,
+          returnMethod: "https://schema.org/ReturnByMail",
+          returnFees: "https://schema.org/FreeReturn"
+        },
+        shippingDetails: {
+          "@type": "OfferShippingDetails",
+          shippingRate: {
+            "@type": "MonetaryAmount",
+            value: "0",
+            currency: "TRY"
+          },
+          shippingDestination: {
+            "@type": "DefinedRegion",
+            addressCountry: "TR"
+          },
+          deliveryTime: {
+            "@type": "ShippingDeliveryTime",
+            handlingTime: {
+              "@type": "QuantitativeValue",
+              minValue: 1,
+              maxValue: 3,
+              unitCode: "DAY"
+            },
+            transitTime: {
+              "@type": "QuantitativeValue",
+              minValue: 0,
+              maxValue: 0,
+              unitCode: "DAY"
+            }
+          }
+        }
       },
       aggregateRating: {
         "@type": "AggregateRating",
