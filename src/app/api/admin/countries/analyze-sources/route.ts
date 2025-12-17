@@ -16,7 +16,7 @@ function isPdfUrl(url: string): boolean {
   return url.toLowerCase().endsWith('.pdf') || url.toLowerCase().includes('.pdf?');
 }
 
-// Fetch PDF and extract text using pdf-parse or external service
+// Fetch PDF and extract text using pdf-parse
 async function fetchPdfContent(url: string): Promise<string> {
   try {
     const response = await fetch(url, {
@@ -33,8 +33,8 @@ async function fetchPdfContent(url: string): Promise<string> {
     const arrayBuffer = await response.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
     
-    // Dynamic import pdf-parse
-    const pdfParse = (await import('pdf-parse')).default;
+    // Use require for pdf-parse (CommonJS module)
+    const pdfParse = require('pdf-parse');
     const pdfData = await pdfParse(buffer);
     
     // Clean and limit text
@@ -78,7 +78,7 @@ async function fetchUrlContent(url: string): Promise<string> {
       const buffer = Buffer.from(arrayBuffer);
       
       try {
-        const pdfParse = (await import('pdf-parse')).default;
+        const pdfParse = require('pdf-parse');
         const pdfData = await pdfParse(buffer);
         return `[PDF İçeriği - ${pdfData.numpages} sayfa]\n${pdfData.text.replace(/\s+/g, " ").trim().slice(0, 20000)}`;
       } catch (pdfError: any) {
