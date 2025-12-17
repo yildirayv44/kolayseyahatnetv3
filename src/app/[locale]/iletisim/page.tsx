@@ -2,11 +2,25 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Mail, Phone, MapPin } from "lucide-react";
 
-export const metadata: Metadata = {
-  title: "İletişim | Kolay Seyahat",
-  description:
-    "Kolay Seyahat ile iletişime geçin. Vize başvurunuz için telefon, e-posta veya online başvuru formu ile bize ulaşabilirsiniz.",
-};
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  const isEnglish = locale === 'en';
+  
+  return {
+    title: isEnglish ? "Contact | Kolay Seyahat" : "İletişim | Kolay Seyahat",
+    description: isEnglish
+      ? "Contact Kolay Seyahat. Reach us by phone, email or online application form for your visa application."
+      : "Kolay Seyahat ile iletişime geçin. Vize başvurunuz için telefon, e-posta veya online başvuru formu ile bize ulaşabilirsiniz.",
+    alternates: {
+      canonical: `https://www.kolayseyahat.net${isEnglish ? '/en' : ''}/iletisim`,
+      languages: {
+        'tr': 'https://www.kolayseyahat.net/iletisim',
+        'en': 'https://www.kolayseyahat.net/en/iletisim',
+        'x-default': 'https://www.kolayseyahat.net/iletisim',
+      },
+    },
+  };
+}
 
 export default function ContactPage() {
   return (

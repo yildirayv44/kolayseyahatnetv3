@@ -171,12 +171,17 @@ export async function generateMetadata({ params }: CountryPageParams): Promise<M
     const localizedTitle = isEnglish && country.title_en ? country.title_en : dbTitle;
     
     // Eğer veritabanında title varsa olduğu gibi kullan, yoksa fallback oluştur ve truncate et
-    const title = localizedTitle || truncateTitle(
+    let title = localizedTitle || truncateTitle(
       isEnglish 
         ? `${country.name} Visa - Kolay Seyahat`
         : `${country.name} Vizesi - Kolay Seyahat`, 
       60
     );
+    
+    // Title'a "- Kolay Seyahat" ekle (yoksa)
+    if (title && !title.includes('Kolay Seyahat')) {
+      title = `${title} - Kolay Seyahat`;
+    }
     
     // Description: Veritabanında varsa olduğu gibi kullan (indekslenen içeriği koru)
     // İngilizce için description_en varsa kullan

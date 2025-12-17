@@ -4,11 +4,25 @@ import { Suspense } from "react";
 import { t } from "@/i18n/translations";
 import type { Locale } from "@/i18n/translations";
 
-export const metadata: Metadata = {
-  title: "Vize Başvurusu | Kolay Seyahat",
-  description:
-    "Online vize başvuru formu ile hızlı ve güvenli şekilde başvurunuzu tamamlayın. Uzman danışmanlarımız en kısa sürede sizinle iletişime geçecek.",
-};
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  const isEnglish = locale === 'en';
+  
+  return {
+    title: isEnglish ? "Visa Application | Kolay Seyahat" : "Vize Başvurusu | Kolay Seyahat",
+    description: isEnglish
+      ? "Complete your application quickly and securely with our online visa application form. Our expert consultants will contact you shortly."
+      : "Online vize başvuru formu ile hızlı ve güvenli şekilde başvurunuzu tamamlayın. Uzman danışmanlarımız en kısa sürede sizinle iletişime geçecek.",
+    alternates: {
+      canonical: `https://www.kolayseyahat.net${isEnglish ? '/en' : ''}/vize-basvuru-formu`,
+      languages: {
+        'tr': 'https://www.kolayseyahat.net/vize-basvuru-formu',
+        'en': 'https://www.kolayseyahat.net/en/vize-basvuru-formu',
+        'x-default': 'https://www.kolayseyahat.net/vize-basvuru-formu',
+      },
+    },
+  };
+}
 
 // Dynamic page because it uses searchParams
 export const dynamic = "force-dynamic";

@@ -4,11 +4,25 @@ import { Mail, Phone, User } from "lucide-react";
 import { getConsultants } from "@/lib/queries";
 import { getConsultantSlug } from "@/lib/helpers";
 
-export const metadata: Metadata = {
-  title: "Uzman Danışmanlarımız | Kolay Seyahat",
-  description:
-    "Vize başvurularınızda size yardımcı olacak deneyimli danışman kadromuzla tanışın.",
-};
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  const isEnglish = locale === 'en';
+  
+  return {
+    title: isEnglish ? "Expert Consultants | Kolay Seyahat" : "Uzman Danışmanlarımız | Kolay Seyahat",
+    description: isEnglish
+      ? "Meet our experienced consultant team who will help you with your visa applications."
+      : "Vize başvurularınızda size yardımcı olacak deneyimli danışman kadromuzla tanışın.",
+    alternates: {
+      canonical: `https://www.kolayseyahat.net${isEnglish ? '/en' : ''}/danismanlar`,
+      languages: {
+        'tr': 'https://www.kolayseyahat.net/danismanlar',
+        'en': 'https://www.kolayseyahat.net/en/danismanlar',
+        'x-default': 'https://www.kolayseyahat.net/danismanlar',
+      },
+    },
+  };
+}
 
 export default async function ConsultantsPage() {
   const consultants = await getConsultants();

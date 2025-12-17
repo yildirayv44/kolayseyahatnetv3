@@ -2,10 +2,25 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { HelpCircle, ChevronDown, Phone, Mail } from "lucide-react";
 
-export const metadata: Metadata = {
-  title: "Sıkça Sorulan Sorular (SSS) | Kolay Seyahat",
-  description: "Vize başvuruları, işlem süreleri, belgeler ve ücretler hakkında en çok sorulan sorular ve cevapları.",
-};
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  const isEnglish = locale === 'en';
+  
+  return {
+    title: isEnglish ? "Frequently Asked Questions (FAQ) | Kolay Seyahat" : "Sıkça Sorulan Sorular (SSS) | Kolay Seyahat",
+    description: isEnglish
+      ? "Most frequently asked questions and answers about visa applications, processing times, documents and fees."
+      : "Vize başvuruları, işlem süreleri, belgeler ve ücretler hakkında en çok sorulan sorular ve cevapları.",
+    alternates: {
+      canonical: `https://www.kolayseyahat.net${isEnglish ? '/en' : ''}/sikca-sorulan-sorular`,
+      languages: {
+        'tr': 'https://www.kolayseyahat.net/sikca-sorulan-sorular',
+        'en': 'https://www.kolayseyahat.net/en/sikca-sorulan-sorular',
+        'x-default': 'https://www.kolayseyahat.net/sikca-sorulan-sorular',
+      },
+    },
+  };
+}
 
 export default function SSSPage() {
   const faqCategories = [

@@ -2,10 +2,25 @@ import { Metadata } from "next";
 import { MessageSquare, CheckCircle, Clock, TrendingUp, AlertCircle } from "lucide-react";
 import { FeedbackForm } from "@/components/forms/FeedbackForm";
 
-export const metadata: Metadata = {
-  title: "Şikayet ve Öneri | Kolay Seyahat",
-  description: "Kolay Seyahat hizmetleri hakkında şikayet, öneri ve geri bildirimlerinizi paylaşın. Müşteri memnuniyeti bizim için önemlidir.",
-};
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  const isEnglish = locale === 'en';
+  
+  return {
+    title: isEnglish ? "Complaints and Suggestions | Kolay Seyahat" : "Şikayet ve Öneri | Kolay Seyahat",
+    description: isEnglish
+      ? "Share your complaints, suggestions and feedback about Kolay Seyahat services. Customer satisfaction is important to us."
+      : "Kolay Seyahat hizmetleri hakkında şikayet, öneri ve geri bildirimlerinizi paylaşın. Müşteri memnuniyeti bizim için önemlidir.",
+    alternates: {
+      canonical: `https://www.kolayseyahat.net${isEnglish ? '/en' : ''}/sikayet-ve-oneri`,
+      languages: {
+        'tr': 'https://www.kolayseyahat.net/sikayet-ve-oneri',
+        'en': 'https://www.kolayseyahat.net/en/sikayet-ve-oneri',
+        'x-default': 'https://www.kolayseyahat.net/sikayet-ve-oneri',
+      },
+    },
+  };
+}
 
 export default function SikayetVeOneriPage() {
   return (

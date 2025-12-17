@@ -53,6 +53,27 @@ const nextConfig: NextConfig = {
   // Redirects for HTTPS and www enforcement
   async redirects() {
     return [
+      // Custom 301 redirects
+      {
+        source: '/amerika/amerika-vize-yenileme-hizmeti',
+        destination: '/amerika-vize-yenileme',
+        permanent: true,
+      },
+      {
+        source: '/en/amerika/amerika-vize-yenileme-hizmeti',
+        destination: '/en/amerika-vize-yenileme',
+        permanent: true,
+      },
+      {
+        source: '/amerika-ds-160-formu-nedir-nasil-doldurulur',
+        destination: '/amerika-ds-160-formu-nasil-doldurulur',
+        permanent: true,
+      },
+      {
+        source: '/en/amerika-ds-160-formu-nedir-nasil-doldurulur',
+        destination: '/en/amerika-ds-160-formu-nasil-doldurulur',
+        permanent: true,
+      },
       // HTTP to HTTPS redirect
       {
         source: '/:path*',

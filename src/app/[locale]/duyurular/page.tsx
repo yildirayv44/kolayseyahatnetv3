@@ -3,10 +3,25 @@ import Link from "next/link";
 import { Megaphone, Calendar, ArrowRight, Bell } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
-export const metadata: Metadata = {
-  title: "Duyurular | Kolay Seyahat",
-  description: "Kolay Seyahat duyuruları, haberler ve güncellemeler. Vize süreçleri, kampanyalar ve önemli bildirimler.",
-};
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  const isEnglish = locale === 'en';
+  
+  return {
+    title: isEnglish ? "Announcements | Kolay Seyahat" : "Duyurular | Kolay Seyahat",
+    description: isEnglish
+      ? "Kolay Seyahat announcements, news and updates. Visa processes, campaigns and important notifications."
+      : "Kolay Seyahat duyuruları, haberler ve güncellemeler. Vize süreçleri, kampanyalar ve önemli bildirimler.",
+    alternates: {
+      canonical: `https://www.kolayseyahat.net${isEnglish ? '/en' : ''}/duyurular`,
+      languages: {
+        'tr': 'https://www.kolayseyahat.net/duyurular',
+        'en': 'https://www.kolayseyahat.net/en/duyurular',
+        'x-default': 'https://www.kolayseyahat.net/duyurular',
+      },
+    },
+  };
+}
 
 interface Announcement {
   id: number;
