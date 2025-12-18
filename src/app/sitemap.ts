@@ -25,86 +25,38 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     getCustomPages()
   ]);
 
-  const staticPages = [
-    {
-      url: baseUrl,
-      lastModified: new Date(),
-      changeFrequency: "daily" as const,
-      priority: 1,
-    },
-    {
-      url: `${baseUrl}/en`,
-      lastModified: new Date(),
-      changeFrequency: "daily" as const,
-      priority: 1,
-    },
-    {
-      url: `${baseUrl}/blog`,
-      lastModified: new Date(),
-      changeFrequency: "daily" as const,
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/danismanlar`,
-      lastModified: new Date(),
-      changeFrequency: "weekly" as const,
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/vize-basvuru-formu`,
-      lastModified: new Date(),
-      changeFrequency: "monthly" as const,
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/hakkimizda`,
-      lastModified: new Date(),
-      changeFrequency: "monthly" as const,
-      priority: 0.6,
-    },
-    {
-      url: `${baseUrl}/iletisim`,
-      lastModified: new Date(),
-      changeFrequency: "monthly" as const,
-      priority: 0.6,
-    },
-    {
-      url: `${baseUrl}/kurumsal-vize-danismanligi`,
-      lastModified: new Date(),
-      changeFrequency: "monthly" as const,
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/ulkeler`,
-      lastModified: new Date(),
-      changeFrequency: "weekly" as const,
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/sikca-sorulan-sorular`,
-      lastModified: new Date(),
-      changeFrequency: "monthly" as const,
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/duyurular`,
-      lastModified: new Date(),
-      changeFrequency: "daily" as const,
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/sikayet-ve-oneri`,
-      lastModified: new Date(),
-      changeFrequency: "monthly" as const,
-      priority: 0.5,
-    },
-    {
-      url: `${baseUrl}/affiliate`,
-      lastModified: new Date(),
-      changeFrequency: "monthly" as const,
-      priority: 0.6,
-    },
+  // Static pages with both TR and EN versions
+  const staticPageSlugs = [
+    { slug: "", changeFrequency: "daily" as const, priority: 1 },
+    { slug: "blog", changeFrequency: "daily" as const, priority: 0.8 },
+    { slug: "danismanlar", changeFrequency: "weekly" as const, priority: 0.7 },
+    { slug: "vize-basvuru-formu", changeFrequency: "monthly" as const, priority: 0.9 },
+    { slug: "hakkimizda", changeFrequency: "monthly" as const, priority: 0.6 },
+    { slug: "iletisim", changeFrequency: "monthly" as const, priority: 0.6 },
+    { slug: "kurumsal-vize-danismanligi", changeFrequency: "monthly" as const, priority: 0.7 },
+    { slug: "ulkeler", changeFrequency: "weekly" as const, priority: 0.8 },
+    { slug: "sikca-sorulan-sorular", changeFrequency: "monthly" as const, priority: 0.7 },
+    { slug: "duyurular", changeFrequency: "daily" as const, priority: 0.8 },
+    { slug: "sikayet-ve-oneri", changeFrequency: "monthly" as const, priority: 0.5 },
+    { slug: "affiliate", changeFrequency: "monthly" as const, priority: 0.6 },
   ];
+
+  const staticPages = staticPageSlugs.flatMap((page) => [
+    // Turkish version
+    {
+      url: page.slug ? `${baseUrl}/${page.slug}` : baseUrl,
+      lastModified: new Date(),
+      changeFrequency: page.changeFrequency,
+      priority: page.priority,
+    },
+    // English version
+    {
+      url: page.slug ? `${baseUrl}/en/${page.slug}` : `${baseUrl}/en`,
+      lastModified: new Date(),
+      changeFrequency: page.changeFrequency,
+      priority: page.priority,
+    },
+  ]);
 
   // Helper function for valid dates
   const getValidDate = (dateStr: string | null | undefined) => {
@@ -153,6 +105,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ];
   });
 
+  // Blog pages - both TR and EN versions
   const blogPages = blogs
     .filter((blog: any) => {
       if (!blog.taxonomy_slug) {
@@ -161,20 +114,49 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       }
       return true;
     })
-    .map((blog: any) => ({
-      url: `${baseUrl}/blog/${blog.taxonomy_slug}`,
-      lastModified: getValidDate(blog.updated_at || blog.created_at),
-      changeFrequency: "monthly" as const,
-      priority: 0.6,
-    }));
+    .flatMap((blog: any) => {
+      const lastModified = getValidDate(blog.updated_at || blog.created_at);
+      return [
+        // Turkish version
+        {
+          url: `${baseUrl}/blog/${blog.taxonomy_slug}`,
+          lastModified,
+          changeFrequency: "monthly" as const,
+          priority: 0.6,
+        },
+        // English version
+        {
+          url: `${baseUrl}/en/blog/${blog.taxonomy_slug}`,
+          lastModified,
+          changeFrequency: "monthly" as const,
+          priority: 0.6,
+        },
+      ];
+    });
 
-  // Dynamic custom pages from database
-  const dynamicPages = customPages.map((page: any) => ({
-    url: `${baseUrl}/${page.slug}`,
-    lastModified: getValidDate(page.updated_at),
-    changeFrequency: (page.page_type === "legal" ? "yearly" : "monthly") as "yearly" | "monthly",
-    priority: page.page_type === "legal" ? 0.4 : page.page_type === "corporate" ? 0.6 : 0.5,
-  }));
+  // Dynamic custom pages from database - both TR and EN versions
+  const dynamicPages = customPages.flatMap((page: any) => {
+    const lastModified = getValidDate(page.updated_at);
+    const changeFrequency = (page.page_type === "legal" ? "yearly" : "monthly") as "yearly" | "monthly";
+    const priority = page.page_type === "legal" ? 0.4 : page.page_type === "corporate" ? 0.6 : 0.5;
+    
+    return [
+      // Turkish version
+      {
+        url: `${baseUrl}/${page.slug}`,
+        lastModified,
+        changeFrequency,
+        priority,
+      },
+      // English version
+      {
+        url: `${baseUrl}/en/${page.slug}`,
+        lastModified,
+        changeFrequency,
+        priority,
+      },
+    ];
+  });
 
   const allPages = [...staticPages, ...countryPages, ...blogPages, ...dynamicPages];
   

@@ -55,6 +55,7 @@ export async function generateMetadata(): Promise<Metadata> {
       languages: {
         "tr": "https://www.kolayseyahat.net/ulkeler",
         "en": "https://www.kolayseyahat.net/en/ulkeler",
+        "x-default": "https://www.kolayseyahat.net/ulkeler",
       },
     },
     robots: {
