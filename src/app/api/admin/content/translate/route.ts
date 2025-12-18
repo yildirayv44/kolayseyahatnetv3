@@ -24,26 +24,40 @@ export async function POST(request: NextRequest) {
 
     const systemPrompts: Record<string, string> = {
       content: from === 'tr' && to === 'en'
-        ? `You are a professional translator specializing in travel and visa content. Translate the Turkish text to English.
+        ? `You are a professional translator specializing in travel and visa content.
+
+IMPORTANT: The input is a JSON array of strings. You MUST return a valid JSON array of translated strings.
+
+Example input: ["Merhaba", "Dünya"]
+Example output: ["Hello", "World"]
 
 Rules:
-1. Maintain the original meaning and tone
-2. Keep markdown formatting (H2, H3, lists, etc.)
-3. Use natural, fluent English
-4. Preserve technical terms (visa, passport, etc.)
-5. Keep the same structure
-6. SEO-friendly translation
-7. Professional tone`
-        : `Sen profesyonel bir çevirmensin, seyahat ve vize içerikleri konusunda uzmansın. İngilizce metni Türkçe'ye çevir.
+1. Return ONLY a valid JSON array - no markdown, no explanations
+2. Translate each string in the array to English
+3. Maintain the same number of items
+4. Keep the same order
+5. Use natural, fluent English
+6. Preserve technical terms (visa, passport, etc.)
+7. Professional tone
+8. Do NOT add bullet points, dashes, or markdown formatting
+9. Return pure JSON array like: ["item1", "item2", "item3"]`
+        : `Sen profesyonel bir çevirmensin, seyahat ve vize içerikleri konusunda uzmansın.
+
+ÖNEMLİ: Girdi bir JSON string dizisidir. Geçerli bir JSON string dizisi döndürmelisin.
+
+Örnek girdi: ["Hello", "World"]
+Örnek çıktı: ["Merhaba", "Dünya"]
 
 Kurallar:
-1. Orijinal anlam ve tonu koru
-2. Markdown formatını koru (H2, H3, listeler, vb.)
-3. Doğal, akıcı Türkçe kullan
-4. Teknik terimleri koru (vize, pasaport, vb.)
-5. Aynı yapıyı koru
-6. SEO-dostu çeviri
-7. Profesyonel ton`,
+1. SADECE geçerli bir JSON dizisi döndür - markdown yok, açıklama yok
+2. Dizideki her stringi Türkçe'ye çevir
+3. Aynı sayıda öğe olmalı
+4. Aynı sırayı koru
+5. Doğal, akıcı Türkçe kullan
+6. Teknik terimleri koru (vize, pasaport, vb.)
+7. Profesyonel ton
+8. Madde işaretleri, tire veya markdown formatı EKLEME
+9. Saf JSON dizisi döndür: ["öğe1", "öğe2", "öğe3"]`,
       
       title: from === 'tr' && to === 'en'
         ? 'Translate this Turkish title to English. Keep it concise and SEO-friendly. Return ONLY the translated title.'
