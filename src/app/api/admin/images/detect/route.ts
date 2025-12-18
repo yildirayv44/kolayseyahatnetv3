@@ -86,20 +86,23 @@ export async function GET(request: NextRequest) {
 
     // Extract images from blogs
     for (const blog of blogsResult.data || []) {
+      // ⚡ ENHANCEMENT: Show all blogs, even without image_url (mark as missing)
+      const img: DetectedImage = {
+        id: `blog-${blog.id}-main-${imageId++}`,
+        url: blog.image_url || '',
+        alt: blog.title,
+        status: blog.image_url ? 'checking' : 'missing',
+        source: {
+          type: 'blog',
+          id: blog.id,
+          title: blog.title,
+          field: 'image_url',
+        },
+      };
+      detectedImages.push(img);
+      
+      // Only check status if URL exists
       if (blog.image_url) {
-        const img: DetectedImage = {
-          id: `blog-${blog.id}-main-${imageId++}`,
-          url: blog.image_url,
-          alt: blog.title,
-          status: 'checking',
-          source: {
-            type: 'blog',
-            id: blog.id,
-            title: blog.title,
-            field: 'image_url',
-          },
-        };
-        detectedImages.push(img);
         imagesToCheck.push({ image: img, url: blog.image_url });
       }
 
