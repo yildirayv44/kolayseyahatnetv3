@@ -185,7 +185,12 @@ export function CountryEditForm({ country }: { country: any }) {
       ];
 
       for (const field of jsonArrayFields) {
-        if (!field.value || field.value.length === 0) continue;
+        if (!field.value || field.value.length === 0) {
+          console.log(`⏭️ Skipping ${field.key} - empty or no value`);
+          continue;
+        }
+
+        console.log(`🔄 Translating ${field.key}:`, field.value);
 
         const response = await fetch('/api/admin/content/translate', {
           method: 'POST',
@@ -199,13 +204,22 @@ export function CountryEditForm({ country }: { country: any }) {
         });
 
         const data = await response.json();
+        console.log(`📥 Response for ${field.key}:`, data);
+        
         if (data.success) {
           try {
             const translated = JSON.parse(data.translated_text);
+            console.log(`✅ Parsed ${field.targetKey}:`, translated);
             setFormData(prev => ({ ...prev, [field.targetKey]: translated }));
-          } catch {
-            // If parsing fails, skip this field
+          } catch (parseError) {
+            console.error(`❌ Parse error for ${field.key}:`, parseError, data.translated_text);
+            // Try to use as-is if it's already an array
+            if (Array.isArray(data.translated_text)) {
+              setFormData(prev => ({ ...prev, [field.targetKey]: data.translated_text }));
+            }
           }
+        } else {
+          console.error(`❌ Translation failed for ${field.key}:`, data.error);
         }
       }
 
