@@ -58,6 +58,7 @@ export function CountryEditForm({ country }: { country: any }) {
     processing_time: country.processing_time || "",
     application_steps: Array.isArray(country.application_steps) ? country.application_steps : [],
     required_documents: Array.isArray(country.required_documents) ? country.required_documents : [],
+    required_documents_en: Array.isArray(country.required_documents_en) ? country.required_documents_en : [],
     important_notes: Array.isArray(country.important_notes) ? country.important_notes : [],
     travel_tips: Array.isArray(country.travel_tips) ? country.travel_tips : [],
     popular_cities: Array.isArray(country.popular_cities) ? country.popular_cities : [],
@@ -176,6 +177,7 @@ export function CountryEditForm({ country }: { country: any }) {
         { key: 'application_steps', value: formData.application_steps, targetKey: 'application_steps_en' },
         { key: 'important_notes', value: formData.important_notes, targetKey: 'important_notes_en' },
         { key: 'popular_cities', value: formData.popular_cities, targetKey: 'popular_cities_en' },
+        { key: 'required_documents', value: formData.required_documents, targetKey: 'required_documents_en' },
       ];
 
       for (const field of jsonArrayFields) {
@@ -332,13 +334,15 @@ export function CountryEditForm({ country }: { country: any }) {
             </div>
           </div>
           
-          {activeLocale === 'tr' && !formData.title_en && (
-            <div className="ml-6 rounded-lg border-2 border-blue-300 bg-white p-4">
+          {activeLocale === 'tr' && (
+            <div className={`ml-6 rounded-lg border-2 ${formData.title_en ? 'border-green-300' : 'border-blue-300'} bg-white p-4`}>
               <div className="mb-2 text-sm font-semibold text-blue-900">
-                🌍 İngilizce Çeviri Yok
+                🌍 {formData.title_en ? 'İngilizce Çeviri Mevcut' : 'İngilizce Çeviri Yok'}
               </div>
               <p className="mb-3 text-xs text-blue-700">
-                Türkçe içeriği otomatik olarak İngilizce'ye çevirebilirsiniz
+                {formData.title_en 
+                  ? 'Türkçe içeriği tekrar çevirmek için butona tıklayın' 
+                  : 'Türkçe içeriği otomatik olarak İngilizce\'ye çevirebilirsiniz'}
               </p>
               <button
                 type="button"
@@ -354,7 +358,7 @@ export function CountryEditForm({ country }: { country: any }) {
                 ) : (
                   <>
                     <Languages className="h-4 w-4" />
-                    İngilizce'ye Çevir
+                    {formData.title_en ? 'Tekrar Çevir' : 'İngilizce\'ye Çevir'}
                   </>
                 )}
               </button>
