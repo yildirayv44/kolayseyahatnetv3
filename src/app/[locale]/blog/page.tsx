@@ -15,13 +15,32 @@ export async function generateMetadata({ params }: BlogPageProps): Promise<Metad
   const { locale } = await params;
   const isEnglish = locale === 'en';
   
+  const title = isEnglish ? "Travel & Visa Blog | Kolay Seyahat" : "Seyahat ve Vize Blogu | Kolay Seyahat";
+  const description = isEnglish
+    ? "Travel tips, visa application guides, country guides and practical information for travelers. Everything you need to explore the world."
+    : "Seyahat ipuçları, vize başvuru süreçleri, ülke rehberleri ve gezginler için pratik bilgiler. Dünya'yı keşfetmek için ihtiyacınız olan her şey.";
+  const url = `https://www.kolayseyahat.net${isEnglish ? '/en' : ''}/blog`;
+  
   return {
-    title: isEnglish ? "Travel & Visa Blog | Kolay Seyahat" : "Seyahat ve Vize Blogu | Kolay Seyahat",
-    description: isEnglish
-      ? "Travel tips, visa application guides, country guides and practical information for travelers. Everything you need to explore the world."
-      : "Seyahat ipuçları, vize başvuru süreçleri, ülke rehberleri ve gezginler için pratik bilgiler. Dünya'yı keşfetmek için ihtiyacınız olan her şey.",
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: 'website',
+      url,
+      siteName: 'Kolay Seyahat',
+      locale: isEnglish ? 'en_US' : 'tr_TR',
+      images: [{ url: 'https://www.kolayseyahat.net/opengraph-image.png', width: 1200, height: 630, alt: title }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: ['https://www.kolayseyahat.net/opengraph-image.png'],
+    },
     alternates: {
-      canonical: `https://www.kolayseyahat.net${isEnglish ? '/en' : ''}/blog`,
+      canonical: url,
       languages: {
         'tr': 'https://www.kolayseyahat.net/blog',
         'en': 'https://www.kolayseyahat.net/en/blog',

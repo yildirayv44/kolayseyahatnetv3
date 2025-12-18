@@ -8,13 +8,32 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const { locale } = await params;
   const isEnglish = locale === 'en';
   
+  const title = isEnglish ? "Visa Application | Kolay Seyahat" : "Vize Başvurusu | Kolay Seyahat";
+  const description = isEnglish
+    ? "Complete your application quickly and securely with our online visa application form. Our expert consultants will contact you shortly."
+    : "Online vize başvuru formu ile hızlı ve güvenli şekilde başvurunuzu tamamlayın. Uzman danışmanlarımız en kısa sürede sizinle iletişime geçecek.";
+  const url = `https://www.kolayseyahat.net${isEnglish ? '/en' : ''}/vize-basvuru-formu`;
+  
   return {
-    title: isEnglish ? "Visa Application | Kolay Seyahat" : "Vize Başvurusu | Kolay Seyahat",
-    description: isEnglish
-      ? "Complete your application quickly and securely with our online visa application form. Our expert consultants will contact you shortly."
-      : "Online vize başvuru formu ile hızlı ve güvenli şekilde başvurunuzu tamamlayın. Uzman danışmanlarımız en kısa sürede sizinle iletişime geçecek.",
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: 'website',
+      url,
+      siteName: 'Kolay Seyahat',
+      locale: isEnglish ? 'en_US' : 'tr_TR',
+      images: [{ url: 'https://www.kolayseyahat.net/opengraph-image.png', width: 1200, height: 630, alt: title }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: ['https://www.kolayseyahat.net/opengraph-image.png'],
+    },
     alternates: {
-      canonical: `https://www.kolayseyahat.net${isEnglish ? '/en' : ''}/vize-basvuru-formu`,
+      canonical: url,
       languages: {
         'tr': 'https://www.kolayseyahat.net/vize-basvuru-formu',
         'en': 'https://www.kolayseyahat.net/en/vize-basvuru-formu',

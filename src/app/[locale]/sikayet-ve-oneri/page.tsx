@@ -6,13 +6,32 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const { locale } = await params;
   const isEnglish = locale === 'en';
   
+  const title = isEnglish ? "Complaints and Suggestions | Kolay Seyahat" : "Şikayet ve Öneri | Kolay Seyahat";
+  const description = isEnglish
+    ? "Share your complaints, suggestions and feedback about Kolay Seyahat services. Customer satisfaction is important to us."
+    : "Kolay Seyahat hizmetleri hakkında şikayet, öneri ve geri bildirimlerinizi paylaşın. Müşteri memnuniyeti bizim için önemlidir.";
+  const url = `https://www.kolayseyahat.net${isEnglish ? '/en' : ''}/sikayet-ve-oneri`;
+  
   return {
-    title: isEnglish ? "Complaints and Suggestions | Kolay Seyahat" : "Şikayet ve Öneri | Kolay Seyahat",
-    description: isEnglish
-      ? "Share your complaints, suggestions and feedback about Kolay Seyahat services. Customer satisfaction is important to us."
-      : "Kolay Seyahat hizmetleri hakkında şikayet, öneri ve geri bildirimlerinizi paylaşın. Müşteri memnuniyeti bizim için önemlidir.",
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: 'website',
+      url,
+      siteName: 'Kolay Seyahat',
+      locale: isEnglish ? 'en_US' : 'tr_TR',
+      images: [{ url: 'https://www.kolayseyahat.net/opengraph-image.png', width: 1200, height: 630, alt: title }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: ['https://www.kolayseyahat.net/opengraph-image.png'],
+    },
     alternates: {
-      canonical: `https://www.kolayseyahat.net${isEnglish ? '/en' : ''}/sikayet-ve-oneri`,
+      canonical: url,
       languages: {
         'tr': 'https://www.kolayseyahat.net/sikayet-ve-oneri',
         'en': 'https://www.kolayseyahat.net/en/sikayet-ve-oneri',

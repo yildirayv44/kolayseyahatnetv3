@@ -32,6 +32,21 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: L
   return {
     title,
     description,
+    openGraph: {
+      title,
+      description,
+      type: 'website',
+      url,
+      siteName: 'Kolay Seyahat',
+      locale: isEnglish ? 'en_US' : 'tr_TR',
+      images: [{ url: 'https://www.kolayseyahat.net/opengraph-image.png', width: 1200, height: 630, alt: title }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: ['https://www.kolayseyahat.net/opengraph-image.png'],
+    },
     alternates: {
       canonical: url,
       languages: {

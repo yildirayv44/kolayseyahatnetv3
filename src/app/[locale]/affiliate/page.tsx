@@ -7,13 +7,32 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const { locale } = await params;
   const isEnglish = locale === 'en';
   
+  const title = isEnglish ? "Affiliate Program | Kolay Seyahat" : "Affiliate Programı | Kolay Seyahat";
+  const description = isEnglish 
+    ? "Join Kolay Seyahat affiliate program and start earning. Earn commission by promoting visa services."
+    : "Kolay Seyahat affiliate programına katılın ve kazanmaya başlayın. Vize hizmetlerini tanıtarak komisyon kazanın.";
+  const url = `https://www.kolayseyahat.net${isEnglish ? '/en' : ''}/affiliate`;
+  
   return {
-    title: isEnglish ? "Affiliate Program | Kolay Seyahat" : "Affiliate Programı | Kolay Seyahat",
-    description: isEnglish 
-      ? "Join Kolay Seyahat affiliate program and start earning. Earn commission by promoting visa services."
-      : "Kolay Seyahat affiliate programına katılın ve kazanmaya başlayın. Vize hizmetlerini tanıtarak komisyon kazanın.",
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: 'website',
+      url,
+      siteName: 'Kolay Seyahat',
+      locale: isEnglish ? 'en_US' : 'tr_TR',
+      images: [{ url: 'https://www.kolayseyahat.net/opengraph-image.png', width: 1200, height: 630, alt: title }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: ['https://www.kolayseyahat.net/opengraph-image.png'],
+    },
     alternates: {
-      canonical: `https://www.kolayseyahat.net${isEnglish ? '/en' : ''}/affiliate`,
+      canonical: url,
       languages: {
         'tr': 'https://www.kolayseyahat.net/affiliate',
         'en': 'https://www.kolayseyahat.net/en/affiliate',

@@ -7,13 +7,32 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const { locale } = await params;
   const isEnglish = locale === 'en';
   
+  const title = isEnglish ? "Announcements | Kolay Seyahat" : "Duyurular | Kolay Seyahat";
+  const description = isEnglish
+    ? "Kolay Seyahat announcements, news and updates. Visa processes, campaigns and important notifications."
+    : "Kolay Seyahat duyuruları, haberler ve güncellemeler. Vize süreçleri, kampanyalar ve önemli bildirimler.";
+  const url = `https://www.kolayseyahat.net${isEnglish ? '/en' : ''}/duyurular`;
+  
   return {
-    title: isEnglish ? "Announcements | Kolay Seyahat" : "Duyurular | Kolay Seyahat",
-    description: isEnglish
-      ? "Kolay Seyahat announcements, news and updates. Visa processes, campaigns and important notifications."
-      : "Kolay Seyahat duyuruları, haberler ve güncellemeler. Vize süreçleri, kampanyalar ve önemli bildirimler.",
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: 'website',
+      url,
+      siteName: 'Kolay Seyahat',
+      locale: isEnglish ? 'en_US' : 'tr_TR',
+      images: [{ url: 'https://www.kolayseyahat.net/opengraph-image.png', width: 1200, height: 630, alt: title }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: ['https://www.kolayseyahat.net/opengraph-image.png'],
+    },
     alternates: {
-      canonical: `https://www.kolayseyahat.net${isEnglish ? '/en' : ''}/duyurular`,
+      canonical: url,
       languages: {
         'tr': 'https://www.kolayseyahat.net/duyurular',
         'en': 'https://www.kolayseyahat.net/en/duyurular',

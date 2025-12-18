@@ -8,13 +8,32 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const { locale } = await params;
   const isEnglish = locale === 'en';
   
+  const title = isEnglish ? "Expert Consultants | Kolay Seyahat" : "Uzman Danışmanlarımız | Kolay Seyahat";
+  const description = isEnglish
+    ? "Meet our experienced consultant team who will help you with your visa applications."
+    : "Vize başvurularınızda size yardımcı olacak deneyimli danışman kadromuzla tanışın.";
+  const url = `https://www.kolayseyahat.net${isEnglish ? '/en' : ''}/danismanlar`;
+  
   return {
-    title: isEnglish ? "Expert Consultants | Kolay Seyahat" : "Uzman Danışmanlarımız | Kolay Seyahat",
-    description: isEnglish
-      ? "Meet our experienced consultant team who will help you with your visa applications."
-      : "Vize başvurularınızda size yardımcı olacak deneyimli danışman kadromuzla tanışın.",
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: 'website',
+      url,
+      siteName: 'Kolay Seyahat',
+      locale: isEnglish ? 'en_US' : 'tr_TR',
+      images: [{ url: 'https://www.kolayseyahat.net/opengraph-image.png', width: 1200, height: 630, alt: title }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: ['https://www.kolayseyahat.net/opengraph-image.png'],
+    },
     alternates: {
-      canonical: `https://www.kolayseyahat.net${isEnglish ? '/en' : ''}/danismanlar`,
+      canonical: url,
       languages: {
         'tr': 'https://www.kolayseyahat.net/danismanlar',
         'en': 'https://www.kolayseyahat.net/en/danismanlar',

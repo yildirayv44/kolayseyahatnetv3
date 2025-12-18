@@ -6,13 +6,32 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const { locale } = await params;
   const isEnglish = locale === 'en';
   
+  const title = isEnglish ? "Contact | Kolay Seyahat" : "İletişim | Kolay Seyahat";
+  const description = isEnglish
+    ? "Contact Kolay Seyahat. Reach us by phone, email or online application form for your visa application."
+    : "Kolay Seyahat ile iletişime geçin. Vize başvurunuz için telefon, e-posta veya online başvuru formu ile bize ulaşabilirsiniz.";
+  const url = `https://www.kolayseyahat.net${isEnglish ? '/en' : ''}/iletisim`;
+  
   return {
-    title: isEnglish ? "Contact | Kolay Seyahat" : "İletişim | Kolay Seyahat",
-    description: isEnglish
-      ? "Contact Kolay Seyahat. Reach us by phone, email or online application form for your visa application."
-      : "Kolay Seyahat ile iletişime geçin. Vize başvurunuz için telefon, e-posta veya online başvuru formu ile bize ulaşabilirsiniz.",
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: 'website',
+      url,
+      siteName: 'Kolay Seyahat',
+      locale: isEnglish ? 'en_US' : 'tr_TR',
+      images: [{ url: 'https://www.kolayseyahat.net/opengraph-image.png', width: 1200, height: 630, alt: title }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: ['https://www.kolayseyahat.net/opengraph-image.png'],
+    },
     alternates: {
-      canonical: `https://www.kolayseyahat.net${isEnglish ? '/en' : ''}/iletisim`,
+      canonical: url,
       languages: {
         'tr': 'https://www.kolayseyahat.net/iletisim',
         'en': 'https://www.kolayseyahat.net/en/iletisim',
