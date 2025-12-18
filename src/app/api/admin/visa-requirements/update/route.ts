@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { revalidatePath } from "next/cache";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -65,6 +66,30 @@ export async function POST(request: Request) {
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    // ⚡ CACHE INVALIDATION: Revalidate country page when visa requirements change
+    try {
+      // Get country slug from country_code
+      const { data: country } = await supabase
+        .from("countries")
+        .select("slug")
+        .eq("country_code", country_code)
+        .maybeSingle();
+
+      if (country?.slug) {
+        // Revalidate the specific country page
+        revalidatePath(`/tr/${country.slug}`);
+        revalidatePath(`/en/${country.slug}`);
+        revalidatePath(`/${country.slug}`);
+        console.log(`✅ Cache revalidated for: /${country.slug}`);
+      }
+
+      // Revalidate all country pages
+      revalidatePath("/[locale]/[slug]", "page");
+    } catch (cacheError) {
+      console.error("Cache revalidation error:", cacheError);
+      // Don't fail the request if cache revalidation fails
     }
 
     return NextResponse.json({
