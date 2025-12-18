@@ -128,6 +128,7 @@ export async function generateMetadata({ params }: CountryPageParams): Promise<M
         : customPageMeta.meta_description;
     const fullTitle = `${title} - Kolay Seyahat`;
     const url = `https://www.kolayseyahat.net/${locale === 'en' ? 'en/' : ''}${decodedSlug}`;
+    const ogImage = customPageMeta.image_url || 'https://www.kolayseyahat.net/opengraph-image.png';
 
     return {
       title: fullTitle,
@@ -139,11 +140,20 @@ export async function generateMetadata({ params }: CountryPageParams): Promise<M
         url,
         siteName: 'Kolay Seyahat',
         locale: locale === 'en' ? 'en_US' : 'tr_TR',
+        images: [
+          {
+            url: ogImage,
+            width: 1200,
+            height: 630,
+            alt: title,
+          }
+        ],
       },
       twitter: {
-        card: 'summary',
+        card: 'summary_large_image',
         title: fullTitle,
         description: description || title,
+        images: [ogImage],
       },
       alternates: {
         canonical: url,

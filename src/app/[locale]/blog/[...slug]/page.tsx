@@ -40,6 +40,9 @@ export async function generateMetadata({ params }: BlogPageProps): Promise<Metad
   const description = blog.meta_description || blog.description || blog.title;
   const blogSlug = slug.join("/");
   const blogUrl = `https://www.kolayseyahat.net/${locale === 'en' ? 'en/' : ''}blog/${blogSlug}`;
+  
+  // Always provide an og:image - use blog image, category image, or default
+  const ogImage = getCleanImageUrl(blog.image_url, "blog") || getBlogCategoryImage(blog.category) || 'https://www.kolayseyahat.net/opengraph-image.png';
 
   return {
     title: `${title} - Kolay Seyahat`,
@@ -49,7 +52,22 @@ export async function generateMetadata({ params }: BlogPageProps): Promise<Metad
       description: description,
       type: "article",
       url: blogUrl,
-      images: blog.image_url ? [getCleanImageUrl(blog.image_url, "blog") || getBlogCategoryImage(blog.category)] : [],
+      locale: locale === 'en' ? 'en_US' : 'tr_TR',
+      siteName: 'Kolay Seyahat',
+      images: [
+        {
+          url: ogImage,
+          width: 1200,
+          height: 630,
+          alt: title,
+        }
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${title} - Kolay Seyahat`,
+      description: description,
+      images: [ogImage],
     },
     alternates: {
       canonical: blogUrl,
