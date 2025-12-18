@@ -608,19 +608,47 @@ export default async function CountryPage({ params }: CountryPageParams) {
     }).filter((faq: any) => faq.question && faq.answer) // Filter out empty ones
   ) : null;
 
-  // Generate Breadcrumb Schema for SEO
+  // Locale-aware schema content
+  const isEnglish = locale === 'en';
+  
+  // Generate Breadcrumb Schema for SEO (locale-aware)
   const breadcrumbSchema = generateBreadcrumbSchema([
-    { name: "Ana Sayfa", url: "/" },
-    { name: country.name, url: `/${country.slug || decodedSlug}` }
+    { name: isEnglish ? "Home" : "Ana Sayfa", url: isEnglish ? "/en" : "/" },
+    { name: country.name, url: isEnglish ? `/en/${country.slug || decodedSlug}` : `/${country.slug || decodedSlug}` }
   ]);
 
-  // Generate HowTo Schema for visa application process
+  // Generate HowTo Schema for visa application process (locale-aware)
   const howToSchema = generateHowToSchema({
-    name: `${country.name} Vizesi Nasıl Alınır?`,
-    description: `${country.name} vize başvurusu için adım adım rehber. Gerekli belgeler, başvuru süreci ve önemli bilgiler.`,
+    name: isEnglish 
+      ? `How to Get a ${country.name} Visa?`
+      : `${country.name} Vizesi Nasıl Alınır?`,
+    description: isEnglish
+      ? `Step-by-step guide for ${country.name} visa application. Required documents, application process and important information.`
+      : `${country.name} vize başvurusu için adım adım rehber. Gerekli belgeler, başvuru süreci ve önemli bilgiler.`,
     image: country.image_url,
     totalTime: country.process_time ? `P${country.process_time}D` : 'P14D', // ISO 8601 duration format
-    steps: [
+    steps: isEnglish ? [
+      {
+        name: 'Prepare Required Documents',
+        text: `Prepare all required documents for ${country.name} visa. Passport, photos, financial documents and other necessary papers.`,
+      },
+      {
+        name: 'Online Application Form',
+        text: 'Fill out the visa application form online. Enter all information correctly and completely.',
+      },
+      {
+        name: 'Schedule an Appointment',
+        text: `Schedule an appointment at the ${country.name} consulate or visa center. Determine the appointment date.`,
+      },
+      {
+        name: 'Pay the Visa Fee',
+        text: 'Pay the visa application fee using the specified methods. Keep the payment receipt.',
+      },
+      {
+        name: 'Complete Your Application',
+        text: 'Go to the application center with all your documents on the appointment day and complete your application.',
+      },
+    ] : [
       {
         name: 'Gerekli Belgeleri Hazırlayın',
         text: `${country.name} vizesi için gerekli tüm belgeleri eksiksiz hazırlayın. Pasaport, fotoğraf, mali durum belgeleri ve diğer gerekli evraklar.`,
@@ -656,11 +684,16 @@ export default async function CountryPage({ params }: CountryPageParams) {
     const reviewCount = seededRandom(seed, 40, 100);
     const ratingValue = seededRating(seed);
     
+    // Locale-aware product description
+    const productDescription = isEnglish
+      ? product.description_en || `${country.name} ${product.name} visa package`
+      : product.description || `${country.name} ${product.name} vize paketi`;
+    
     return {
       "@context": "https://schema.org",
       "@type": "Product",
       name: product.name,
-      description: product.description || `${country.name} ${product.name} vize paketi`,
+      description: productDescription,
       image: country.image_url,
       brand: {
         "@type": "Brand",
@@ -671,7 +704,7 @@ export default async function CountryPage({ params }: CountryPageParams) {
         price: product.price || "0",
         priceCurrency: getCurrencySymbol(product.currency_id) === "₺" ? "TRY" : getCurrencySymbol(product.currency_id) === "$" ? "USD" : "EUR",
         availability: "https://schema.org/InStock",
-        url: `https://www.kolayseyahat.net/${country.slug}`,
+        url: isEnglish ? `https://www.kolayseyahat.net/en/${country.slug}` : `https://www.kolayseyahat.net/${country.slug}`,
         priceValidUntil: priceValidUntilStr,
         hasMerchantReturnPolicy: {
           "@type": "MerchantReturnPolicy",
@@ -722,15 +755,15 @@ export default async function CountryPage({ params }: CountryPageParams) {
   // Check if we should show required documents section
   const hasRequiredDocs = (country.required_documents && country.required_documents.length > 0) || fixedReqDocument;
 
-  // Generate Review Schema from comments
+  // Generate Review Schema from comments (locale-aware)
   const reviewSchema = comments.length > 0 ? generateReviewSchema(
     comments.map((comment: any) => ({
-      author: comment.name || 'Anonim',
+      author: comment.name || (isEnglish ? 'Anonymous' : 'Anonim'),
       rating: comment.rating || 5,
       content: comment.content || comment.comment || '',
       date: comment.created_at ? new Date(comment.created_at).toISOString().split('T')[0] : undefined,
     })),
-    `${country.name} Vize Danışmanlığı`
+    isEnglish ? `${country.name} Visa Consultancy` : `${country.name} Vize Danışmanlığı`
   ) : null;
 
   // TOC items
