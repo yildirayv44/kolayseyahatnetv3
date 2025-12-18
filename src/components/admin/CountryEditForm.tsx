@@ -60,8 +60,12 @@ export function CountryEditForm({ country }: { country: any }) {
     required_documents: Array.isArray(country.required_documents) ? country.required_documents : [],
     required_documents_en: Array.isArray(country.required_documents_en) ? country.required_documents_en : [],
     important_notes: Array.isArray(country.important_notes) ? country.important_notes : [],
+    important_notes_en: Array.isArray(country.important_notes_en) ? country.important_notes_en : [],
     travel_tips: Array.isArray(country.travel_tips) ? country.travel_tips : [],
+    travel_tips_en: Array.isArray(country.travel_tips_en) ? country.travel_tips_en : [],
     popular_cities: Array.isArray(country.popular_cities) ? country.popular_cities : [],
+    popular_cities_en: Array.isArray(country.popular_cities_en) ? country.popular_cities_en : [],
+    application_steps_en: Array.isArray(country.application_steps_en) ? country.application_steps_en : [],
     best_time_to_visit: country.best_time_to_visit || "",
     health_requirements: country.health_requirements || "",
     customs_regulations: country.customs_regulations || "",
@@ -722,29 +726,59 @@ export function CountryEditForm({ country }: { country: any }) {
               </div>
             </div>
 
-            <ArrayInput
-              label="Başvuru Adımları"
-              value={formData.application_steps}
-              onChange={(value) => setFormData({ ...formData, application_steps: value })}
-              placeholder="Örn: Adım 1: Kolay Seyahat uzman danışmanlarıyla iletişime geçin"
-              helpText="Vize başvuru sürecinin adım adım açıklaması"
-            />
+            {activeLocale === 'tr' ? (
+              <>
+                <ArrayInput
+                  label="Başvuru Adımları"
+                  value={formData.application_steps}
+                  onChange={(value) => setFormData({ ...formData, application_steps: value })}
+                  placeholder="Örn: Adım 1: Kolay Seyahat uzman danışmanlarıyla iletişime geçin"
+                  helpText="Vize başvuru sürecinin adım adım açıklaması"
+                />
 
-            <ArrayInput
-              label="Gerekli Belgeler (Liste)"
-              value={formData.required_documents}
-              onChange={(value) => setFormData({ ...formData, required_documents: value })}
-              placeholder="Örn: Pasaport fotokopisi"
-              helpText="Her belgeyi ayrı ayrı ekleyin"
-            />
+                <ArrayInput
+                  label="Gerekli Belgeler (Liste)"
+                  value={formData.required_documents}
+                  onChange={(value) => setFormData({ ...formData, required_documents: value })}
+                  placeholder="Örn: Pasaport fotokopisi"
+                  helpText="Her belgeyi ayrı ayrı ekleyin"
+                />
 
-            <ArrayInput
-              label="Önemli Notlar"
-              value={formData.important_notes}
-              onChange={(value) => setFormData({ ...formData, important_notes: value })}
-              placeholder="Örn: Pasaport en az 6 ay geçerli olmalıdır"
-              helpText="Başvuru sahiplerinin dikkat etmesi gereken önemli noktalar"
-            />
+                <ArrayInput
+                  label="Önemli Notlar"
+                  value={formData.important_notes}
+                  onChange={(value) => setFormData({ ...formData, important_notes: value })}
+                  placeholder="Örn: Pasaport en az 6 ay geçerli olmalıdır"
+                  helpText="Başvuru sahiplerinin dikkat etmesi gereken önemli noktalar"
+                />
+              </>
+            ) : (
+              <>
+                <ArrayInput
+                  label="Application Steps (EN)"
+                  value={formData.application_steps_en}
+                  onChange={(value) => setFormData({ ...formData, application_steps_en: value })}
+                  placeholder="E.g.: Step 1: Contact Kolay Seyahat expert consultants"
+                  helpText="Step-by-step description of the visa application process"
+                />
+
+                <ArrayInput
+                  label="Required Documents (EN)"
+                  value={formData.required_documents_en}
+                  onChange={(value) => setFormData({ ...formData, required_documents_en: value })}
+                  placeholder="E.g.: Passport copy"
+                  helpText="Add each document separately"
+                />
+
+                <ArrayInput
+                  label="Important Notes (EN)"
+                  value={formData.important_notes_en}
+                  onChange={(value) => setFormData({ ...formData, important_notes_en: value })}
+                  placeholder="E.g.: Passport must be valid for at least 6 months"
+                  helpText="Important points applicants should pay attention to"
+                />
+              </>
+            )}
           </div>
         )}
       </div>
@@ -762,21 +796,43 @@ export function CountryEditForm({ country }: { country: any }) {
         
         {expandedSections.extended && (
           <div className="mt-4 space-y-4">
-            <ArrayInput
-              label="Seyahat İpuçları"
-              value={formData.travel_tips}
-              onChange={(value) => setFormData({ ...formData, travel_tips: value })}
-              placeholder="Örn: Yerel para birimi kullanmak daha avantajlıdır"
-              helpText="Seyahat eden kişilere faydalı ipuçları"
-            />
+            {activeLocale === 'tr' ? (
+              <>
+                <ArrayInput
+                  label="Seyahat İpuçları"
+                  value={formData.travel_tips}
+                  onChange={(value) => setFormData({ ...formData, travel_tips: value })}
+                  placeholder="Örn: Yerel para birimi kullanmak daha avantajlıdır"
+                  helpText="Seyahat eden kişilere faydalı ipuçları"
+                />
 
-            <ArrayInput
-              label="Popüler Şehirler"
-              value={formData.popular_cities}
-              onChange={(value) => setFormData({ ...formData, popular_cities: value })}
-              placeholder="Örn: Paris, Lyon, Nice"
-              helpText="Turistlerin sıkça ziyaret ettiği şehirler"
-            />
+                <ArrayInput
+                  label="Popüler Şehirler"
+                  value={formData.popular_cities}
+                  onChange={(value) => setFormData({ ...formData, popular_cities: value })}
+                  placeholder="Örn: Paris, Lyon, Nice"
+                  helpText="Turistlerin sıkça ziyaret ettiği şehirler"
+                />
+              </>
+            ) : (
+              <>
+                <ArrayInput
+                  label="Travel Tips (EN)"
+                  value={formData.travel_tips_en}
+                  onChange={(value) => setFormData({ ...formData, travel_tips_en: value })}
+                  placeholder="E.g.: Using local currency is more advantageous"
+                  helpText="Helpful tips for travelers"
+                />
+
+                <ArrayInput
+                  label="Popular Cities (EN)"
+                  value={formData.popular_cities_en}
+                  onChange={(value) => setFormData({ ...formData, popular_cities_en: value })}
+                  placeholder="E.g.: Paris, Lyon, Nice"
+                  helpText="Cities frequently visited by tourists"
+                />
+              </>
+            )}
 
             <div className="space-y-2">
               <label className="block text-sm font-semibold text-slate-900">
