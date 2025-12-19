@@ -31,12 +31,12 @@ export const trackWhatsAppClick = () => {
   }
 };
 
-// Phone Click Conversion - Tel tıklama dönüşümü
+// Phone Click Conversion - Dönüşüm Etiketi: JvINCPa9ufYZEK6K0rko
 export const trackPhoneClick = () => {
   const gtag = getGtag();
   if (gtag) {
     gtag('event', 'conversion', {
-      'send_to': 'AW-10858300718/phone_click',
+      'send_to': 'AW-10858300718/JvINCPa9ufYZEK6K0rko',
     });
     console.log('📊 Phone click conversion tracked');
   }
