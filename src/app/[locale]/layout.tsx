@@ -128,6 +128,19 @@ export default async function LocaleLayout({
           src="https://analytics.ahrefs.com/analytics.js"
           data-key="Nom01ct23vxfXr8cZgauIg"
         />
+        
+        {/* Microsoft Clarity */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function(c,l,a,r,i,t,y){
+                c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+                t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+                y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+              })(window, document, "clarity", "script", "YOUR_CLARITY_PROJECT_ID");
+            `,
+          }}
+        />
         {/* Hreflang Tags - Dynamic tags are added in individual page metadata */}
       </head>
       <body className={`${inter.className} antialiased pb-16 md:pb-0`}>

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Send } from "lucide-react";
+import { trackFormSubmit } from "@/lib/gtag";
 
 export function FeedbackForm() {
   const [loading, setLoading] = useState(false);
@@ -40,6 +41,7 @@ export function FeedbackForm() {
       if (error) throw error;
 
       alert("Geri bildiriminiz başarıyla gönderildi. Teşekkür ederiz!");
+      trackFormSubmit(); // Google Ads conversion tracking
       
       // Reset form
       setFormData({

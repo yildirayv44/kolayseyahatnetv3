@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Send } from "lucide-react";
+import { trackFormSubmit } from "@/lib/gtag";
 
 export function AffiliateForm() {
   const [loading, setLoading] = useState(false);
@@ -52,6 +53,7 @@ export function AffiliateForm() {
       if (error) throw error;
 
       alert("Başvurunuz başarıyla gönderildi! En kısa sürede size geri dönüş yapacağız.");
+      trackFormSubmit(); // Google Ads conversion tracking
       
       // Reset form
       setFormData({
