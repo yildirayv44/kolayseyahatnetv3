@@ -79,6 +79,9 @@ export default async function LocaleLayout({
   return (
     <html lang={locale}>
       <head>
+        {/* Smart App Banner for iOS Safari */}
+        <meta name="apple-itunes-app" content="app-id=6756451040, app-argument=https://www.kolayseyahat.net" />
+        
         {/* DNS Prefetch & Preconnect for faster external resources */}
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         <link rel="dns-prefetch" href="https://analytics.ahrefs.com" />
