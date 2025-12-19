@@ -6,7 +6,6 @@ import { Send } from "lucide-react";
 import { getCountries, getCountryProducts, submitApplication } from "@/lib/queries";
 import { t } from "@/i18n/translations";
 import type { Locale } from "@/i18n/translations";
-import { trackFormSubmit } from "@/lib/gtag";
 
 interface ApplicationFormProps {
   locale?: Locale;
@@ -86,7 +85,6 @@ export function ApplicationForm({ locale = "tr" }: ApplicationFormProps) {
 
     if (result) {
       setSuccess(true);
-      trackFormSubmit(); // Google Ads conversion tracking
       setFormData({
         full_name: "",
         email: "",

@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { MessageCircle, X } from "lucide-react";
 import Image from "next/image";
-import { trackWhatsAppClick } from "@/lib/gtag";
 
 export function WhatsAppWidget() {
   const [isOpen, setIsOpen] = useState(false);
@@ -75,7 +74,6 @@ export function WhatsAppWidget() {
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
-              onClick={trackWhatsAppClick}
               className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#25D366] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#20BA5A]"
             >
               <MessageCircle className="h-5 w-5" />

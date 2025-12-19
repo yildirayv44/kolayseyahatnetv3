@@ -12,7 +12,6 @@ import { TestimonialsSlider } from "@/components/home/TestimonialsSlider";
 import { ComparisonTable } from "@/components/home/ComparisonTable";
 import { AppPromoBanner } from "@/components/home/AppPromoBanner";
 import { translateArray } from "@/lib/translation";
-import { PhoneLink } from "@/components/shared/PhoneLink";
 import { type Locale } from "@/i18n/config";
 
 // Cache'i 5 dakikada bir yenile
@@ -164,11 +163,13 @@ export default async function Home({ params }: HomePageProps) {
               {t.hero.cta}
               <ArrowRight className="h-5 w-5" />
             </Link>
-            <PhoneLink
+            <a
+              href="tel:+902129099971"
               className="inline-flex items-center justify-center gap-2 rounded-xl border-2 border-primary bg-white px-8 py-4 font-semibold text-primary transition-all hover:bg-primary hover:text-white"
             >
+              <PhoneCall className="h-5 w-5" />
               {t.hero.call}
-            </PhoneLink>
+            </a>
           </div>
         </div>
       </section>

@@ -89,61 +89,41 @@ export default async function LocaleLayout({
         <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://fonts.googleapis.com" crossOrigin="anonymous" />
         
-        {/* Structured Data - Highest Priority */}
+        {/* Google Tag Manager - Must be first in head */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-MV883RTB');`,
+          }}
+        />
+        
+        {/* Structured Data */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
         />
         
-        {/* Google tag (gtag.js) - Deferred for performance */}
-        <script
-          async
-          src="https://www.googletagmanager.com/gtag/js?id=AW-10858300718"
-        />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', 'AW-10858300718', {
-                'send_page_view': false
-              });
-              
-              // Send pageview after page is interactive
-              if (document.readyState === 'complete') {
-                gtag('event', 'page_view');
-              } else {
-                window.addEventListener('load', function() {
-                  gtag('event', 'page_view');
-                });
-              }
-            `,
-          }}
-        />
-        
-        {/* Ahrefs Web Analytics - Lowest Priority */}
+        {/* Ahrefs Web Analytics */}
         <script
           defer
           src="https://analytics.ahrefs.com/analytics.js"
           data-key="Nom01ct23vxfXr8cZgauIg"
         />
-        
-        {/* Microsoft Clarity */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function(c,l,a,r,i,t,y){
-                c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-                t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-                y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-              })(window, document, "clarity", "script", "YOUR_CLARITY_PROJECT_ID");
-            `,
-          }}
-        />
         {/* Hreflang Tags - Dynamic tags are added in individual page metadata */}
       </head>
       <body className={`${inter.className} antialiased pb-16 md:pb-0`}>
+        {/* Google Tag Manager (noscript) */}
+        <noscript>
+          <iframe 
+            src="https://www.googletagmanager.com/ns.html?id=GTM-MV883RTB"
+            height="0" 
+            width="0" 
+            style={{ display: 'none', visibility: 'hidden' }}
+          />
+        </noscript>
         <WebVitals />
         <PageLoadingBar />
         <Header />

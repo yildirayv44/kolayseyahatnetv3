@@ -13,7 +13,6 @@ import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 import { getLocalizedUrl, getLocaleFromPathname } from "@/lib/locale-link";
 import { type Locale } from "@/i18n/config";
 import { t } from "@/i18n/translations";
-import { trackPhoneClick } from "@/lib/gtag";
 
 const menuItems = [
   { path: "ulkeler", label: "Ülkeler" },
@@ -184,7 +183,7 @@ export function Header() {
       <div className="hidden border-b border-slate-200 bg-slate-50 md:block">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-2 text-xs">
           <div className="flex items-center gap-4">
-            <a href="tel:02129099971" onClick={trackPhoneClick} className="flex items-center gap-1 text-slate-700 hover:text-primary">
+            <a href="tel:02129099971" className="flex items-center gap-1 text-slate-700 hover:text-primary">
               <PhoneCall className="h-3 w-3" />
               0212 909 99 71
             </a>
