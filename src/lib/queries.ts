@@ -829,13 +829,21 @@ export async function submitApplication(formData: any) {
     return false;
   }
 
-  // Send email notification (non-blocking)
+  // Send email notifications (non-blocking)
   try {
-    await fetch('/api/send-application-notification', {
+    // Send notification to admin
+    fetch('/api/send-application-notification', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(formData),
-    }).catch(err => console.error('Email notification failed:', err));
+    }).catch(err => console.error('Admin notification failed:', err));
+
+    // Send confirmation email to user
+    fetch('/api/send-user-confirmation', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData),
+    }).catch(err => console.error('User confirmation failed:', err));
   } catch (err) {
     // Don't fail the application if email fails
     console.error('Email notification error:', err);
