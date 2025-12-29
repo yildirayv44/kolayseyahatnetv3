@@ -74,24 +74,42 @@ export async function GET(
       .eq('country_code', countryCode)
       .maybeSingle();
 
-    // Get products for this country
-    const { data: products } = await supabase
-      .from('products')
-      .select('id, name, price, currency_id, description, requirements, process_time')
-      .eq('country_id', country.id)
-      .eq('active', true)
-      .order('price', { ascending: true });
-
-    // Format products
-    const formattedProducts = products?.map(product => ({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      currency_id: product.currency_id,
-      description: product.description || null,
-      requirements: product.requirements || [],
-      process_time: product.process_time || null,
-    })) || [];
+    // Note: products table doesn't exist in this database
+    // Using country's avg_cost and cost_info instead
+    const formattedProducts = [];
+    
+    // Parse cost_info to extract price (e.g., "Turist vizesi: $40. Toplam: ₺5.000-8.000")
+    let extractedPrice = null;
+    let extractedCurrency = 1; // Default TRY
+    
+    if (country.cost_info) {
+      // Try to extract USD price (e.g., "$40")
+      const usdMatch = country.cost_info.match(/\$(\d+)/);
+      if (usdMatch) {
+        extractedPrice = usdMatch[1];
+        extractedCurrency = 1; // USD
+      } else {
+        // Try to extract TRY price (e.g., "₺5.000")
+        const tryMatch = country.cost_info.match(/₺([\d.,]+)/);
+        if (tryMatch) {
+          extractedPrice = tryMatch[1].replace(/\./g, '').replace(',', '.');
+          extractedCurrency = 3; // TRY
+        }
+      }
+    }
+    
+    // Create a product object from country data
+    if (country.cost_info || country.short_description) {
+      formattedProducts.push({
+        id: country.id,
+        name: `${country.name} Vizesi`,
+        price: extractedPrice || (country.avg_cost > 0 ? country.avg_cost.toString() : null),
+        currency_id: extractedCurrency,
+        description: country.cost_info || country.short_description || null,
+        requirements: country.requirements ? country.requirements.split('\n').filter(Boolean) : [],
+        process_time: country.processing_time || null,
+      });
+    }
 
     // Format response
     const response = {
