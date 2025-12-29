@@ -84,9 +84,7 @@ export function Footer({ locale = "tr" }: FooterProps) {
           <div>
             <h4 className="mb-3 font-semibold text-slate-900">{t(locale, "contact")}</h4>
             <ul className="space-y-2 text-slate-600 text-sm">
-              <li>Telefon: 0212 909 99 71</li>
-              <li>E-posta: vize@kolayseyahat.net</li>
-              <li>İstanbul, Türkiye</li>
+              <li>0212 909 99 71</li>
             </ul>
           </div>
 
@@ -126,8 +124,45 @@ export function Footer({ locale = "tr" }: FooterProps) {
         </div>
       </div>
 
-      <div className="border-t border-slate-200 bg-slate-50 py-4">
+      <div className="border-t border-slate-200 bg-slate-50 py-6">
         <div className="mx-auto max-w-6xl px-4">
+          {/* Payment Logos and Security Info */}
+          <div className="mb-6 flex flex-col items-center gap-4">
+            <div className="flex items-center gap-6 flex-wrap justify-center">
+              <img 
+                src="/images/visa-mastercard.svg" 
+                alt="Visa ve Mastercard ile Güvenli Ödeme" 
+                className="h-12 md:h-14"
+              />
+              <div className="flex items-center gap-2 text-xs text-slate-600">
+                <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+                <span className="font-medium">256-bit SSL Güvenli Bağlantı</span>
+              </div>
+              <div className="flex items-center gap-2 text-xs text-slate-600">
+                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                <span className="font-medium">3D Secure Ödeme</span>
+              </div>
+            </div>
+            <p className="text-xs text-slate-500 text-center max-w-2xl">
+              Tüm ödemeleriniz 256-bit SSL sertifikası ile şifrelenir ve 3D Secure teknolojisi ile korunur. 
+              Kredi kartı bilgileriniz güvenle işlenir ve saklanmaz.
+            </p>
+          </div>
+
+          {/* TÜRSAB Info */}
+          <div className="mb-6 border-t border-slate-200 pt-4">
+            <div className="text-center text-xs text-slate-600 space-y-1">
+              <p className="font-semibold text-slate-700">TÜRSAB Üyesi Seyahat Acentası</p>
+              <p>ACENTA / AGENCY: <span className="font-medium">TAMZARA TURİZM</span></p>
+              <p>BELGE NO / LICENCE NR: <span className="font-medium">1758</span></p>
+              <p className="text-slate-500 italic">Kolay Seyahat&apos;in turizm hizmetleri Tamzara Turizm tarafından sağlanmaktadır.</p>
+            </div>
+          </div>
+
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs text-slate-500 mb-3">
             <Link href={getLocalizedUrl("kvkk", locale)} className="hover:text-primary">
               KVKK

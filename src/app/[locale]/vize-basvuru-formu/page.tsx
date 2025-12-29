@@ -53,7 +53,7 @@ interface ApplicationPageProps {
 export default async function ApplicationPage({ params }: ApplicationPageProps) {
   const { locale } = await params;
   return (
-    <div className="mx-auto max-w-2xl space-y-8">
+    <div className="mx-auto max-w-7xl space-y-8">
       <section className="space-y-4 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 p-6 md:p-8">
         <div className="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
           <span className="relative flex h-2 w-2">
