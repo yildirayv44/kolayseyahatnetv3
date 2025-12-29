@@ -1,7 +1,7 @@
 "use client";
 
 import { supabase } from "@/lib/supabase";
-import { Eye, Download, Filter, CheckCircle, Clock, XCircle, TrendingUp, X, FileText } from "lucide-react";
+import { Eye, Download, Filter, CheckCircle, Clock, XCircle, TrendingUp, X, FileText, CreditCard, Building2 } from "lucide-react";
 import { useState, useEffect } from "react";
 
 // Note: Metadata cannot be exported from client components
@@ -95,7 +95,7 @@ export default function ApplicationsPage() {
                 <th className="px-6 py-4 font-semibold">Telefon</th>
                 <th className="px-6 py-4 font-semibold">Ülke</th>
                 <th className="px-6 py-4 font-semibold">Paket</th>
-                <th className="px-6 py-4 font-semibold">Notlar</th>
+                <th className="px-6 py-4 font-semibold">Ödeme</th>
                 <th className="px-6 py-4 font-semibold">Durum</th>
                 <th className="px-6 py-4 font-semibold">Tarih & Saat</th>
                 <th className="px-6 py-4 font-semibold text-right">İşlemler</th>
@@ -121,16 +121,25 @@ export default function ApplicationsPage() {
                           {app.package_name || "-"}
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-sm text-slate-600">
-                        {app.notes ? (
+                      <td className="px-6 py-4 text-sm">
+                        {app.wants_payment ? (
                           <div className="flex items-center gap-1">
-                            <FileText className="h-4 w-4 text-primary" />
-                            <span className="max-w-xs truncate" title={app.notes}>
-                              {app.notes}
-                            </span>
+                            {app.payment_method === 'credit_card' ? (
+                              <>
+                                <CreditCard className="h-4 w-4 text-blue-600" />
+                                <span className="text-blue-700 font-medium">Kredi Kartı</span>
+                              </>
+                            ) : app.payment_method === 'bank_transfer' ? (
+                              <>
+                                <Building2 className="h-4 w-4 text-emerald-600" />
+                                <span className="text-emerald-700 font-medium">Havale</span>
+                              </>
+                            ) : (
+                              <span className="text-slate-500">Bekliyor</span>
+                            )}
                           </div>
                         ) : (
-                          <span className="text-slate-400">-</span>
+                          <span className="text-slate-400">Sonra ödeme</span>
                         )}
                       </td>
                       <td className="px-6 py-4">
@@ -166,7 +175,7 @@ export default function ApplicationsPage() {
                 })
               ) : (
                 <tr>
-                  <td colSpan={10} className="px-6 py-12 text-center text-slate-600">
+                  <td colSpan={9} className="px-6 py-12 text-center text-slate-600">
                     Henüz başvuru bulunmuyor.
                   </td>
                 </tr>
@@ -243,6 +252,91 @@ export default function ApplicationsPage() {
                         {new Date(selectedApp.created_at).toLocaleTimeString("tr-TR")}
                       </p>
                     </div>
+                  </div>
+                </div>
+
+                {/* Payment Info */}
+                <div>
+                  <h4 className="mb-3 text-sm font-semibold text-slate-900">Ödeme Bilgileri</h4>
+                  <div className="rounded-lg border-2 border-slate-200 p-4">
+                    {selectedApp.wants_payment ? (
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle className="h-5 w-5 text-emerald-600" />
+                          <span className="font-semibold text-emerald-900">Şimdi ödeme yapmak istiyor</span>
+                        </div>
+                        
+                        <div className="grid gap-4 sm:grid-cols-2">
+                          <div>
+                            <p className="text-xs text-slate-600">Ödeme Yöntemi</p>
+                            <div className="flex items-center gap-2 mt-1">
+                              {selectedApp.payment_method === 'credit_card' ? (
+                                <>
+                                  <CreditCard className="h-5 w-5 text-blue-600" />
+                                  <span className="font-medium text-blue-900">Kredi Kartı ile Ödeme</span>
+                                </>
+                              ) : selectedApp.payment_method === 'bank_transfer' ? (
+                                <>
+                                  <Building2 className="h-5 w-5 text-emerald-600" />
+                                  <span className="font-medium text-emerald-900">Banka Havalesi / EFT</span>
+                                </>
+                              ) : (
+                                <span className="text-slate-500">Belirtilmemiş</span>
+                              )}
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <p className="text-xs text-slate-600">Ödeme Durumu</p>
+                            <p className="font-medium text-slate-900 mt-1">
+                              {selectedApp.payment_status === 'completed' ? (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-1 text-xs font-semibold text-emerald-700">
+                                  <CheckCircle className="h-3 w-3" />
+                                  Tamamlandı
+                                </span>
+                              ) : selectedApp.payment_status === 'pending' ? (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-700">
+                                  <Clock className="h-3 w-3" />
+                                  Bekliyor
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700">
+                                  <Clock className="h-3 w-3" />
+                                  Bekliyor
+                                </span>
+                              )}
+                            </p>
+                          </div>
+                        </div>
+
+                        {selectedApp.payment_method === 'bank_transfer' && (
+                          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3">
+                            <p className="text-xs font-semibold text-blue-900 mb-2">İşlem Notları:</p>
+                            <ul className="text-xs text-blue-800 space-y-1">
+                              <li>• Müşteriden dekont/makbuz bekleniyor</li>
+                              <li>• IBAN: TR71 0004 6001 1888 8000 1215 84</li>
+                              <li>• Ödeme onaylanması gerekiyor</li>
+                            </ul>
+                          </div>
+                        )}
+
+                        {selectedApp.payment_method === 'credit_card' && (
+                          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mt-3">
+                            <p className="text-xs font-semibold text-amber-900 mb-2">İşlem Notları:</p>
+                            <ul className="text-xs text-amber-800 space-y-1">
+                              <li>• Kredi kartı ödemesi şu anda kapalı</li>
+                              <li>• Müşteriye ödeme linki gönderilmeli</li>
+                              <li>• 3D Secure ile güvenli ödeme</li>
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 text-slate-600">
+                        <Clock className="h-5 w-5" />
+                        <span>Müşteri daha sonra ödeme yapmak istiyor</span>
+                      </div>
+                    )}
                   </div>
                 </div>
 
