@@ -34,12 +34,12 @@ export async function GET(
     // Normalize code to uppercase
     const countryCode = code.toUpperCase();
 
-    // Get country by country_code
+    // Get country by code (not country_code - column name is 'code')
     const { data: country, error: countryError } = await supabase
       .from('countries')
       .select('*')
-      .eq('country_code', countryCode)
-      .eq('status', 1)
+      .eq('code', countryCode)
+      .eq('active', true)
       .maybeSingle();
 
     if (countryError) {
@@ -67,7 +67,7 @@ export async function GET(
 
     const slug = taxonomy?.slug || `country-${country.id}`;
 
-    // Get visa requirements
+    // Get visa requirements (using code, not country_code)
     const { data: visaReqs } = await supabase
       .from('visa_requirements')
       .select('visa_status, allowed_stay, conditions, notes, application_method, available_methods')
@@ -79,7 +79,7 @@ export async function GET(
       .from('products')
       .select('id, name, price, currency_id, description, requirements, process_time')
       .eq('country_id', country.id)
-      .eq('status', 1)
+      .eq('active', true)
       .order('price', { ascending: true });
 
     // Format products
@@ -98,15 +98,15 @@ export async function GET(
       id: country.id,
       name: country.name,
       slug: slug,
-      country_code: country.country_code,
+      country_code: country.code, // Use 'code' column, not 'country_code'
       visa_status: visaReqs?.visa_status || 'unknown',
-      visa_info: country.visa_info || null,
+      visa_info: country.short_description || null,
       allowed_stay: visaReqs?.allowed_stay || null,
       conditions: visaReqs?.conditions || null,
       notes: visaReqs?.notes || null,
       application_method: visaReqs?.application_method || null,
       available_methods: visaReqs?.available_methods || [],
-      image_url: country.image_url || null,
+      image_url: country.featured_image_url || null,
       products: formattedProducts,
       // Lowest price for quick reference
       starting_price: formattedProducts.length > 0 ? formattedProducts[0].price : null,
