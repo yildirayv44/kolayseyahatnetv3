@@ -32,12 +32,15 @@ export async function GET() {
       id: country.id,
       name: country.name,
       slug: country.slug,
-      country_code: country.country_code,
+      country_code: country.country_code, // ISO 3166-1 alpha-3 (e.g., KOR, JPN, USA)
       visa_status: country.visa_status || 'unknown',
       visa_info: country.visa_info || null,
       price: country.price || null,
       currency_id: country.currency_id || 1,
       image_url: country.image_url || null,
+      // Add URL for easy access
+      detail_url: `https://www.kolayseyahat.net/${country.slug}`,
+      api_url: `https://www.kolayseyahat.net/api/countries/code/${country.country_code}`,
     }));
 
     return NextResponse.json({

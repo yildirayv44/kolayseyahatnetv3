@@ -21,23 +21,52 @@ GET https://www.kolayseyahat.net/api/countries
 
 **Response Örneği:**
 ```json
-[
-  {
-    "id": 123,
-    "name": "Güney Kore",
-    "slug": "guney-kore",
-    "country_code": "KOR",
-    "visa_status": "required",
-    "price": "100.00",
-    "currency_id": 1,
-    "visa_info": "K-ETA elektronik vize gereklidir"
-  }
-]
+{
+  "success": true,
+  "data": [
+    {
+      "id": 123,
+      "name": "Güney Kore",
+      "slug": "guney-kore",
+      "country_code": "KOR",
+      "visa_status": "required",
+      "price": "100.00",
+      "currency_id": 1,
+      "visa_info": "K-ETA elektronik vize gereklidir",
+      "detail_url": "https://www.kolayseyahat.net/guney-kore",
+      "api_url": "https://www.kolayseyahat.net/api/countries/code/KOR"
+    }
+  ],
+  "count": 150
+}
 ```
 
-### Endpoint 2: Ülke Detayı
+### Endpoint 2: Ülke Detayı (Üçlü Kod ile) ⭐ ÖNERİLEN
+```
+GET https://www.kolayseyahat.net/api/countries/code/[CODE]
+```
+
+**Örnek:**
+```
+GET https://www.kolayseyahat.net/api/countries/code/KOR
+GET https://www.kolayseyahat.net/api/countries/code/JPN
+GET https://www.kolayseyahat.net/api/countries/code/USA
+```
+
+**Avantajları:**
+- ✅ Standart ISO 3166-1 alpha-3 kodları
+- ✅ Daha kısa ve hızlı
+- ✅ Türkçe karakter sorunu yok
+- ✅ Slug'a göre daha güvenilir
+
+### Endpoint 3: Ülke Detayı (Slug ile)
 ```
 GET https://www.kolayseyahat.net/api/countries/[slug]
+```
+
+**Örnek:**
+```
+GET https://www.kolayseyahat.net/api/countries/guney-kore
 ```
 
 **Response Örneği:**
