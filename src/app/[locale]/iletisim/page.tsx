@@ -109,7 +109,6 @@ export default function ContactPage() {
           <div>
             <h3 className="text-sm font-semibold text-slate-900">Randevuyla Görüşme Adresi</h3>
             <div className="mt-1 text-sm text-slate-600 space-y-1">
-              <p className="font-medium text-slate-700">Kolay Seyahat Teknoloji Ltd. Şti.</p>
               <p>Yeniçarşı Cad. Kalkan Han No: 36/4</p>
               <p>Beyoğlu - İstanbul, Türkiye</p>
               <p className="text-xs text-amber-600 font-medium mt-2">⚠️ Randevu alarak ziyaret ediniz</p>
@@ -124,7 +123,6 @@ export default function ContactPage() {
           <div>
             <h3 className="text-sm font-semibold text-slate-900">Yasal Adres</h3>
             <div className="mt-1 text-sm text-slate-600 space-y-1">
-              <p className="font-medium text-slate-700">Kolay Seyahat Teknoloji Ltd. Şti.</p>
               <p>Cami Mh. Niyaz Sk. No: 5 D: 1</p>
               <p>Darıca - Kocaeli, Türkiye</p>
               <p className="text-xs text-slate-500 font-medium mt-2">MERSİS: 0575107732000001</p>
