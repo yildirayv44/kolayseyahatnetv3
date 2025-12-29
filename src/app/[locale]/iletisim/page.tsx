@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Mail, Phone, MapPin } from "lucide-react";
+import { Mail, Phone, MapPin, Building2, MessageCircle } from "lucide-react";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -53,19 +53,37 @@ export default function ContactPage() {
         </p>
       </section>
 
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <div className="card space-y-3 text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
             <Phone className="h-6 w-6" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-slate-900">Telefon</h3>
+            <h3 className="text-sm font-semibold text-slate-900">Çağrı Merkezi</h3>
             <a
               href="tel:02129099971"
               className="mt-1 block text-sm text-slate-600 hover:text-primary"
             >
               0212 909 99 71
             </a>
+          </div>
+        </div>
+
+        <div className="card space-y-3 text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-500/10 text-green-600">
+            <MessageCircle className="h-6 w-6" />
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-slate-900">7/24 WhatsApp Destek</h3>
+            <a
+              href="https://wa.me/12314032205"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-1 block text-sm text-green-600 hover:text-green-700 font-medium"
+            >
+              +1 231 403 2205
+            </a>
+            <p className="text-xs text-slate-500 mt-1">(Amerika)</p>
           </div>
         </div>
 
@@ -114,6 +132,36 @@ export default function ContactPage() {
           </div>
         </div>
       </div>
+
+      {/* Company Information */}
+      <section className="card border-slate-300 bg-slate-50">
+        <div className="flex items-start gap-4">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-200 text-slate-700 flex-shrink-0">
+            <Building2 className="h-6 w-6" />
+          </div>
+          <div className="flex-1">
+            <h2 className="text-lg font-semibold text-slate-900 mb-4">Şirket Bilgileri</h2>
+            <div className="grid gap-3 sm:grid-cols-2 text-sm">
+              <div>
+                <p className="text-xs text-slate-600 mb-1">Şirket Adı</p>
+                <p className="font-semibold text-slate-900">Kolay Seyahat Teknoloji Ltd. Şti.</p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-600 mb-1">Vergi No</p>
+                <p className="font-semibold text-slate-900">5751077320</p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-600 mb-1">Vergi Dairesi</p>
+                <p className="font-semibold text-slate-900">Uluçınar</p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-600 mb-1">MERSİS No</p>
+                <p className="font-semibold text-slate-900">0575107732000001</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <section className="card border-primary/10 bg-primary/5">
         <div className="space-y-3">
