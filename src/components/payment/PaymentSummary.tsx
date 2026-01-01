@@ -17,6 +17,8 @@ interface PaymentSummaryProps {
   formatTurkish: (num: number, decimals?: number) => string;
   wantsToPayNow: boolean;
   paymentMethod: string;
+  personCount: number;
+  onPersonCountChange: (count: number) => void;
   onWantsToPayNowChange: (checked: boolean) => void;
   onPaymentMethodChange: (method: string) => void;
   loading?: boolean;
@@ -32,6 +34,8 @@ export function PaymentSummary({
   formatTurkish,
   wantsToPayNow,
   paymentMethod,
+  personCount,
+  onPersonCountChange,
   onWantsToPayNowChange,
   onPaymentMethodChange,
   loading = false,
@@ -49,11 +53,50 @@ export function PaymentSummary({
             <p className="text-sm font-semibold text-slate-900">{packageName}</p>
           </div>
           
+          {/* Person Count Selector */}
           <div>
-            <p className="text-xs text-slate-500">Paket Fiyatı</p>
-            <p className="text-2xl font-bold text-primary">
+            <p className="text-xs text-slate-500 mb-2">Kişi Sayısı</p>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => onPersonCountChange(Math.max(1, personCount - 1))}
+                className="flex items-center justify-center w-8 h-8 rounded-lg border-2 border-slate-300 hover:border-primary hover:bg-primary/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={personCount <= 1}
+              >
+                <span className="text-lg font-bold">−</span>
+              </button>
+              <div className="flex-1 text-center">
+                <span className="text-2xl font-bold text-slate-900">{personCount}</span>
+                <span className="text-xs text-slate-500 ml-1">kişi</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => onPersonCountChange(Math.min(10, personCount + 1))}
+                className="flex items-center justify-center w-8 h-8 rounded-lg border-2 border-slate-300 hover:border-primary hover:bg-primary/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={personCount >= 10}
+              >
+                <span className="text-lg font-bold">+</span>
+              </button>
+            </div>
+          </div>
+          
+          <div>
+            <p className="text-xs text-slate-500">Paket Fiyatı (Kişi Başı)</p>
+            <p className="text-lg font-bold text-slate-700">
               {formatTurkish(packagePrice, 2)} {packageCurrency}
             </p>
+          </div>
+          
+          <div>
+            <p className="text-xs text-slate-500">Toplam Tutar</p>
+            <p className="text-2xl font-bold text-primary">
+              {formatTurkish(packagePrice * personCount, 2)} {packageCurrency}
+            </p>
+            {personCount > 1 && (
+              <p className="text-xs text-slate-500 mt-1">
+                ({personCount} kişi × {formatTurkish(packagePrice, 2)} {packageCurrency})
+              </p>
+            )}
           </div>
         </div>
 

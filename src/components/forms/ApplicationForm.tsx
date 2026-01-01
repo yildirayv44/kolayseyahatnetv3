@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { Send, CreditCard, Building2, Smartphone } from "lucide-react";
+import { Send, CreditCard, Building2, Smartphone, CheckCircle2 } from "lucide-react";
 import { getCountries, getCountryProducts, submitApplication } from "@/lib/queries";
 import { getCurrentUser } from "@/lib/auth";
 import { t } from "@/i18n/translations";
@@ -22,6 +22,9 @@ interface CurrencyRates {
 export function ApplicationForm({ locale = "tr" }: ApplicationFormProps) {
   const searchParams = useSearchParams();
   const [countries, setCountries] = useState<any[]>([]);
+  const [filteredCountries, setFilteredCountries] = useState<any[]>([]);
+  const [countrySearch, setCountrySearch] = useState("");
+  const [showCountryDropdown, setShowCountryDropdown] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -30,6 +33,8 @@ export function ApplicationForm({ locale = "tr" }: ApplicationFormProps) {
   const [wantsToPayNow, setWantsToPayNow] = useState(true);
   const [paymentMethod, setPaymentMethod] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [skipPackageSelection, setSkipPackageSelection] = useState(false);
+  const [personCount, setPersonCount] = useState(1);
 
   const [formData, setFormData] = useState({
     full_name: "",
@@ -42,6 +47,7 @@ export function ApplicationForm({ locale = "tr" }: ApplicationFormProps) {
     notes: "",
     wants_payment: false,
     payment_method: "",
+    person_count: 1,
   });
 
   // Turkish number formatting
@@ -52,16 +58,30 @@ export function ApplicationForm({ locale = "tr" }: ApplicationFormProps) {
   // Get selected product details
   const selectedProduct = products.find((p) => p.id === parseInt(formData.package_id, 10));
   const packagePrice = selectedProduct ? parseFloat(selectedProduct.price) : 0;
-  // currency_id: 1 = USD, 2 = EUR
-  const packageCurrency = selectedProduct?.currency_id === 2 ? "EUR" : "USD";
+  // currency_id: 1 = TL, 2 = USD, 3 = EUR
+  const packageCurrency = selectedProduct?.currency_id === 1 ? "TRY" : selectedProduct?.currency_id === 2 ? "USD" : "EUR";
+  
+  // Calculate total price (package price * person count)
+  const totalPackagePrice = packagePrice * personCount;
   
   // Calculate TL amount
-  const tlAmount = currencyRates && packagePrice > 0
-    ? packagePrice * (packageCurrency === "EUR" ? currencyRates.EUR.selling : currencyRates.USD.selling)
-    : 0;
+  const tlAmount = currencyRates && totalPackagePrice > 0
+    ? packageCurrency === "TRY" 
+      ? totalPackagePrice 
+      : totalPackagePrice * (packageCurrency === "EUR" ? currencyRates.EUR.selling : currencyRates.USD.selling)
+    : packageCurrency === "TRY" ? totalPackagePrice : 0;
 
   useEffect(() => {
-    getCountries().then(setCountries);
+    getCountries().then((data) => {
+      setCountries(data);
+      setFilteredCountries(data);
+      
+      // If country_name is in URL, set it as search value
+      const countryName = searchParams.get("country_name");
+      if (countryName) {
+        setCountrySearch(countryName);
+      }
+    });
     
     // Check if user is authenticated and pre-fill data
     getCurrentUser().then(user => {
@@ -74,15 +94,45 @@ export function ApplicationForm({ locale = "tr" }: ApplicationFormProps) {
         }));
       }
     });
+    
+    // If package_id is NOT in URL, set skip to true by default
+    const packageId = searchParams.get("package_id");
+    if (!packageId) {
+      setSkipPackageSelection(true);
+    }
   }, []);
 
   useEffect(() => {
     if (formData.country_id) {
-      getCountryProducts(parseInt(formData.country_id, 10)).then(setProducts);
+      getCountryProducts(parseInt(formData.country_id, 10)).then((data) => {
+        setProducts(data);
+        
+        // Auto-select first package if no package is selected from URL
+        if (data.length > 0 && !formData.package_id) {
+          setFormData(prev => ({
+            ...prev,
+            package_id: data[0].id.toString(),
+            package_name: data[0].name,
+          }));
+          setSkipPackageSelection(false);
+        }
+      });
     } else {
       setProducts([]);
     }
   }, [formData.country_id]);
+
+  // Filter countries based on search
+  useEffect(() => {
+    if (countrySearch.trim() === "") {
+      setFilteredCountries(countries);
+    } else {
+      const filtered = countries.filter((country) =>
+        country.name.toLowerCase().includes(countrySearch.toLowerCase())
+      );
+      setFilteredCountries(filtered);
+    }
+  }, [countrySearch, countries]);
 
   // Fetch currency rates from API when package is selected
   useEffect(() => {
@@ -102,16 +152,16 @@ export function ApplicationForm({ locale = "tr" }: ApplicationFormProps) {
     }
   }, [formData.package_id]);
 
-  const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedId = e.target.value;
-    const selectedCountry = countries.find((c) => c.id === parseInt(selectedId, 10));
+  const handleCountrySelect = (country: any) => {
     setFormData({
       ...formData,
-      country_id: selectedId,
-      country_name: selectedCountry?.name || "",
+      country_id: country.id.toString(),
+      country_name: country.name,
       package_id: "",
       package_name: "",
     });
+    setCountrySearch(country.name);
+    setShowCountryDropdown(false);
   };
 
   const handlePackageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -141,6 +191,7 @@ export function ApplicationForm({ locale = "tr" }: ApplicationFormProps) {
       notes: formData.notes || null,
       wants_payment: wantsToPayNow,
       payment_method: wantsToPayNow ? paymentMethod : null,
+      person_count: personCount,
     });
 
     setLoading(false);
@@ -158,10 +209,12 @@ export function ApplicationForm({ locale = "tr" }: ApplicationFormProps) {
         notes: "",
         wants_payment: false,
         payment_method: "",
+        person_count: 1,
       });
       setWantsToPayNow(true);
       setPaymentMethod("");
       setCurrencyRates(null);
+      setPersonCount(1);
     } else {
       setError(t(locale, "applicationError"));
     }
@@ -182,7 +235,7 @@ export function ApplicationForm({ locale = "tr" }: ApplicationFormProps) {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <form onSubmit={handleSubmit} className={`grid grid-cols-1 gap-8 ${formData.package_id ? 'lg:grid-cols-2' : 'lg:grid-cols-1 max-w-3xl mx-auto'}`}>
         {/* Left Column - Application Form */}
         <div className="space-y-5 card">
           <h2 className="text-xl font-bold text-slate-900">Başvuru Bilgileri</h2>
@@ -254,45 +307,133 @@ export function ApplicationForm({ locale = "tr" }: ApplicationFormProps) {
             />
           </div>
 
-          <div className="space-y-2">
-            <label htmlFor="country_id" className="block text-sm font-medium text-slate-700">
+          <div className="space-y-2 relative">
+            <label htmlFor="country_search" className="block text-sm font-medium text-slate-700">
               {t(locale, "country")} <span className="text-red-500">*</span>
             </label>
-            <select
-              id="country_id"
+            <input
+              type="text"
+              id="country_search"
               required
-              value={formData.country_id}
-              onChange={handleCountryChange}
+              value={countrySearch}
+              onChange={(e) => {
+                setCountrySearch(e.target.value);
+                setShowCountryDropdown(true);
+              }}
+              onFocus={() => setShowCountryDropdown(true)}
+              placeholder="Ülke ara..."
               className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-            >
-              <option value="">-- {t(locale, "selectCountry")} --</option>
-              {countries.map((country) => (
-                <option key={country.id} value={country.id}>
-                  {country.name}
-                </option>
-              ))}
-            </select>
+            />
+            {showCountryDropdown && filteredCountries.length > 0 && (
+              <div className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                {filteredCountries.map((country) => (
+                  <button
+                    key={country.id}
+                    type="button"
+                    onClick={() => handleCountrySelect(country)}
+                    className="w-full text-left px-4 py-2 text-sm hover:bg-primary/5 focus:bg-primary/10 focus:outline-none transition-colors"
+                  >
+                    {country.name}
+                  </button>
+                ))}
+              </div>
+            )}
+            <input type="hidden" name="country_id" value={formData.country_id} required />
           </div>
 
           {products.length > 0 && (
-            <div className="space-y-2">
-              <label htmlFor="package_id" className="block text-sm font-medium text-slate-700">
-                {t(locale, "selectPackage")} <span className="text-red-500">*</span>
+            <div className="space-y-3">
+              <label className="block text-sm font-medium text-slate-700">
+                {t(locale, "selectPackage")} (Opsiyonel)
               </label>
-              <select
-                id="package_id"
-                required
-                value={formData.package_id}
-                onChange={handlePackageChange}
-                className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-              >
-                <option value="">-- {t(locale, "selectPackage")} --</option>
-                {products.map((product) => (
-                  <option key={product.id} value={product.id}>
-                    {product.name} - ${Number(product.price).toFixed(2)}
-                  </option>
-                ))}
-              </select>
+              <div className="grid grid-cols-1 gap-3">
+                {products.map((product, index) => {
+                  const isSelected = formData.package_id === product.id.toString();
+                  const currencySymbol = product.currency_id === 1 ? '₺' : product.currency_id === 2 ? '$' : '€';
+                  
+                  return (
+                    <button
+                      key={product.id}
+                      type="button"
+                      onClick={() => {
+                        setSkipPackageSelection(false);
+                        setFormData({
+                          ...formData,
+                          package_id: product.id.toString(),
+                          package_name: product.name,
+                        });
+                      }}
+                      className={`relative rounded-lg border-2 p-4 text-left transition-all hover:shadow-lg ${
+                        isSelected
+                          ? 'border-primary bg-primary/5 shadow-md'
+                          : 'border-slate-200 bg-white hover:border-primary/50'
+                      }`}
+                    >
+                      {index === 0 && (
+                        <div className="absolute -right-1 -top-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-white">
+                          ⭐ Popüler
+                        </div>
+                      )}
+                      {isSelected && (
+                        <div className="absolute -left-1 -top-1 rounded-full bg-green-500 p-1">
+                          <CheckCircle2 className="h-3 w-3 text-white" />
+                        </div>
+                      )}
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1">
+                          <div className="text-sm font-bold text-slate-900 mb-1">{product.name}</div>
+                          {product.description && (
+                            <div className="text-xs text-slate-600 line-clamp-2">{product.description}</div>
+                          )}
+                        </div>
+                        <div className="flex flex-col items-end">
+                          <div className="flex items-baseline gap-1">
+                            <span className="text-lg font-bold text-primary">
+                              {currencySymbol}{Number(product.price).toFixed(0)}
+                            </span>
+                          </div>
+                          {isSelected && (
+                            <span className="text-xs font-semibold text-green-600 mt-1">Seçili</span>
+                          )}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+                
+                {/* Daha sonra karar vereceğim seçeneği */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSkipPackageSelection(true);
+                    setFormData({
+                      ...formData,
+                      package_id: "",
+                      package_name: "",
+                    });
+                  }}
+                  className={`relative rounded-lg border-2 p-4 text-left transition-all hover:shadow-lg ${
+                    skipPackageSelection
+                      ? 'border-primary bg-primary/5 shadow-md'
+                      : 'border-slate-200 bg-white hover:border-primary/50'
+                  }`}
+                >
+                  {skipPackageSelection && (
+                    <div className="absolute -left-1 -top-1 rounded-full bg-green-500 p-1">
+                      <CheckCircle2 className="h-3 w-3 text-white" />
+                    </div>
+                  )}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1">
+                      <div className="text-sm font-bold text-slate-900 mb-1">Daha Sonra Karar Vereceğim</div>
+                      <div className="text-xs text-slate-600">Paket seçimini daha sonra danışmanlarımızla birlikte yapabilirsiniz</div>
+                    </div>
+                    {skipPackageSelection && (
+                      <span className="text-xs font-semibold text-green-600 mt-1">Seçili</span>
+                    )}
+                  </div>
+                </button>
+              </div>
             </div>
           )}
 
@@ -332,8 +473,20 @@ export function ApplicationForm({ locale = "tr" }: ApplicationFormProps) {
             </div>
           </div>
 
-          {/* Show button here only if payment is NOT selected */}
-          {!wantsToPayNow && (
+          {/* Scroll hint for mobile - outside of CTA box */}
+          {formData.package_id && (
+            <div className="md:hidden text-center">
+              <p className="text-sm text-primary font-medium flex items-center justify-center gap-2">
+                <svg className="w-4 h-4 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                </svg>
+                Ödeme bilgileri için aşağı kaydırın
+              </p>
+            </div>
+          )}
+
+          {/* Show button here if NO package selected OR payment is NOT selected */}
+          {(!formData.package_id || !wantsToPayNow) && (
             <>
               <button
                 type="submit"
@@ -409,6 +562,8 @@ export function ApplicationForm({ locale = "tr" }: ApplicationFormProps) {
               formatTurkish={formatTurkish}
               wantsToPayNow={wantsToPayNow}
               paymentMethod={paymentMethod}
+              personCount={personCount}
+              onPersonCountChange={setPersonCount}
               onWantsToPayNowChange={(checked) => {
                 setWantsToPayNow(checked);
                 if (!checked) setPaymentMethod("");

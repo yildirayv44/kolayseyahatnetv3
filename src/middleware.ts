@@ -34,6 +34,7 @@ export async function middleware(request: NextRequest) {
     "/kuveyt/kuveyt-gezilecek-yerler": "/blog/kuveyt-gezilecek-yerler",
     "/amerika/danismanlik-paketleri": "/amerika",
     "/amerika/tum-sorular": "/amerika",
+    "/uganda/uganda-e-vize-basvurusu-kolay-seyahat": "/uganda",
     // Blog redirects (old URLs to new blog URLs)
     "/kuveyt-gezilecek-yerler": "/blog/kuveyt-gezilecek-yerler",
     "/kapida-vize-isteyen-ulkeler": "/blog/kapida-vize-isteyen-ulkeler",

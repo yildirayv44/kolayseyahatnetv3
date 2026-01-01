@@ -89,8 +89,9 @@ export default async function LocaleLayout({
         <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://fonts.googleapis.com" crossOrigin="anonymous" />
         
-        {/* Google Tag Manager - Must be first in head */}
+        {/* Google Tag Manager */}
         <script
+          suppressHydrationWarning
           dangerouslySetInnerHTML={{
             __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -99,6 +100,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-MV883RTB');`,
           }}
         />
+        {/* End Google Tag Manager */}
         
         {/* Structured Data */}
         <script
@@ -124,6 +126,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             style={{ display: 'none', visibility: 'hidden' }}
           />
         </noscript>
+        {/* End Google Tag Manager (noscript) */}
         <WebVitals />
         <PageLoadingBar />
         <Header />
