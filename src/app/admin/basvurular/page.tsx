@@ -241,6 +241,16 @@ export default function ApplicationsPage() {
                       <p className="font-medium text-slate-900">{selectedApp.package_name || "-"}</p>
                     </div>
                     <div>
+                      <p className="text-xs text-slate-600">Kişi Sayısı</p>
+                      <p className="font-medium text-slate-900">{selectedApp.person_count || 1} kişi</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-600">Toplam Tutar</p>
+                      <p className="font-medium text-slate-900">
+                        {selectedApp.total_amount ? `${Number(selectedApp.total_amount).toFixed(2)} ${selectedApp.package_name?.includes('USD') ? 'USD' : selectedApp.package_name?.includes('EUR') ? 'EUR' : 'TRY'}` : "-"}
+                      </p>
+                    </div>
+                    <div>
                       <p className="text-xs text-slate-600">Başvuru Tarihi</p>
                       <p className="font-medium text-slate-900">
                         {new Date(selectedApp.created_at).toLocaleDateString("tr-TR")}
@@ -254,6 +264,37 @@ export default function ApplicationsPage() {
                     </div>
                   </div>
                 </div>
+
+                {/* Currency & Pricing Info */}
+                {selectedApp.package_currency && (
+                  <div>
+                    <h4 className="mb-3 text-sm font-semibold text-slate-900">Fiyat ve Kur Bilgileri</h4>
+                    <div className="grid gap-4 sm:grid-cols-2 rounded-lg border-2 border-slate-200 p-4">
+                      <div>
+                        <p className="text-xs text-slate-600">Para Birimi</p>
+                        <p className="font-medium text-slate-900">{selectedApp.package_currency}</p>
+                      </div>
+                      {selectedApp.usd_rate && (
+                        <div>
+                          <p className="text-xs text-slate-600">USD Kuru (TCMB)</p>
+                          <p className="font-medium text-slate-900">{Number(selectedApp.usd_rate).toFixed(4)} ₺</p>
+                        </div>
+                      )}
+                      {selectedApp.eur_rate && (
+                        <div>
+                          <p className="text-xs text-slate-600">EUR Kuru (TCMB)</p>
+                          <p className="font-medium text-slate-900">{Number(selectedApp.eur_rate).toFixed(4)} ₺</p>
+                        </div>
+                      )}
+                      {selectedApp.tl_amount && (
+                        <div>
+                          <p className="text-xs text-slate-600">TL Karşılığı</p>
+                          <p className="font-medium text-primary text-lg">{Number(selectedApp.tl_amount).toFixed(2)} ₺</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 {/* Payment Info */}
                 <div>

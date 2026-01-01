@@ -192,6 +192,11 @@ export function ApplicationForm({ locale = "tr" }: ApplicationFormProps) {
       wants_payment: wantsToPayNow,
       payment_method: wantsToPayNow ? paymentMethod : null,
       person_count: personCount,
+      total_amount: totalPackagePrice,
+      package_currency: packageCurrency,
+      usd_rate: currencyRates?.USD.selling || null,
+      eur_rate: currencyRates?.EUR.selling || null,
+      tl_amount: tlAmount,
     });
 
     setLoading(false);
