@@ -247,7 +247,7 @@ export default function ApplicationsPage() {
                     <div>
                       <p className="text-xs text-slate-600">Toplam Tutar</p>
                       <p className="font-medium text-slate-900">
-                        {selectedApp.total_amount ? `${Number(selectedApp.total_amount).toFixed(2)} ${selectedApp.package_name?.includes('USD') ? 'USD' : selectedApp.package_name?.includes('EUR') ? 'EUR' : 'TRY'}` : "-"}
+                        {selectedApp.total_amount ? `${Number(selectedApp.total_amount).toFixed(2)} ${selectedApp.package_currency || 'TRY'}` : "-"}
                       </p>
                     </div>
                     <div>

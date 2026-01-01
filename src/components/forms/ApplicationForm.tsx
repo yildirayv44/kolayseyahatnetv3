@@ -341,7 +341,7 @@ export function ApplicationForm({ locale = "tr" }: ApplicationFormProps) {
           </div>
 
           {/* Payment Instructions */}
-          {submittedData.wants_payment && (
+          {submittedData.wants_payment && submittedData.package_name && (
             <div className="space-y-4 mb-6">
               <h4 className="font-semibold text-slate-900 text-lg">💳 Ödeme Bilgileri</h4>
               

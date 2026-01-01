@@ -3,7 +3,18 @@ import { NextResponse } from 'next/server';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { full_name, email, country_name, package_name } = body;
+    const { 
+      full_name, 
+      email, 
+      country_name, 
+      package_name,
+      person_count,
+      total_amount,
+      package_currency,
+      tl_amount,
+      wants_payment,
+      payment_method 
+    } = body;
 
     if (!email) {
       return NextResponse.json({ success: false, error: 'Email is required' });
@@ -76,8 +87,37 @@ export async function POST(request: Request) {
               
               ${package_name ? `
               <div class="info-box">
-                <h3>📦 Seçtiğiniz Paket</h3>
-                <p style="margin: 0;"><strong>${package_name}</strong></p>
+                <h3>📦 Başvuru Detayları</h3>
+                <p style="margin: 0 0 10px 0;"><strong>Paket:</strong> ${package_name}</p>
+                ${person_count ? `<p style="margin: 0 0 10px 0;"><strong>Kişi Sayısı:</strong> ${person_count} kişi</p>` : ''}
+                ${total_amount ? `
+                <p style="margin: 0 0 10px 0;"><strong>Toplam Tutar:</strong> ${Number(total_amount).toFixed(2)} ${package_currency || 'TRY'}</p>
+                ${tl_amount && package_currency !== 'TRY' ? `<p style="margin: 0;"><strong>TL Karşılığı:</strong> ${Number(tl_amount).toFixed(2)} ₺</p>` : ''}
+                ` : ''}
+              </div>
+              ` : ''}
+              
+              ${wants_payment && package_name ? `
+              <div class="contact-info" style="background: #fef3c7; border-color: #fde047;">
+                <h4 style="color: #92400e;">💳 Ödeme Bekleniyor</h4>
+                <p style="margin: 0 0 10px 0; color: #78350f;">
+                  <strong>Önemli:</strong> Başvurunuzun işleme alınabilmesi için ödemenizin yapılması gerekmektedir.
+                </p>
+                ${payment_method === 'bank_transfer' ? `
+                <div style="background: white; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                  <p style="margin: 0 0 10px 0; color: #1e40af;"><strong>Banka Havalesi / EFT Bilgileri:</strong></p>
+                  <p style="margin: 5px 0; color: #334155;"><strong>Banka:</strong> Kolay Seyahat Teknoloji Ltd. Şti.</p>
+                  <p style="margin: 5px 0; color: #334155;"><strong>IBAN:</strong> TR71 0006 6001 1888 8000 1215 84</p>
+                  <p style="margin: 15px 0 5px 0; color: #dc2626; font-size: 14px;">
+                    ⚠️ Ödeme yaptıktan sonra dekont/makbuzunuzu WhatsApp veya e-posta ile bize iletmeyi unutmayın.
+                  </p>
+                </div>
+                ` : ''}
+                ${payment_method === 'credit_card' ? `
+                <p style="margin: 10px 0 0 0; color: #78350f;">
+                  Kredi kartı ile ödeme için danışmanlarımız sizinle iletişime geçecektir.
+                </p>
+                ` : ''}
               </div>
               ` : ''}
               
