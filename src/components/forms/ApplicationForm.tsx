@@ -245,6 +245,57 @@ export function ApplicationForm({ locale = "tr" }: ApplicationFormProps) {
 
   return (
     <div className="w-full">
+      {/* Header - Show only when form is not submitted */}
+      {!success && (
+        <div className="bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-300 rounded-xl p-6 mb-8">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="flex-shrink-0 w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-slate-900 mb-1">Online Vize Başvuru Formu</h2>
+              <p className="text-sm text-slate-600">Ortalama 3 dakikada tamamlanır</p>
+            </div>
+          </div>
+          
+          <p className="text-slate-700 mb-4">
+            Formu doldurun, <strong className="text-primary">1 saat içinde</strong> uzman danışmanlarımız sizinle iletişime geçsin.
+          </p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="flex items-center gap-2 bg-white rounded-lg p-3 border border-blue-200">
+              <svg className="w-5 h-5 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              <span className="text-sm font-semibold text-slate-900">Hızlı Yanıt</span>
+            </div>
+            <div className="flex items-center gap-2 bg-white rounded-lg p-3 border border-blue-200">
+              <svg className="w-5 h-5 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+              <span className="text-sm font-semibold text-slate-900">Profesyonel Destek</span>
+            </div>
+            <div className="flex items-center gap-2 bg-white rounded-lg p-3 border border-blue-200">
+              <svg className="w-5 h-5 text-purple-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+              <span className="text-sm font-semibold text-slate-900">Güvenli İşlem</span>
+            </div>
+          </div>
+          
+          <div className="mt-4 p-3 bg-amber-50 border border-amber-300 rounded-lg">
+            <p className="text-sm text-amber-900 flex items-center gap-2">
+              <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              </svg>
+              <strong>Ücretsiz Ön Değerlendirme:</strong> Başvurunuz uzmanlarımız tarafından incelenir ve size en uygun çözüm önerilir.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Success/Error Messages */}
       {success && submittedData && (
         <div className="rounded-xl border-2 border-emerald-300 bg-gradient-to-br from-emerald-50 to-green-50 p-6 mb-8 shadow-lg">
@@ -256,8 +307,8 @@ export function ApplicationForm({ locale = "tr" }: ApplicationFormProps) {
               </svg>
             </div>
             <div>
-              <h3 className="text-xl font-bold text-emerald-900">Başvurunuz Başarıyla Alındı!</h3>
-              <p className="text-sm text-emerald-700">Başvuru bilgileriniz sistemimize kaydedildi.</p>
+              <h3 className="text-xl font-bold text-emerald-900">🎉 Tebrikler! Başvurunuz Alındı</h3>
+              <p className="text-sm text-emerald-700">Şanslısınız! Fırsatı kaçırmadınız. Başvurunuz başarıyla kaydedildi.</p>
             </div>
           </div>
 
@@ -296,9 +347,12 @@ export function ApplicationForm({ locale = "tr" }: ApplicationFormProps) {
                     <p className="font-bold text-primary text-lg">{submittedData.total_amount.toFixed(2)} {submittedData.package_currency}</p>
                   </div>
                   {submittedData.tl_amount > 0 && (
-                    <div>
-                      <p className="text-xs text-slate-600 mb-1">TL Karşılığı</p>
-                      <p className="font-bold text-primary text-lg">{submittedData.tl_amount.toFixed(2)} ₺</p>
+                    <div className="md:col-span-2">
+                      <div className="bg-gradient-to-r from-primary/10 to-blue-50 rounded-lg p-4 border-2 border-primary">
+                        <p className="text-sm text-slate-700 mb-2">💰 Ödenecek Toplam Tutar</p>
+                        <p className="font-bold text-primary text-3xl">{submittedData.tl_amount.toFixed(2)} ₺</p>
+                        <p className="text-xs text-slate-600 mt-1">({submittedData.total_amount.toFixed(2)} {submittedData.package_currency} × Güncel Kur)</p>
+                      </div>
                     </div>
                   )}
                 </>
@@ -327,8 +381,23 @@ export function ApplicationForm({ locale = "tr" }: ApplicationFormProps) {
                       <p className="font-bold text-slate-900">Kolay Seyahat Teknoloji Ltd. Şti.</p>
                     </div>
                     <div>
-                      <p className="text-xs text-slate-600">IBAN</p>
-                      <p className="font-mono font-bold text-slate-900 text-lg">TR71 0006 6001 1888 8000 1215 84</p>
+                      <p className="text-xs text-slate-600 mb-2">IBAN</p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-mono font-bold text-slate-900 text-lg flex-1">TR71 0006 6001 1888 8000 1215 84</p>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText('TR71000660011888800012158 4');
+                            alert('IBAN kopyalandı!');
+                          }}
+                          className="flex items-center gap-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                          </svg>
+                          Kopyala
+                        </button>
+                      </div>
                     </div>
                     <div>
                       <p className="text-xs text-slate-600">Açıklama</p>
@@ -373,7 +442,7 @@ export function ApplicationForm({ locale = "tr" }: ApplicationFormProps) {
               <div className="flex items-start gap-3">
                 <div className="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center text-sm font-bold">1</div>
                 <p className="text-sm text-slate-700">
-                  <strong>24 saat içinde</strong> danışmanlarımız sizinle iletişime geçecek ve başvuru süreciniz hakkında detaylı bilgi verecektir.
+                  <strong>1 saat içinde</strong> danışmanlarımız sizinle iletişime geçecek ve başvuru süreciniz hakkında detaylı bilgi verecektir.
                 </p>
               </div>
               <div className="flex items-start gap-3">
@@ -401,18 +470,18 @@ export function ApplicationForm({ locale = "tr" }: ApplicationFormProps) {
           <div className="bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-300 rounded-lg p-4">
             <h4 className="font-semibold text-slate-900 mb-3">📞 İletişim</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-              <div className="flex items-center gap-2">
+              <a href="https://wa.me/902129099971" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:bg-green-50 p-2 rounded-lg transition-colors">
                 <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
                 </svg>
-                <span className="text-slate-700">WhatsApp: <strong className="text-slate-900">+90 555 123 45 67</strong></span>
-              </div>
-              <div className="flex items-center gap-2">
+                <span className="text-slate-700">WhatsApp: <strong className="text-slate-900">0212 909 99 71</strong></span>
+              </a>
+              <a href="mailto:vize@kolayseyahat.net" className="flex items-center gap-2 hover:bg-blue-50 p-2 rounded-lg transition-colors">
                 <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
-                <span className="text-slate-700">E-posta: <strong className="text-slate-900">info@kolayseyahat.net</strong></span>
-              </div>
+                <span className="text-slate-700">E-posta: <strong className="text-slate-900">vize@kolayseyahat.net</strong></span>
+              </a>
             </div>
           </div>
         </div>
@@ -424,7 +493,8 @@ export function ApplicationForm({ locale = "tr" }: ApplicationFormProps) {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className={`grid grid-cols-1 gap-8 ${formData.package_id ? 'lg:grid-cols-2' : 'lg:grid-cols-1 max-w-3xl mx-auto'}`}>
+      {!success && (
+        <form onSubmit={handleSubmit} className={`grid grid-cols-1 gap-8 ${formData.package_id ? 'lg:grid-cols-2' : 'lg:grid-cols-1 max-w-3xl mx-auto'}`}>
         {/* Left Column - Application Form */}
         <div className="space-y-5 card">
           <h2 className="text-xl font-bold text-slate-900">Başvuru Bilgileri</h2>
@@ -764,6 +834,7 @@ export function ApplicationForm({ locale = "tr" }: ApplicationFormProps) {
           )}
         </div>
       </form>
+      )}
     </div>
   );
 }
