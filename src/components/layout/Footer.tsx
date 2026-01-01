@@ -92,13 +92,13 @@ export function Footer({ locale = "tr" }: FooterProps) {
             <h4 className="mb-3 font-semibold text-slate-900">{t(locale, "followUs")}</h4>
             <ul className="space-y-2 text-slate-600">
               <li>
-                <a href="#" className="hover:text-primary">
+                <a href="https://www.instagram.com/kolayseyahattr/" target="_blank" rel="noopener noreferrer" className="hover:text-primary">
                   Instagram
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-primary">
-                  Facebook
+                <a href="https://www.linkedin.com/company/kolay-seyahat/" target="_blank" rel="noopener noreferrer" className="hover:text-primary">
+                  LinkedIn
                 </a>
               </li>
             </ul>

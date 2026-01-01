@@ -109,7 +109,7 @@ Başvuru Zamanı: ${new Date().toLocaleString('tr-TR', { timeZone: 'Europe/Istan
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Kolay Seyahat <onboarding@resend.dev>', // Update with your verified domain
+        from: 'Kolay Seyahat <noreply@kolayseyahat.com>',
         to: ['yildirayv4@gmail.com'],
         subject: `🎉 Yeni Vize Başvurusu - ${full_name}`,
         html: emailHtml,

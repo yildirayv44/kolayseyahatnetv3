@@ -266,7 +266,7 @@ Kolay Seyahat - Profesyonel Vize Danışmanlığı
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Kolay Seyahat <onboarding@resend.dev>', // Update with your verified domain
+        from: 'Kolay Seyahat <noreply@kolayseyahat.com>',
         to: [email],
         subject: `✅ Başvurunuz Alındı - Kolay Seyahat`,
         html: emailHtml,
