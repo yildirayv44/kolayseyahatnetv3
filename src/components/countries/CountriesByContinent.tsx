@@ -39,9 +39,10 @@ interface VisaRequirement {
 interface Props {
   countries: Country[];
   visaData: Record<string, VisaRequirement>;
+  locale?: 'tr' | 'en';
 }
 
-export function CountriesByContinent({ countries, visaData }: Props) {
+export function CountriesByContinent({ countries, visaData, locale = 'tr' }: Props) {
   const [selectedContinent, setSelectedContinent] = useState<Continent | 'all'>('all');
   
   const continentGroups = getCountriesByContinent(countries);
@@ -165,7 +166,7 @@ export function CountriesByContinent({ countries, visaData }: Props) {
                     return (
                       <Link
                         key={country.id}
-                        href={`/${country.slug || getCountrySlug(country.id)}`}
+                        href={locale === 'en' ? `/en/${country.slug || getCountrySlug(country.id)}` : `/${country.slug || getCountrySlug(country.id)}`}
                         className="card group overflow-hidden p-0 hover:border-primary hover:shadow-lg"
                       >
                         <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-100">
@@ -230,7 +231,7 @@ export function CountriesByContinent({ countries, visaData }: Props) {
             return (
               <Link
                 key={country.id}
-                href={`/${country.slug || getCountrySlug(country.id)}`}
+                href={locale === 'en' ? `/en/${country.slug || getCountrySlug(country.id)}` : `/${country.slug || getCountrySlug(country.id)}`}
                 className="card group overflow-hidden p-0 hover:border-primary hover:shadow-lg"
               >
                 <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-100">

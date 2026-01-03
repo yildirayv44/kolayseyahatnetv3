@@ -259,7 +259,7 @@ export function CountriesListWithFilters({ initialCountries, locale = 'tr' }: Co
           </p>
         </div>
       ) : viewMode === 'continent' ? (
-        <CountriesByContinent countries={filteredCountries} visaData={{}} />
+        <CountriesByContinent countries={filteredCountries} visaData={{}} locale={locale} />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filteredCountries.map((country) => {
@@ -269,7 +269,7 @@ export function CountriesListWithFilters({ initialCountries, locale = 'tr' }: Co
             return (
               <Link
                 key={country.id}
-                href={`/${country.slug || getCountrySlug(country.id)}`}
+                href={locale === 'en' ? `/en/${country.slug || getCountrySlug(country.id)}` : `/${country.slug || getCountrySlug(country.id)}`}
                 className="card group overflow-hidden p-0 hover:border-primary hover:shadow-lg"
               >
                 {/* Country Image */}

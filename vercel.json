@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/web-vitals/refresh",
+      "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/web-vitals/check-alerts",
+      "schedule": "0 */6 * * *"
+    }
+  ]
+}
