@@ -3,50 +3,83 @@ import { getCountries } from "@/lib/queries";
 import { CountriesListWithFilters } from "@/components/countries/CountriesListWithFilters";
 import { generateItemListSchema, generateBreadcrumbSchema, generateOrganizationSchema } from "@/components/shared/SEOHead";
 
+interface CountriesPageProps {
+  params: Promise<{ locale: string }>;
+}
+
 // Cache'i 5 dakikada bir yenile
 export const revalidate = 300;
 
-export async function generateMetadata(): Promise<Metadata> {
+export async function generateMetadata({ params }: CountriesPageProps): Promise<Metadata> {
+  const { locale } = await params;
+  const isEnglish = locale === 'en';
   const countries = await getCountries();
   const countryCount = countries.length;
 
   return {
-    title: `${countryCount} Ülke için Vize Başvurusu | Kolay Seyahat`,
-    description: `Türk vatandaşları için ${countryCount} ülkeye vize başvurusu. Vizesiz, varışta vize ve e-vize gerektiren tüm ülkeler. Amerika, İngiltere, Schengen, Kanada vizesi ve daha fazlası için profesyonel danışmanlık.`,
-    keywords: [
-      "vize ülkeleri",
-      "vize başvurusu",
-      "vizesiz ülkeler",
-      "varışta vize",
-      "e-vize ülkeleri",
-      "amerika vizesi",
-      "schengen vizesi",
-      "ingiltere vizesi",
-      "kanada vizesi",
-      "avustralya vizesi",
-      "türk vatandaşları vize",
-      "vize danışmanlık",
-    ].join(", "),
+    title: isEnglish
+      ? `Visa Application for ${countryCount} Countries | Kolay Seyahat`
+      : `${countryCount} Ülke için Vize Başvurusu | Kolay Seyahat`,
+    description: isEnglish
+      ? `Visa applications to ${countryCount} countries for Turkish citizens. All countries requiring visa-free, visa on arrival and e-visa. Professional consultancy for USA, UK, Schengen, Canada visa and more.`
+      : `Türk vatandaşları için ${countryCount} ülkeye vize başvurusu. Vizesiz, varışta vize ve e-vize gerektiren tüm ülkeler. Amerika, İngiltere, Schengen, Kanada vizesi ve daha fazlası için profesyonel danışmanlık.`,
+    keywords: isEnglish
+      ? [
+        "visa countries",
+        "visa application",
+        "visa-free countries",
+        "visa on arrival",
+        "e-visa countries",
+        "usa visa",
+        "schengen visa",
+        "uk visa",
+        "canada visa",
+        "australia visa",
+        "turkish citizens visa",
+        "visa consultancy",
+      ].join(", ")
+      : [
+        "vize ülkeleri",
+        "vize başvurusu",
+        "vizesiz ülkeler",
+        "varışta vize",
+        "e-vize ülkeleri",
+        "amerika vizesi",
+        "schengen vizesi",
+        "ingiltere vizesi",
+        "kanada vizesi",
+        "avustralya vizesi",
+        "türk vatandaşları vize",
+        "vize danışmanlık",
+      ].join(", "),
     openGraph: {
-      title: `${countryCount} Ülke için Vize Başvurusu | Kolay Seyahat`,
-      description: `Türk vatandaşları için ${countryCount} ülkeye vize başvurusu. Vizesiz, varışta vize ve e-vize gerektiren tüm ülkeler.`,
+      title: isEnglish
+        ? `Visa Application for ${countryCount} Countries | Kolay Seyahat`
+        : `${countryCount} Ülke için Vize Başvurusu | Kolay Seyahat`,
+      description: isEnglish
+        ? `Visa applications to ${countryCount} countries for Turkish citizens. All countries requiring visa-free, visa on arrival and e-visa.`
+        : `Türk vatandaşları için ${countryCount} ülkeye vize başvurusu. Vizesiz, varışta vize ve e-vize gerektiren tüm ülkeler.`,
       type: "website",
-      url: "https://www.kolayseyahat.net/ulkeler",
+      url: isEnglish ? "https://www.kolayseyahat.net/en/ulkeler" : "https://www.kolayseyahat.net/ulkeler",
       siteName: "Kolay Seyahat",
-      locale: "tr_TR",
+      locale: isEnglish ? "en_US" : "tr_TR",
       images: [
         {
           url: "https://www.kolayseyahat.net/opengraph-image",
           width: 1200,
           height: 630,
-          alt: "Vize Başvurusu Yapılabilecek Ülkeler",
+          alt: isEnglish ? "Countries for Visa Application" : "Vize Başvurusu Yapılabilecek Ülkeler",
         },
       ],
     },
     twitter: {
       card: "summary_large_image",
-      title: `${countryCount} Ülke için Vize Başvurusu`,
-      description: `Türk vatandaşları için ${countryCount} ülkeye vize başvurusu.`,
+      title: isEnglish
+        ? `Visa Application for ${countryCount} Countries`
+        : `${countryCount} Ülke için Vize Başvurusu`,
+      description: isEnglish
+        ? `Visa applications to ${countryCount} countries for Turkish citizens.`
+        : `Türk vatandaşları için ${countryCount} ülkeye vize başvurusu.`,
       creator: "@kolayseyahat",
       site: "@kolayseyahat",
     },
@@ -72,7 +105,9 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function CountriesPage() {
+export default async function CountriesPage({ params }: CountriesPageProps) {
+  const { locale } = await params;
+  const isEnglish = locale === 'en';
   const countries = await getCountries();
 
   // ItemList Schema for SEO
@@ -87,8 +122,8 @@ export default async function CountriesPage() {
 
   // Breadcrumb Schema
   const breadcrumbSchema = generateBreadcrumbSchema([
-    { name: "Ana Sayfa", url: "/" },
-    { name: "Ülkeler", url: "/ulkeler" },
+    { name: isEnglish ? "Home" : "Ana Sayfa", url: isEnglish ? "/en" : "/" },
+    { name: isEnglish ? "Countries" : "Ülkeler", url: isEnglish ? "/en/ulkeler" : "/ulkeler" },
   ]);
 
   // Organization Schema

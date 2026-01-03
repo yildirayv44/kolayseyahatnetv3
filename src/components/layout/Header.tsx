@@ -14,13 +14,13 @@ import { getLocalizedUrl, getLocaleFromPathname } from "@/lib/locale-link";
 import { type Locale } from "@/i18n/config";
 import { t } from "@/i18n/translations";
 
-const menuItems = [
-  { path: "ulkeler", label: "Ülkeler" },
-  { path: "kurumsal-vize-danismanligi", label: "Kurumsal Vize Danışmanlığı" },
+const getMenuItems = (locale: 'tr' | 'en') => [
+  { path: "ulkeler", label: locale === 'en' ? "Countries" : "Ülkeler" },
+  { path: "kurumsal-vize-danismanligi", label: locale === 'en' ? "Corporate Visa Consultancy" : "Kurumsal Vize Danışmanlığı" },
   { path: "blog", label: "Blog" },
-  { path: "danisman", label: "Danışmanlar" },
-  { path: "hakkimizda", label: "Hakkımızda" },
-  { path: "iletisim", label: "İletişim" },
+  { path: "danismanlar", label: locale === 'en' ? "Consultants" : "Danışmanlar" },
+  { path: "hakkimizda", label: locale === 'en' ? "About Us" : "Hakkımızda" },
+  { path: "iletisim", label: locale === 'en' ? "Contact" : "İletişim" },
 ];
 
 export function Header() {
@@ -349,7 +349,7 @@ export function Header() {
 
             {menuOpen && (
               <div className="absolute right-0 top-full mt-2 w-56 rounded-lg border border-slate-200 bg-white shadow-lg">
-                {menuItems.map((item) => (
+                {getMenuItems(locale).map((item) => (
                   <Link
                     key={item.path}
                     href={getLocalizedUrl(item.path, locale)}
@@ -400,7 +400,7 @@ export function Header() {
       {menuOpen && (
         <div className="border-t border-slate-200 bg-white shadow-lg md:hidden">
           <nav className="mx-auto flex max-w-6xl flex-col px-4 py-3">
-            {menuItems.map((item) => (
+            {getMenuItems(locale).map((item) => (
               <Link
                 key={item.path}
                 href={getLocalizedUrl(item.path, locale)}

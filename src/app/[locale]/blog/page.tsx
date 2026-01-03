@@ -91,7 +91,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
           return (
             <Link
               key={blog.id}
-              href={getBlogSlug(blog)}
+              href={getBlogSlug(blog, locale as 'tr' | 'en')}
               className="card group overflow-hidden p-0"
             >
               {/* Blog Image */}

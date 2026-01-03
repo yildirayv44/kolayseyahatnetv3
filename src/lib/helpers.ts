@@ -66,25 +66,29 @@ export function getConsultantSlug(consultant: any): string {
 }
 
 // Blog slug helper - taxonomies'den slug kullan
-export function getBlogSlug(blog: any): string {
+export function getBlogSlug(blog: any, locale: 'tr' | 'en' = 'tr'): string {
+  const prefix = locale === 'en' ? '/en/blog' : '/blog';
+  
   // Blog'un taxonomy slug'ı varsa kullan
   if (blog.taxonomy_slug) {
-    return `/blog/${blog.taxonomy_slug}`;
+    return `${prefix}/${blog.taxonomy_slug}`;
   }
   
   // Fallback: blog.slug veya blog.url
   if (blog.slug) {
     const slug = blog.slug.trim();
-    return slug.startsWith('/blog/') ? slug : `/blog/${slug}`;
+    const cleanSlug = slug.replace(/^\/blog\//, '').replace(/^blog\//, '');
+    return `${prefix}/${cleanSlug}`;
   }
   
   if (blog.url) {
     const url = blog.url.trim();
-    return url.startsWith('/blog/') ? url : `/blog/${url}`;
+    const cleanUrl = url.replace(/^\/blog\//, '').replace(/^blog\//, '');
+    return `${prefix}/${cleanUrl}`;
   }
   
   // Son çare: ID kullan
-  return `/blog/${blog.id}`;
+  return `${prefix}/${blog.id}`;
 }
 
 // Parse H2 headings from HTML content
