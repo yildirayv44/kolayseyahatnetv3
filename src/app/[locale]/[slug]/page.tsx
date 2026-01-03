@@ -33,6 +33,11 @@ import { supabase } from "@/lib/supabase";
 import { generateFAQSchema, generateBreadcrumbSchema, generateHowToSchema, generateOrganizationSchema, generateReviewSchema } from "@/components/shared/SEOHead";
 import { fixHtmlImageUrls } from "@/lib/image-helpers";
 import { generateCountryMetaDescription, generateMenuMetaDescription, truncateAtWord, truncateTitle, seededRandom, seededRating } from "@/lib/meta-helpers";
+import { ReadingProgressBar } from "@/components/shared/ReadingProgressBar";
+import { ScrollTriggeredCTA } from "@/components/shared/ScrollTriggeredCTA";
+import { RelatedContentCarousel } from "@/components/shared/RelatedContentCarousel";
+import { SocialProofNotifications } from "@/components/shared/SocialProofNotifications";
+import { getReadingTime } from "@/lib/reading-time";
 
 // ⚡ PERFORMANCE: Revalidate every 2 hours (7200 seconds) to reduce database load
 export const revalidate = 7200;
@@ -794,7 +799,34 @@ export default async function CountryPage({ params }: CountryPageParams) {
     { id: "soru-sor", title: t.askQuestion },
   ];
 
+  // Calculate reading time for main content
+  const contentForReading = [fixedContents, fixedPriceContents, fixedReqDocument]
+    .filter(Boolean)
+    .join(' ');
+  const readingTime = contentForReading ? getReadingTime(contentForReading, locale as 'tr' | 'en') : null;
+
+  // Prepare related content (blogs) for carousel
+  const relatedContent = blogs.map((blog: any) => ({
+    id: blog.id,
+    title: blog.title,
+    description: blog.description,
+    image_url: blog.image_url,
+    slug: blog.taxonomy_slug || blog.slug || `blog/${blog.id}`,
+    type: 'blog' as const,
+    created_at: blog.created_at,
+  }));
+
   return (
+    <>
+      {/* Reading Progress Bar */}
+      <ReadingProgressBar />
+
+      {/* Social Proof Notifications */}
+      <SocialProofNotifications 
+        countryName={country.name}
+        locale={locale as 'tr' | 'en'} 
+      />
+
     <div className="space-y-10 md:space-y-14">
       {/* SEO Schemas */}
       <script
@@ -981,27 +1013,13 @@ export default async function CountryPage({ params }: CountryPageParams) {
         <AskQuestionForm countryId={country.id} countryName={country.name} locale={locale as 'tr' | 'en'} />
       </section>
 
-      {/* İLGİLİ BLOG YAZILARI */}
-      {blogs.length > 0 && (
-        <section className="space-y-4">
-          <h2 className="text-lg font-semibold text-slate-900">{locale === 'en' ? 'Related Blog Posts' : 'İlgili Blog Yazıları'}</h2>
-          <div className="grid gap-4 md:grid-cols-3">
-            {blogs.map((blog: any) => (
-              <Link
-                key={blog.id}
-                href={getBlogSlug(blog)}
-                className="card space-y-2 text-sm transition-all hover:border-primary hover:shadow-lg"
-              >
-                <h3 className="font-semibold text-slate-900 line-clamp-2 group-hover:text-primary">
-                  {blog.title}
-                </h3>
-                <p className="text-xs text-slate-600 line-clamp-3">
-                  {blog.description}
-                </p>
-              </Link>
-            ))}
-          </div>
-        </section>
+      {/* İLGİLİ BLOG YAZILARI - Carousel Format */}
+      {relatedContent.length > 0 && (
+        <RelatedContentCarousel
+          items={relatedContent}
+          title={locale === 'en' ? 'Related Blog Posts' : 'İlgili Blog Yazıları'}
+          locale={locale as 'tr' | 'en'}
+        />
       )}
 
           {/* CTA */}
@@ -1047,5 +1065,6 @@ export default async function CountryPage({ params }: CountryPageParams) {
         />
       </section>
     </div>
+    </>
   );
 }

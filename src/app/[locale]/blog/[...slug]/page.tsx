@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, Calendar, User, Clock, MessageSquare } from "lucide-react";
-import { getBlogBySlug, getBlogComments } from "@/lib/queries";
+import { getBlogBySlug, getBlogComments, getBlogs } from "@/lib/queries";
 import { Breadcrumb } from "@/components/shared/Breadcrumb";
 import { ContentWithIds } from "@/components/country/ContentWithIds";
 import { parseH2Headings } from "@/lib/helpers";
@@ -11,6 +11,11 @@ import { GenericCommentSection } from "@/components/comments/GenericCommentSecti
 import { getLocalizedFields } from "@/lib/locale-content";
 import { getCleanImageUrl, getBlogCategoryImage } from "@/lib/image-helpers";
 import { generateArticleSchema } from "@/components/shared/SEOHead";
+import { ReadingProgressBar } from "@/components/shared/ReadingProgressBar";
+import { ScrollTriggeredCTA } from "@/components/shared/ScrollTriggeredCTA";
+import { RelatedContentCarousel } from "@/components/shared/RelatedContentCarousel";
+import { SocialProofNotifications } from "@/components/shared/SocialProofNotifications";
+import { getReadingTime } from "@/lib/reading-time";
 
 interface BlogPageProps {
   params: Promise<{ slug: string[]; locale: string }>;
@@ -100,6 +105,24 @@ export default async function BlogPage({ params }: BlogPageProps) {
   // Get comments
   const comments = await getBlogComments(blog.id);
 
+  // Calculate reading time
+  const readingTime = blog.contents ? getReadingTime(blog.contents, locale as 'tr' | 'en') : { minutes: 5, formatted: '5 dakika okuma' };
+
+  // Get related blogs (same category, exclude current)
+  const relatedBlogsData = await getBlogs({ limit: 6 });
+  const relatedBlogs = (relatedBlogsData || [])
+    .filter((b: any) => b.id !== blog.id && b.category === blog.category)
+    .slice(0, 3)
+    .map((b: any) => ({
+      id: b.id,
+      title: b.title,
+      description: b.description,
+      image_url: getCleanImageUrl(b.image_url, "blog") || getBlogCategoryImage(b.category),
+      slug: b.taxonomy_slug || b.slug || `blog/${b.id}`,
+      type: 'blog' as const,
+      created_at: b.created_at,
+    }));
+
   // Get clean image URL
   const imageUrl = getCleanImageUrl(blog.image_url, "blog") || getBlogCategoryImage(blog.category);
 
@@ -113,6 +136,21 @@ export default async function BlogPage({ params }: BlogPageProps) {
   });
 
   return (
+    <>
+      {/* Reading Progress Bar */}
+      <ReadingProgressBar />
+
+      {/* Social Proof Notifications */}
+      <SocialProofNotifications locale={locale as 'tr' | 'en'} />
+
+      {/* Scroll Triggered CTA */}
+      <ScrollTriggeredCTA
+        title={locale === 'en' ? 'Need Help with Your Visa?' : 'Vize Başvurunuzda Yardım mı Lazım?'}
+        description={locale === 'en' ? 'Our expert consultants are ready to help you.' : 'Uzman danışmanlarımız size yardımcı olmak için hazır.'}
+        locale={locale as 'tr' | 'en'}
+        triggerPercentage={40}
+      />
+
     <div className="space-y-8 md:space-y-10">
       {/* Article Schema */}
       <script
@@ -182,7 +220,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
             
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4" />
-              <span>5 dakika okuma</span>
+              <span>{readingTime.formatted}</span>
             </div>
           </div>
         </header>
@@ -213,6 +251,14 @@ export default async function BlogPage({ params }: BlogPageProps) {
           <div className="prose prose-slate max-w-none">
             <ContentWithIds html={blog.contents} />
           </div>
+        )}
+
+        {/* Related Content Carousel */}
+        {relatedBlogs.length > 0 && (
+          <RelatedContentCarousel
+            items={relatedBlogs}
+            locale={locale as 'tr' | 'en'}
+          />
         )}
 
         {/* CTA */}
@@ -251,5 +297,6 @@ export default async function BlogPage({ params }: BlogPageProps) {
         </div>
       </article>
     </div>
+    </>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { getLocalizedUrl } from "@/lib/locale-link";
 import { t } from "@/i18n/translations";
@@ -10,7 +11,11 @@ interface FooterProps {
 }
 
 export function Footer({ locale = "tr" }: FooterProps) {
-  const year = new Date().getFullYear();
+  const [year, setYear] = useState(2026); // Default year to avoid hydration mismatch
+  
+  useEffect(() => {
+    setYear(new Date().getFullYear());
+  }, []);
 
   return (
     <footer className="border-t border-slate-200 bg-slate-50 mt-10">
