@@ -545,7 +545,7 @@ export default async function CountryPage({ params }: CountryPageParams) {
           </div>
           
           {/* STICKY CTA */}
-          <StickyCTA countryName={menuCountry?.name || menu.name} />
+          <StickyCTA countryName={menuCountry?.name || menu.name} locale={locale as 'tr' | 'en'} />
         </div>
       );
   }
@@ -836,6 +836,7 @@ export default async function CountryPage({ params }: CountryPageParams) {
         countries={allCountries as any}
         locale={locale as 'tr' | 'en'}
         currentCountry={country.slug}
+        autoOpen={false}
       />
 
     <div className="space-y-10 md:space-y-14">
@@ -877,7 +878,7 @@ export default async function CountryPage({ params }: CountryPageParams) {
       {/* BREADCRUMB */}
       <Breadcrumb
         items={[
-          { label: "Ülkeler", href: getLocalizedUrl("ulkeler", locale as 'tr' | 'en') },
+          { label: locale === 'en' ? "Countries" : "Ülkeler", href: getLocalizedUrl("ulkeler", locale as 'tr' | 'en') },
           { label: country.name },
         ]}
       />
@@ -890,7 +891,7 @@ export default async function CountryPage({ params }: CountryPageParams) {
       />
 
       {/* STICKY CTA */}
-      <StickyCTA countryName={country.name} />
+      <StickyCTA countryName={country.name} locale={locale as 'tr' | 'en'} />
 
       {/* TABLE OF CONTENTS */}
       {tocItems.length > 0 && <TableOfContents items={tocItems} locale={locale as 'tr' | 'en'} />}

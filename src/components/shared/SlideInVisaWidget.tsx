@@ -26,9 +26,10 @@ interface SlideInVisaWidgetProps {
   countries: Country[];
   locale?: 'tr' | 'en';
   currentCountry?: string;
+  autoOpen?: boolean;
 }
 
-export function SlideInVisaWidget({ countries, locale = 'tr', currentCountry }: SlideInVisaWidgetProps) {
+export function SlideInVisaWidget({ countries, locale = 'tr', currentCountry, autoOpen = true }: SlideInVisaWidgetProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [hasScrolled, setHasScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -39,6 +40,17 @@ export function SlideInVisaWidget({ countries, locale = 'tr', currentCountry }: 
   const [touchEnd, setTouchEnd] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect mobile on mount
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024); // lg breakpoint
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Auto-select current country on mount
   useEffect(() => {
@@ -67,13 +79,17 @@ export function SlideInVisaWidget({ countries, locale = 'tr', currentCountry }: 
       
       if (scrollPercentage > 20 && !hasScrolled) {
         setHasScrolled(true);
-        setIsOpen(true);
+        // Auto-open logic: Desktop always opens, Mobile only if autoOpen is true
+        const shouldAutoOpen = !isMobile || autoOpen;
+        if (shouldAutoOpen) {
+          setIsOpen(true);
+        }
       }
     };
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [hasScrolled]);
+  }, [hasScrolled, autoOpen, isMobile]);
 
   // Swipe gesture handlers - Right swipe to close
   const handleTouchStart = (e: React.TouchEvent) => {

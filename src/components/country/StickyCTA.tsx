@@ -6,9 +6,10 @@ import { ArrowRight, PhoneCall, X } from "lucide-react";
 
 interface StickyCTAProps {
   countryName: string;
+  locale?: 'tr' | 'en';
 }
 
-export function StickyCTA({ countryName }: StickyCTAProps) {
+export function StickyCTA({ countryName, locale = 'tr' }: StickyCTAProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
 
@@ -41,10 +42,16 @@ export function StickyCTA({ countryName }: StickyCTAProps) {
             {/* Left: Text */}
             <div className="flex-1">
               <p className="text-sm font-bold text-slate-900">
-                {countryName} Vizesi için Hemen Başvurun
+                {locale === 'en' 
+                  ? `Apply Now for ${countryName} Visa`
+                  : `${countryName} Vizesi için Hemen Başvurun`
+                }
               </p>
               <p className="text-xs text-slate-600">
-                %98 onay oranı • 7-14 gün süre • Ücretsiz ön değerlendirme
+                {locale === 'en'
+                  ? '98% approval rate • 7-14 days • Free evaluation'
+                  : '%98 onay oranı • 7-14 gün süre • Ücretsiz ön değerlendirme'
+                }
               </p>
             </div>
 
@@ -55,19 +62,19 @@ export function StickyCTA({ countryName }: StickyCTAProps) {
                 className="hidden items-center gap-2 rounded-lg border-2 border-primary bg-white px-4 py-2 text-sm font-bold text-primary transition-all hover:bg-primary hover:text-white sm:inline-flex"
               >
                 <PhoneCall className="h-4 w-4" />
-                <span>Ara</span>
+                <span>{locale === 'en' ? 'Call' : 'Ara'}</span>
               </a>
               <Link
                 href="/vize-basvuru-formu"
                 className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-2 text-sm font-bold text-white shadow-lg transition-all hover:bg-primary/90"
               >
-                <span>Başvur</span>
+                <span>{locale === 'en' ? 'Apply Now' : 'Başvur'}</span>
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <button
                 onClick={() => setIsDismissed(true)}
                 className="ml-2 rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
-                aria-label="Kapat"
+                aria-label={locale === 'en' ? 'Close' : 'Kapat'}
               >
                 <X className="h-4 w-4" />
               </button>

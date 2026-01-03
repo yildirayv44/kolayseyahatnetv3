@@ -23,8 +23,10 @@ export function Footer({ locale = "tr" }: FooterProps) {
         <div className="space-y-3 max-w-sm">
           <h3 className="text-lg font-semibold text-slate-900">Kolay Seyahat</h3>
           <p className="text-sm text-slate-600">
-            Türkiye merkezli profesyonel vize danışmanlık hizmeti. Amerika, İngiltere,
-            Schengen ve daha birçok ülke için başvuru sürecinizi kolaylaştırıyoruz.
+            {locale === 'en'
+              ? 'Turkey-based professional visa consultancy service. We simplify your application process for the USA, UK, Schengen, and many other countries.'
+              : 'Türkiye merkezli profesyonel vize danışmanlık hizmeti. Amerika, İngiltere, Schengen ve daha birçok ülke için başvuru sürecinizi kolaylaştırıyoruz.'
+            }
           </p>
         </div>
 
@@ -34,48 +36,48 @@ export function Footer({ locale = "tr" }: FooterProps) {
             <ul className="space-y-2 text-slate-600">
               <li>
                 <Link href={getLocalizedUrl("neden-biz", locale)} className="hover:text-primary">
-                  Neden Biz
+                  {locale === 'en' ? 'Why Us' : 'Neden Biz'}
                 </Link>
               </li>
               <li>
                 <Link href={getLocalizedUrl("duyurular", locale)} className="hover:text-primary">
-                  Duyurular
+                  {locale === 'en' ? 'Announcements' : 'Duyurular'}
                 </Link>
               </li>
               <li>
                 <Link href={getLocalizedUrl("sikca-sorulan-sorular", locale)} className="hover:text-primary">
-                  Sıkça Sorulan Sorular
+                  {locale === 'en' ? 'FAQ' : 'Sıkça Sorulan Sorular'}
                 </Link>
               </li>
               <li>
                 <Link href={getLocalizedUrl("sikayet-ve-oneri", locale)} className="hover:text-primary">
-                  Şikayet ve Öneri
+                  {locale === 'en' ? 'Complaints & Suggestions' : 'Şikayet ve Öneri'}
                 </Link>
               </li>
               <li>
                 <Link href={getLocalizedUrl("ucret-politikamiz", locale)} className="hover:text-primary">
-                  Ücret Politikamız
+                  {locale === 'en' ? 'Pricing Policy' : 'Ücret Politikamız'}
                 </Link>
               </li>
               <li>
                 <Link href={getLocalizedUrl("kosullar-ve-isleyis", locale)} className="hover:text-primary">
-                  Koşullar ve İşleyiş
+                  {locale === 'en' ? 'Terms & Process' : 'Koşullar ve İşleyiş'}
                 </Link>
               </li>
             </ul>
           </div>
 
           <div>
-            <h4 className="mb-3 font-semibold text-slate-900">Kurumsal</h4>
+            <h4 className="mb-3 font-semibold text-slate-900">{locale === 'en' ? 'Corporate' : 'Kurumsal'}</h4>
             <ul className="space-y-2 text-slate-600">
               <li>
                 <Link href={getLocalizedUrl("iletisim", locale)} className="hover:text-primary">
-                  İletişim
+                  {locale === 'en' ? 'Contact' : 'İletişim'}
                 </Link>
               </li>
               <li>
                 <Link href={getLocalizedUrl("danismanlar", locale)} className="hover:text-primary">
-                  Danışmanlar
+                  {locale === 'en' ? 'Consultants' : 'Danışmanlar'}
                 </Link>
               </li>
               <li>
