@@ -39,7 +39,12 @@ interface VisaRequirement {
   allowedStay: string | null;
 }
 
-export function CountriesListWithFilters({ initialCountries }: { initialCountries: Country[] }) {
+interface CountriesListWithFiltersProps {
+  initialCountries: Country[];
+  locale?: 'tr' | 'en';
+}
+
+export function CountriesListWithFilters({ initialCountries, locale = 'tr' }: CountriesListWithFiltersProps) {
   const [countries] = useState<Country[]>(initialCountries);
   const [filteredCountries, setFilteredCountries] = useState<Country[]>(initialCountries);
   
@@ -68,14 +73,19 @@ export function CountriesListWithFilters({ initialCountries }: { initialCountrie
       filtered = filtered.filter(c => {
         if (!c.visa_labels || c.visa_labels.length === 0) return false;
         
+        const visaFreeLabel = locale === 'en' ? 'Visa-Free' : 'Vizesiz';
+        const visaOnArrivalLabel = locale === 'en' ? 'Visa on Arrival' : 'Varışta Vize';
+        const eVisaLabel = locale === 'en' ? 'E-Visa' : 'E-vize';
+        const visaRequiredLabel = locale === 'en' ? 'Visa Required' : 'Vize Gerekli';
+        
         if (visaStatusFilter === "visa-free") {
-          return c.visa_labels.includes("Vizesiz");
+          return c.visa_labels.includes(visaFreeLabel) || c.visa_labels.includes("Vizesiz");
         } else if (visaStatusFilter === "visa-on-arrival") {
-          return c.visa_labels.includes("Varışta Vize");
+          return c.visa_labels.includes(visaOnArrivalLabel) || c.visa_labels.includes("Varışta Vize");
         } else if (visaStatusFilter === "eta") {
-          return c.visa_labels.includes("E-vize");
+          return c.visa_labels.includes(eVisaLabel) || c.visa_labels.includes("E-vize");
         } else if (visaStatusFilter === "visa-required") {
-          return c.visa_labels.includes("Vize Gerekli");
+          return c.visa_labels.includes(visaRequiredLabel) || c.visa_labels.includes("Vize Gerekli");
         }
         return false;
       });
@@ -119,17 +129,21 @@ export function CountriesListWithFilters({ initialCountries }: { initialCountrie
       {/* Header - SEO Optimized */}
       <section className="space-y-4">
         <h1 className="text-3xl font-bold text-slate-900 md:text-4xl">
-          Türk Vatandaşları İçin {countries.length} Ülkeye Vize Başvurusu
+          {locale === 'en'
+            ? `Visa Application for ${countries.length} Countries for Turkish Citizens`
+            : `Türk Vatandaşları İçin ${countries.length} Ülkeye Vize Başvurusu`}
         </h1>
         <p className="text-lg text-slate-600 max-w-3xl">
-          Vizesiz giriş, varışta vize, e-vize ve konsolosluk başvurusu gerektiren tüm ülkeler için 
-          profesyonel vize danışmanlık hizmeti. %98 başarı oranıyla güvenle başvurun.
+          {locale === 'en'
+            ? 'Professional visa consultancy service for all countries requiring visa-free entry, visa on arrival, e-visa and consulate application. Apply with confidence with 98% success rate.'
+            : 'Vizesiz giriş, varışta vize, e-vize ve konsolosluk başvurusu gerektiren tüm ülkeler için profesyonel vize danışmanlık hizmeti. %98 başarı oranıyla güvenle başvurun.'}
         </p>
       </section>
 
       {/* Visa Statistics - VisaMap bileşeni */}
       <VisaMap 
-        countries={countries} 
+        countries={countries}
+        locale={locale}
         onFilterChange={(filterValue) => {
           // Filtre değerini dropdown formatına çevir
           if (filterValue === "Vizesiz") setVisaStatusFilter("visa-free");
@@ -144,7 +158,7 @@ export function CountriesListWithFilters({ initialCountries }: { initialCountrie
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Filter className="h-5 w-5 text-slate-400" />
-            <h2 className="text-lg font-semibold text-slate-900">Filtrele</h2>
+            <h2 className="text-lg font-semibold text-slate-900">{locale === 'en' ? 'Filter' : 'Filtrele'}</h2>
           </div>
           
           {/* View Mode Toggle */}
@@ -158,7 +172,7 @@ export function CountriesListWithFilters({ initialCountries }: { initialCountrie
               }`}
             >
               <Grid3x3 className="h-4 w-4" />
-              Liste
+              {locale === 'en' ? 'List' : 'Liste'}
             </button>
             <button
               onClick={() => setViewMode('continent')}
@@ -169,7 +183,7 @@ export function CountriesListWithFilters({ initialCountries }: { initialCountrie
               }`}
             >
               <Map className="h-4 w-4" />
-              Kıtalara Göre
+              {locale === 'en' ? 'By Continent' : 'Kıtalara Göre'}
             </button>
           </div>
         </div>
@@ -180,7 +194,7 @@ export function CountriesListWithFilters({ initialCountries }: { initialCountrie
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
-              placeholder="Ülke adı ara..."
+              placeholder={locale === 'en' ? 'Search country name...' : 'Ülke adı ara...'}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full rounded-lg border border-slate-200 py-2 pl-10 pr-4 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -193,29 +207,29 @@ export function CountriesListWithFilters({ initialCountries }: { initialCountrie
             onChange={(e) => setVisaStatusFilter(e.target.value as any)}
             className="rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
           >
-            <option value="all">Tüm Vize Durumları</option>
-            <option value="visa-free">✅ Vizesiz</option>
-            <option value="visa-on-arrival">🛬 Varışta Vize</option>
-            <option value="eta">📧 E-vize</option>
-            <option value="visa-required">🏛️ Vize Gerekli</option>
+            <option value="all">{locale === 'en' ? 'All Visa Statuses' : 'Tüm Vize Durumları'}</option>
+            <option value="visa-free">✅ {locale === 'en' ? 'Visa-Free' : 'Vizesiz'}</option>
+            <option value="visa-on-arrival">🛬 {locale === 'en' ? 'Visa on Arrival' : 'Varışta Vize'}</option>
+            <option value="eta">📧 {locale === 'en' ? 'E-Visa' : 'E-vize'}</option>
+            <option value="visa-required">🏛️ {locale === 'en' ? 'Visa Required' : 'Vize Gerekli'}</option>
           </select>
         </div>
 
         {/* Active Filters */}
         {(searchQuery || visaStatusFilter !== "all") && (
           <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-600">Aktif filtreler:</span>
+            <span className="text-xs text-slate-600">{locale === 'en' ? 'Active filters:' : 'Aktif filtreler:'}</span>
             {searchQuery && (
               <span className="rounded-full bg-primary/10 px-2 py-1 text-xs text-primary">
-                Arama: "{searchQuery}"
+                {locale === 'en' ? 'Search' : 'Arama'}: "{searchQuery}"
               </span>
             )}
             {visaStatusFilter !== "all" && (
               <span className="rounded-full bg-primary/10 px-2 py-1 text-xs text-primary">
-                {visaStatusFilter === "visa-free" && "Vizesiz"}
-                {visaStatusFilter === "visa-on-arrival" && "Varışta Vize"}
-                {visaStatusFilter === "eta" && "E-vize"}
-                {visaStatusFilter === "visa-required" && "Vize Gerekli"}
+                {visaStatusFilter === "visa-free" && (locale === 'en' ? 'Visa-Free' : 'Vizesiz')}
+                {visaStatusFilter === "visa-on-arrival" && (locale === 'en' ? 'Visa on Arrival' : 'Varışta Vize')}
+                {visaStatusFilter === "eta" && (locale === 'en' ? 'E-Visa' : 'E-vize')}
+                {visaStatusFilter === "visa-required" && (locale === 'en' ? 'Visa Required' : 'Vize Gerekli')}
               </span>
             )}
             <button
@@ -225,7 +239,7 @@ export function CountriesListWithFilters({ initialCountries }: { initialCountrie
               }}
               className="text-xs text-slate-600 hover:text-slate-900"
             >
-              Temizle
+              {locale === 'en' ? 'Clear' : 'Temizle'}
             </button>
           </div>
         )}
@@ -236,10 +250,12 @@ export function CountriesListWithFilters({ initialCountries }: { initialCountrie
         <div className="card py-12 text-center">
           <Globe2 className="mx-auto h-12 w-12 text-slate-300" />
           <h3 className="mt-4 text-lg font-semibold text-slate-900">
-            Ülke bulunamadı
+            {locale === 'en' ? 'No country found' : 'Ülke bulunamadı'}
           </h3>
           <p className="mt-2 text-sm text-slate-600">
-            Filtrelerinize uygun ülke bulunamadı. Lütfen farklı kriterler deneyin.
+            {locale === 'en'
+              ? 'No country found matching your filters. Please try different criteria.'
+              : 'Filtrelerinize uygun ülke bulunamadı. Lütfen farklı kriterler deneyin.'}
           </p>
         </div>
       ) : viewMode === 'continent' ? (
@@ -291,15 +307,15 @@ export function CountriesListWithFilters({ initialCountries }: { initialCountrie
                         <div className="text-2xl font-bold text-emerald-600">
                           {getCurrencySymbol(country.currency_id)}{country.price.toLocaleString('tr-TR')}
                         </div>
-                        <p className="text-[10px] text-slate-500">Başlangıç fiyatı</p>
+                        <p className="text-[10px] text-slate-500">{locale === 'en' ? 'Starting price' : 'Başlangıç fiyatı'}</p>
                       </div>
                       <div className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white group-hover:bg-primary-dark">
-                        Başvur
+                        {locale === 'en' ? 'Apply' : 'Başvur'}
                       </div>
                     </div>
                   ) : (
                     <div className="flex items-center justify-between border-t border-slate-100 pt-3">
-                      <span className="text-sm text-slate-600">Detaylar için tıklayın</span>
+                      <span className="text-sm text-slate-600">{locale === 'en' ? 'Click for details' : 'Detaylar için tıklayın'}</span>
                       <ArrowRight className="h-4 w-4 text-primary transition-transform group-hover:translate-x-1" />
                     </div>
                   )}

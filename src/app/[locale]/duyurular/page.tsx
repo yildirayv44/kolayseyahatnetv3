@@ -51,7 +51,9 @@ interface Announcement {
   views: number;
 }
 
-export default async function DuyurularPage() {
+export default async function DuyurularPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const isEnglish = locale === 'en';
   // Database'den duyuruları ve slug'ları birlikte çek
   const { data: dbAnnouncements, error } = await supabase
     .from("announcements")
@@ -120,10 +122,12 @@ export default async function DuyurularPage() {
               <Megaphone className="h-8 w-8" />
             </div>
             <h1 className="mb-4 text-4xl font-bold md:text-5xl">
-              Duyurular
+              {isEnglish ? 'Announcements' : 'Duyurular'}
             </h1>
             <p className="text-lg text-blue-50">
-              Vize süreçleri, kampanyalar ve önemli güncellemeler hakkında haberdar olun
+              {isEnglish
+                ? 'Stay informed about visa processes, campaigns and important updates'
+                : 'Vize süreçleri, kampanyalar ve önemli güncellemeler hakkında haberdar olun'}
             </p>
           </div>
         </div>
@@ -134,7 +138,7 @@ export default async function DuyurularPage() {
         <section className="container mx-auto px-4">
           <div className="mb-6 flex items-center gap-2">
             <Bell className="h-5 w-5 text-primary" />
-            <h2 className="text-2xl font-bold text-slate-900">Öne Çıkan Duyurular</h2>
+            <h2 className="text-2xl font-bold text-slate-900">{isEnglish ? 'Featured Announcements' : 'Öne Çıkan Duyurular'}</h2>
           </div>
           <div className="grid gap-6 lg:grid-cols-2">
             {featuredAnnouncements.map((announcement) => (
@@ -145,7 +149,7 @@ export default async function DuyurularPage() {
               >
                 <div className="mb-3 flex items-center justify-between">
                   <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-                    Duyuru
+                    {isEnglish ? 'Announcement' : 'Duyuru'}
                   </span>
                   <div className="flex items-center gap-1 text-sm text-slate-600">
                     <Calendar className="h-4 w-4" />
@@ -159,7 +163,7 @@ export default async function DuyurularPage() {
                   {getExcerpt(announcement.contents)}
                 </p>
                 <div className="flex items-center gap-2 font-semibold text-primary">
-                  <span>Devamını Oku</span>
+                  <span>{isEnglish ? 'Read More' : 'Devamını Oku'}</span>
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </div>
               </Link>
@@ -170,11 +174,11 @@ export default async function DuyurularPage() {
 
       {/* Regular Announcements */}
       <section className="container mx-auto px-4">
-        <h2 className="mb-6 text-2xl font-bold text-slate-900">Tüm Duyurular</h2>
+        <h2 className="mb-6 text-2xl font-bold text-slate-900">{isEnglish ? 'All Announcements' : 'Tüm Duyurular'}</h2>
         {announcements.length === 0 ? (
           <div className="card text-center py-12">
             <Megaphone className="mx-auto h-12 w-12 text-slate-300 mb-4" />
-            <p className="text-slate-600">Henüz duyuru bulunmamaktadır.</p>
+            <p className="text-slate-600">{isEnglish ? 'No announcements yet.' : 'Henüz duyuru bulunmamaktadır.'}</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -187,7 +191,7 @@ export default async function DuyurularPage() {
               <div className="flex-1">
                 <div className="mb-2 flex flex-wrap items-center gap-3">
                   <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
-                    Duyuru
+                    {isEnglish ? 'Announcement' : 'Duyuru'}
                   </span>
                   <div className="flex items-center gap-1 text-sm text-slate-600">
                     <Calendar className="h-4 w-4" />
@@ -202,7 +206,7 @@ export default async function DuyurularPage() {
                 </p>
               </div>
               <div className="flex items-center gap-2 font-semibold text-primary sm:flex-col sm:items-end">
-                <span className="text-sm">Detaylar</span>
+                <span className="text-sm">{isEnglish ? 'Details' : 'Detaylar'}</span>
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </div>
             </Link>
@@ -219,26 +223,30 @@ export default async function DuyurularPage() {
               <Bell className="h-6 w-6 text-primary" />
             </div>
             <h2 className="mb-2 text-2xl font-bold text-slate-900">
-              Duyurulardan Haberdar Olun
+              {isEnglish ? 'Stay Informed' : 'Duyurulardan Haberdar Olun'}
             </h2>
             <p className="mb-6 text-slate-600">
-              E-posta adresinizi girerek yeni duyurular ve kampanyalardan haberdar olabilirsiniz
+              {isEnglish
+                ? 'Enter your email address to be notified of new announcements and campaigns'
+                : 'E-posta adresinizi girerek yeni duyurular ve kampanyalardan haberdar olabilirsiniz'}
             </p>
             <form className="flex flex-col gap-3 sm:flex-row">
               <input
                 type="email"
-                placeholder="E-posta adresiniz"
+                placeholder={isEnglish ? 'Your email address' : 'E-posta adresiniz'}
                 className="flex-1 rounded-lg border border-slate-200 px-4 py-3 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
               />
               <button
                 type="submit"
                 className="rounded-lg bg-primary px-6 py-3 font-semibold text-white transition-all hover:bg-primary/90"
               >
-                Abone Ol
+                {isEnglish ? 'Subscribe' : 'Abone Ol'}
               </button>
             </form>
             <p className="mt-3 text-xs text-slate-500">
-              Gizliliğinize saygı duyuyoruz. İstediğiniz zaman abonelikten çıkabilirsiniz.
+              {isEnglish
+                ? 'We respect your privacy. You can unsubscribe at any time.'
+                : 'Gizliliğinize saygı duyuyoruz. İstediğiniz zaman abonelikten çıkabilirsiniz.'}
             </p>
           </div>
         </div>
@@ -247,19 +255,19 @@ export default async function DuyurularPage() {
       {/* Categories */}
       <section className="container mx-auto px-4">
         <div className="card bg-slate-50">
-          <h2 className="mb-4 text-xl font-bold text-slate-900">Kategoriler</h2>
+          <h2 className="mb-4 text-xl font-bold text-slate-900">{isEnglish ? 'Categories' : 'Kategoriler'}</h2>
           <div className="flex flex-wrap gap-3">
             <button className="rounded-lg border-2 border-primary bg-primary px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-primary/90">
-              Tümü
+              {isEnglish ? 'All' : 'Tümü'}
             </button>
             <button className="rounded-lg border-2 border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-all hover:border-primary hover:text-primary">
-              Kampanyalar
+              {isEnglish ? 'Campaigns' : 'Kampanyalar'}
             </button>
             <button className="rounded-lg border-2 border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-all hover:border-primary hover:text-primary">
-              Güncellemeler
+              {isEnglish ? 'Updates' : 'Güncellemeler'}
             </button>
             <button className="rounded-lg border-2 border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-all hover:border-primary hover:text-primary">
-              Haberler
+              {isEnglish ? 'News' : 'Haberler'}
             </button>
           </div>
         </div>

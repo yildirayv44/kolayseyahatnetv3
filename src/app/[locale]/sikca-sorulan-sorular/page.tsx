@@ -22,7 +22,9 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   };
 }
 
-export default function SSSPage() {
+export default async function SSSPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const isEnglish = locale === 'en';
   const faqCategories = [
     {
       title: "Genel Sorular",
@@ -154,10 +156,12 @@ export default function SSSPage() {
               <HelpCircle className="h-8 w-8" />
             </div>
             <h1 className="mb-4 text-4xl font-bold md:text-5xl">
-              Sıkça Sorulan Sorular
+              {isEnglish ? 'Frequently Asked Questions' : 'Sıkça Sorulan Sorular'}
             </h1>
             <p className="text-lg text-blue-50">
-              Vize başvuruları hakkında merak ettikleriniz ve cevapları
+              {isEnglish
+                ? 'Your questions and answers about visa applications'
+                : 'Vize başvuruları hakkında merak ettikleriniz ve cevapları'}
             </p>
           </div>
         </div>
@@ -196,10 +200,12 @@ export default function SSSPage() {
       <section className="container mx-auto px-4">
         <div className="card mx-auto max-w-3xl border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-blue-50 text-center">
           <h2 className="text-2xl font-bold text-slate-900">
-            Sorunuza Cevap Bulamadınız mı?
+            {isEnglish ? "Couldn't Find the Answer?" : 'Sorunuza Cevap Bulamadınız mı?'}
           </h2>
           <p className="mt-2 text-slate-600">
-            Uzman danışmanlarımız size yardımcı olmak için hazır
+            {isEnglish
+              ? 'Our expert consultants are ready to help you'
+              : 'Uzman danışmanlarımız size yardımcı olmak için hazır'}
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
             <a
@@ -214,7 +220,7 @@ export default function SSSPage() {
               className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 font-semibold text-white transition-all hover:bg-primary/90"
             >
               <Mail className="h-5 w-5" />
-              İletişime Geçin
+              {isEnglish ? 'Contact Us' : 'İletişime Geçin'}
             </Link>
           </div>
         </div>
@@ -225,34 +231,34 @@ export default function SSSPage() {
         <div className="container mx-auto px-4">
           <div className="mx-auto max-w-4xl">
             <h2 className="mb-6 text-center text-2xl font-bold text-slate-900">
-              Faydalı Linkler
+              {isEnglish ? 'Useful Links' : 'Faydalı Linkler'}
             </h2>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <Link
                 href="/vize-basvuru-formu"
                 className="card text-center transition-all hover:shadow-lg"
               >
-                <h3 className="font-semibold text-primary">Online Başvuru</h3>
+                <h3 className="font-semibold text-primary">{isEnglish ? 'Online Application' : 'Online Başvuru'}</h3>
                 <p className="mt-1 text-sm text-slate-600">
-                  Hemen başvurunuzu yapın
+                  {isEnglish ? 'Apply now' : 'Hemen başvurunuzu yapın'}
                 </p>
               </Link>
               <Link
                 href="/ulkeler"
                 className="card text-center transition-all hover:shadow-lg"
               >
-                <h3 className="font-semibold text-primary">Ülkeler</h3>
+                <h3 className="font-semibold text-primary">{isEnglish ? 'Countries' : 'Ülkeler'}</h3>
                 <p className="mt-1 text-sm text-slate-600">
-                  Vize bilgilerini inceleyin
+                  {isEnglish ? 'Review visa information' : 'Vize bilgilerini inceleyin'}
                 </p>
               </Link>
               <Link
                 href="/ucret-politikamiz"
                 className="card text-center transition-all hover:shadow-lg"
               >
-                <h3 className="font-semibold text-primary">Ücret Politikası</h3>
+                <h3 className="font-semibold text-primary">{isEnglish ? 'Pricing Policy' : 'Ücret Politikası'}</h3>
                 <p className="mt-1 text-sm text-slate-600">
-                  Fiyatları öğrenin
+                  {isEnglish ? 'Learn about prices' : 'Fiyatları öğrenin'}
                 </p>
               </Link>
             </div>

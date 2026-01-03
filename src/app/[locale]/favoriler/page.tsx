@@ -6,8 +6,12 @@ import { Heart, Globe2, FileText, User, ArrowRight } from "lucide-react";
 import { useFavorites } from "@/hooks/useFavorites";
 import { FavoriteButton } from "@/components/shared/FavoriteButton";
 import { Breadcrumb } from "@/components/shared/Breadcrumb";
+import { useParams } from "next/navigation";
 
 export default function FavoritesPage() {
+  const params = useParams();
+  const locale = (params?.locale as string) || 'tr';
+  const isEnglish = locale === 'en';
   const { getFavoriteIds, isLoaded } = useFavorites();
   const [countries, setCountries] = useState<any[]>([]);
   const [blogs, setBlogs] = useState<any[]>([]);
@@ -67,12 +71,12 @@ export default function FavoritesPage() {
   if (!isLoaded || loading) {
     return (
       <div className="space-y-6">
-        <Breadcrumb items={[{ label: "Favorilerim" }]} />
-        <h1 className="text-3xl font-bold text-slate-900">Favorilerim</h1>
+        <Breadcrumb items={[{ label: isEnglish ? "My Favorites" : "Favorilerim" }]} />
+        <h1 className="text-3xl font-bold text-slate-900">{isEnglish ? "My Favorites" : "Favorilerim"}</h1>
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
             <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-            <p className="mt-4 text-sm text-slate-600">Yükleniyor...</p>
+            <p className="mt-4 text-sm text-slate-600">{isEnglish ? "Loading..." : "Yüklüyor..."}</p>
           </div>
         </div>
       </div>
@@ -82,22 +86,24 @@ export default function FavoritesPage() {
   if (totalFavorites === 0) {
     return (
       <div className="space-y-6">
-        <Breadcrumb items={[{ label: "Favorilerim" }]} />
-        <h1 className="text-3xl font-bold text-slate-900">Favorilerim</h1>
+        <Breadcrumb items={[{ label: isEnglish ? "My Favorites" : "Favorilerim" }]} />
+        <h1 className="text-3xl font-bold text-slate-900">{isEnglish ? "My Favorites" : "Favorilerim"}</h1>
         
         <div className="card text-center py-20">
           <Heart className="mx-auto h-16 w-16 text-slate-300" />
           <h2 className="mt-4 text-xl font-semibold text-slate-900">
-            Henüz favori eklemediniz
+            {isEnglish ? "You haven't added any favorites yet" : "Henüz favori eklemediniz"}
           </h2>
           <p className="mt-2 text-slate-600">
-            Beğendiğiniz ülkeleri, blogları ve danışmanları favorilerinize ekleyin
+            {isEnglish
+              ? "Add your favorite countries, blogs and consultants to your favorites"
+              : "Beğendiğiniz ülkeleri, blogları ve danışmanları favorilerinize ekleyin"}
           </p>
           <Link
-            href="/"
+            href={locale === 'en' ? '/en' : '/'}
             className="mt-6 inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 font-semibold text-white transition-colors hover:bg-primary/90"
           >
-            Ana Sayfaya Dön
+            {isEnglish ? "Back to Home" : "Ana Sayfaya Dön"}
             <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
@@ -107,13 +113,13 @@ export default function FavoritesPage() {
 
   return (
     <div className="space-y-8">
-      <Breadcrumb items={[{ label: "Favorilerim" }]} />
+      <Breadcrumb items={[{ label: isEnglish ? "My Favorites" : "Favorilerim" }]} />
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">Favorilerim</h1>
+          <h1 className="text-3xl font-bold text-slate-900">{isEnglish ? "My Favorites" : "Favorilerim"}</h1>
           <p className="mt-2 text-slate-600">
-            {totalFavorites} favori öğe
+            {totalFavorites} {isEnglish ? "favorite items" : "favori öğe"}
           </p>
         </div>
         <Heart className="h-8 w-8 fill-red-500 text-red-500" />
@@ -124,7 +130,7 @@ export default function FavoritesPage() {
         <section className="space-y-4">
           <h2 className="flex items-center gap-2 text-xl font-semibold text-slate-900">
             <Globe2 className="h-5 w-5 text-primary" />
-            Ülkeler ({countries.length})
+            {isEnglish ? `Countries (${countries.length})` : `Ülkeler (${countries.length})`}
           </h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {countries.map((country: any) => (
@@ -151,7 +157,7 @@ export default function FavoritesPage() {
         <section className="space-y-4">
           <h2 className="flex items-center gap-2 text-xl font-semibold text-slate-900">
             <FileText className="h-5 w-5 text-primary" />
-            Blog Yazıları ({blogs.length})
+            {isEnglish ? `Blog Posts (${blogs.length})` : `Blog Yazıları (${blogs.length})`}
           </h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {blogs.map((blog: any) => (
@@ -178,7 +184,7 @@ export default function FavoritesPage() {
         <section className="space-y-4">
           <h2 className="flex items-center gap-2 text-xl font-semibold text-slate-900">
             <User className="h-5 w-5 text-primary" />
-            Danışmanlar ({consultants.length})
+            {isEnglish ? `Consultants (${consultants.length})` : `Danışmanlar (${consultants.length})`}
           </h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {consultants.map((consultant: any) => (
@@ -191,7 +197,7 @@ export default function FavoritesPage() {
                     {consultant.name}
                   </h3>
                   <p className="mt-2 line-clamp-2 text-sm text-slate-600">
-                    {consultant.description || "Vize Danışmanı"}
+                    {consultant.description || (isEnglish ? "Visa Consultant" : "Vize Danışmanı")}
                   </p>
                 </Link>
               </div>

@@ -147,7 +147,7 @@ export default async function CountriesPage({ params }: CountriesPageProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
       />
       
-      <CountriesListWithFilters initialCountries={countries as any} />
+      <CountriesListWithFilters initialCountries={countries as any} locale={locale as 'tr' | 'en'} />
     </>
   );
 }
