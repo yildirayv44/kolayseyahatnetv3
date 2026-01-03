@@ -217,6 +217,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
                     year: "numeric",
                     month: "long",
                     day: "numeric",
+                    timeZone: "UTC",
                   })}
                 </time>
               </div>

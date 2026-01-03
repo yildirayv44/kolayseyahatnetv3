@@ -127,6 +127,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
                       day: "numeric",
                       month: "short",
                       year: "numeric",
+                      timeZone: "UTC",
                     })}
                   </span>
                   <span className="inline-flex items-center gap-1">

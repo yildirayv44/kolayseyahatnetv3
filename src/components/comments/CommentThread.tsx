@@ -81,11 +81,12 @@ function CommentItem({
                 </div>
               )}
             </div>
-            <time className="text-xs text-slate-500">
+            <time className="text-xs text-slate-500" dateTime={comment.created_at}>
               {new Date(comment.created_at).toLocaleDateString("tr-TR", {
                 year: "numeric",
                 month: "long",
                 day: "numeric",
+                timeZone: "UTC",
               })}
             </time>
           </div>
