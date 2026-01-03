@@ -27,7 +27,7 @@ export async function GET() {
       );
     }
 
-    // Format for WhatsApp AI
+    // Format for WhatsApp AI and Widget
     const formattedCountries = countries.map(country => ({
       id: country.id,
       name: country.name,
@@ -35,6 +35,8 @@ export async function GET() {
       country_code: country.country_code, // ISO 3166-1 alpha-3 (e.g., KOR, JPN, USA)
       visa_status: country.visa_status || 'unknown',
       visa_info: country.visa_info || null,
+      visa_labels: country.visa_labels || [],
+      visa_required: country.visa_required || false,
       price: country.price || null,
       currency_id: country.currency_id || 1,
       image_url: country.image_url || null,

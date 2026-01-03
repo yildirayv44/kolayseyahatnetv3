@@ -132,7 +132,7 @@ export function SocialProofNotifications({
 
   return (
     <div
-      className={`fixed bottom-20 left-4 z-[60] max-w-sm transition-all duration-500 md:bottom-6 md:left-6 ${
+      className={`fixed bottom-24 left-4 z-[55] max-w-sm transition-all duration-500 md:bottom-6 md:left-6 ${
         isVisible
           ? 'translate-x-0 opacity-100'
           : '-translate-x-full opacity-0'

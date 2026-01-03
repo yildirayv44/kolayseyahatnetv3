@@ -15,7 +15,9 @@ import { ReadingProgressBar } from "@/components/shared/ReadingProgressBar";
 import { ScrollTriggeredCTA } from "@/components/shared/ScrollTriggeredCTA";
 import { RelatedContentCarousel } from "@/components/shared/RelatedContentCarousel";
 import { SocialProofNotifications } from "@/components/shared/SocialProofNotifications";
+import { SlideInVisaWidget } from "@/components/shared/SlideInVisaWidget";
 import { getReadingTime } from "@/lib/reading-time";
+import { getCountries } from "@/lib/queries";
 
 interface BlogPageProps {
   params: Promise<{ slug: string[]; locale: string }>;
@@ -105,6 +107,9 @@ export default async function BlogPage({ params }: BlogPageProps) {
   // Get comments
   const comments = await getBlogComments(blog.id);
 
+  // Get countries for widget
+  const countries = await getCountries();
+
   // Calculate reading time
   const readingTime = blog.contents ? getReadingTime(blog.contents, locale as 'tr' | 'en') : { minutes: 5, formatted: '5 dakika okuma' };
 
@@ -151,7 +156,13 @@ export default async function BlogPage({ params }: BlogPageProps) {
         triggerPercentage={40}
       />
 
-    <div className="space-y-8 md:space-y-10">
+      {/* Slide-in Visa Widget */}
+      <SlideInVisaWidget
+        countries={countries as any}
+        locale={locale as 'tr' | 'en'}
+      />
+
+      <div className="space-y-8 md:space-y-10">
       {/* Article Schema */}
       <script
         type="application/ld+json"
@@ -260,6 +271,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
             locale={locale as 'tr' | 'en'}
           />
         )}
+
 
         {/* CTA */}
         <div className="mt-12 rounded-xl border-2 border-primary/20 bg-primary/5 p-6">

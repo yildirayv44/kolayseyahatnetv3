@@ -13,7 +13,8 @@ import {
   getCountryBlogs,
   getCountryComments,
   getBlogBySlug,
-  getCountryPageData
+  getCountryPageData,
+  getCountries
 } from "@/lib/queries";
 import { createClient } from "@supabase/supabase-js";
 import { Breadcrumb } from "@/components/shared/Breadcrumb";
@@ -34,9 +35,9 @@ import { generateFAQSchema, generateBreadcrumbSchema, generateHowToSchema, gener
 import { fixHtmlImageUrls } from "@/lib/image-helpers";
 import { generateCountryMetaDescription, generateMenuMetaDescription, truncateAtWord, truncateTitle, seededRandom, seededRating } from "@/lib/meta-helpers";
 import { ReadingProgressBar } from "@/components/shared/ReadingProgressBar";
-import { ScrollTriggeredCTA } from "@/components/shared/ScrollTriggeredCTA";
 import { RelatedContentCarousel } from "@/components/shared/RelatedContentCarousel";
 import { SocialProofNotifications } from "@/components/shared/SocialProofNotifications";
+import { SlideInVisaWidget } from "@/components/shared/SlideInVisaWidget";
 import { getReadingTime } from "@/lib/reading-time";
 
 // ⚡ PERFORMANCE: Revalidate every 2 hours (7200 seconds) to reduce database load
@@ -816,6 +817,9 @@ export default async function CountryPage({ params }: CountryPageParams) {
     created_at: blog.created_at,
   }));
 
+  // Get all countries for widget
+  const allCountries = await getCountries();
+
   return (
     <>
       {/* Reading Progress Bar */}
@@ -825,6 +829,13 @@ export default async function CountryPage({ params }: CountryPageParams) {
       <SocialProofNotifications 
         countryName={country.name}
         locale={locale as 'tr' | 'en'} 
+      />
+
+      {/* Slide-in Visa Widget */}
+      <SlideInVisaWidget
+        countries={allCountries as any}
+        locale={locale as 'tr' | 'en'}
+        currentCountry={country.name}
       />
 
     <div className="space-y-10 md:space-y-14">
@@ -1021,6 +1032,7 @@ export default async function CountryPage({ params }: CountryPageParams) {
           locale={locale as 'tr' | 'en'}
         />
       )}
+
 
           {/* CTA */}
       <section className="card flex flex-col items-start justify-between gap-4 border-primary/10 bg-primary/5 md:flex-row md:items-center">
