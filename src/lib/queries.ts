@@ -27,13 +27,22 @@ export async function getCountries() {
     .in("model_id", countryIds)
     .eq("type", "Country\\CountryController@detail");
 
-  // Tek sorguda tüm ülkelerin en düşük fiyatlı paketlerini çek (currency_id dahil)
-  const { data: products } = await supabase
+  // Tek sorguda tüm ülkelerin paketlerini çek (tüm bilgilerle)
+  const { data: products, error: productsError } = await supabase
     .from("products")
-    .select("country_id, price, currency_id")
+    .select("id, country_id, name, price, currency_id")
     .in("country_id", countryIds)
     .eq("status", 1)
     .order("price", { ascending: true });
+
+  if (productsError) {
+    console.error("getCountries products error", productsError);
+  }
+
+  console.log("🔍 Products fetched:", products?.length || 0);
+  if (products && products.length > 0) {
+    console.log("📦 Sample product:", products[0]);
+  }
 
   // Ülke kodlarını topla
   const countryCodes = countries
@@ -52,9 +61,29 @@ export async function getCountries() {
     taxonomyMap.set(tax.model_id, tax.slug);
   });
 
-  // Her ülke için en düşük fiyatlı paketi bul (products zaten price'a göre sıralı)
+  // Her ülke için paketleri grupla
+  const packagesMap = new Map<number, Array<{
+    id: number;
+    name: string;
+    price: number;
+    currency_id: number;
+  }>>();
+  
   const priceMap = new Map<number, { price: number; currency_id: number }>();
+  
   products?.forEach(product => {
+    // Paketleri grupla
+    if (!packagesMap.has(product.country_id)) {
+      packagesMap.set(product.country_id, []);
+    }
+    packagesMap.get(product.country_id)!.push({
+      id: product.id,
+      name: product.name,
+      price: parseFloat(product.price),
+      currency_id: product.currency_id || 1
+    });
+    
+    // En düşük fiyatı bul (ilk ürün zaten en düşük fiyatlı)
     if (!priceMap.has(product.country_id)) {
       priceMap.set(product.country_id, {
         price: parseFloat(product.price),
@@ -118,6 +147,8 @@ export async function getCountries() {
       // Fiyatı products tablosundan al, yoksa null
       price: productData?.price ?? null,
       currency_id: productData?.currency_id ?? 1,
+      // Paketler
+      packages: packagesMap.get(country.id) || [],
       // Vize durumu
       visa_status: visaStatus,
       visa_labels: visaLabels,

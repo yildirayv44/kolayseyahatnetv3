@@ -835,7 +835,7 @@ export default async function CountryPage({ params }: CountryPageParams) {
       <SlideInVisaWidget
         countries={allCountries as any}
         locale={locale as 'tr' | 'en'}
-        currentCountry={country.name}
+        currentCountry={country.slug}
       />
 
     <div className="space-y-10 md:space-y-14">

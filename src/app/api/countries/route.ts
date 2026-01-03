@@ -39,6 +39,7 @@ export async function GET() {
       visa_required: country.visa_required || false,
       price: country.price || null,
       currency_id: country.currency_id || 1,
+      packages: country.packages || [],
       image_url: country.image_url || null,
       // Add URL for easy access
       detail_url: `https://www.kolayseyahat.net/${country.slug}`,

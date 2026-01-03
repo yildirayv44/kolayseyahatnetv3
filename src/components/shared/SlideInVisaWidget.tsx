@@ -4,6 +4,13 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Search, CheckCircle, Clock, Globe, XCircle, ArrowRight, X, ChevronLeft } from "lucide-react";
 
+interface Package {
+  id: number;
+  name: string;
+  price: number;
+  currency_id?: number;
+}
+
 interface Country {
   id: number;
   name: string;
@@ -12,6 +19,7 @@ interface Country {
   price: number | null;
   currency_id?: number;
   visa_required: boolean;
+  packages?: Package[];
 }
 
 interface SlideInVisaWidgetProps {
@@ -25,11 +33,33 @@ export function SlideInVisaWidget({ countries, locale = 'tr', currentCountry }: 
   const [hasScrolled, setHasScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
+  const [selectedPackage, setSelectedPackage] = useState<Package | null>(null);
   const [showDropdown, setShowDropdown] = useState(false);
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState(0);
+
+  // Auto-select current country on mount
+  useEffect(() => {
+    if (currentCountry && countries.length > 0) {
+      console.log("🔍 Looking for country:", currentCountry);
+      const country = countries.find(c => c.slug === currentCountry);
+      if (country) {
+        console.log("✅ Found country:", country.name);
+        console.log("📦 Packages:", country.packages?.length || 0);
+        setSelectedCountry(country);
+        setSearchQuery(country.name);
+        // Auto-select first package if available
+        if (country.packages && country.packages.length > 0) {
+          console.log("✅ Auto-selecting first package:", country.packages[0]);
+          setSelectedPackage(country.packages[0]);
+        } else {
+          console.log("❌ No packages found for this country");
+        }
+      }
+    }
+  }, [currentCountry, countries]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -151,17 +181,17 @@ export function SlideInVisaWidget({ countries, locale = 'tr', currentCountry }: 
 
   return (
     <>
-      {/* Backdrop overlay - Subtle */}
+      {/* Backdrop overlay */}
       {isOpen && (
         <div 
-          className="fixed inset-0 z-[59] bg-black/30 backdrop-blur-sm transition-opacity duration-300"
+          className="fixed inset-0 z-[59] bg-black/40 backdrop-blur-sm transition-opacity duration-300"
           onClick={() => setIsOpen(false)}
         />
       )}
 
       {/* Widget - Slide-in from right (both mobile & desktop) */}
       <div
-        className={`fixed right-0 top-0 z-[60] h-full w-[90%] max-w-md transform transition-all duration-500 ease-in-out sm:w-96
+        className={`fixed right-0 top-0 z-[60] h-full w-[85%] max-w-md transform transition-all duration-500 ease-in-out sm:w-96
           ${isOpen ? 'translate-x-0' : 'translate-x-full'}
         `}
         style={{
@@ -260,34 +290,76 @@ export function SlideInVisaWidget({ countries, locale = 'tr', currentCountry }: 
 
               {/* Selected Country */}
               {selectedCountry && (
-                <div className={`rounded-xl border-2 p-4 ${getVisaStatusInfo(selectedCountry).borderColor} ${getVisaStatusInfo(selectedCountry).bgColor}`}>
-                  <div className="mb-3">
+                <div className={`space-y-3 rounded-xl border-2 p-4 ${getVisaStatusInfo(selectedCountry).borderColor} ${getVisaStatusInfo(selectedCountry).bgColor}`}>
+                  {/* Country Header */}
+                  <div>
                     <h4 className="text-base font-bold text-slate-900 mb-2">{selectedCountry.name}</h4>
-                    
-                    <div className="flex items-center justify-between gap-3 mb-2">
-                      <div className="flex items-center gap-1.5">
-                        {(() => { const Icon = getVisaStatusInfo(selectedCountry).icon; return <Icon className={`h-4 w-4 flex-shrink-0 ${getVisaStatusInfo(selectedCountry).textColor}`} />; })()}
-                        <span className={`text-sm font-semibold ${getVisaStatusInfo(selectedCountry).textColor}`}>{getVisaStatusInfo(selectedCountry).label}</span>
-                      </div>
-                      {selectedCountry.price && (
-                        <div className="text-right flex-shrink-0">
-                          <div className="text-lg font-bold text-primary">{getCurrencySymbol(selectedCountry.currency_id)}{selectedCountry.price}</div>
-                        </div>
-                      )}
+                    <div className="flex items-center gap-1.5">
+                      {(() => { const Icon = getVisaStatusInfo(selectedCountry).icon; return <Icon className={`h-4 w-4 flex-shrink-0 ${getVisaStatusInfo(selectedCountry).textColor}`} />; })()}
+                      <span className={`text-sm font-semibold ${getVisaStatusInfo(selectedCountry).textColor}`}>{getVisaStatusInfo(selectedCountry).label}</span>
                     </div>
-
-                    {selectedCountry.price && (
-                      <div className="text-xs text-slate-600 bg-white/50 rounded px-2 py-1 inline-block">
-                        💼 {locale === 'en' ? 'Package available' : 'Paket mevcut'}
-                      </div>
-                    )}
                   </div>
 
-                  <div className="flex gap-2">
-                    <Link href={`/${selectedCountry.slug}`} className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border-2 border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition-all hover:border-primary hover:bg-slate-50">
+                  {/* Packages */}
+                  {selectedCountry.packages && selectedCountry.packages.length > 0 && (
+                    <div className="space-y-2">
+                      <h5 className="text-xs font-semibold text-slate-600 uppercase">
+                        {locale === 'en' ? 'Available Packages' : 'Vize Paketleri'}
+                      </h5>
+                      <div className="max-h-[240px] space-y-2 overflow-y-auto">
+                        {selectedCountry.packages.map((pkg) => (
+                          <button
+                            key={pkg.id}
+                            onClick={() => setSelectedPackage(pkg)}
+                            className={`w-full rounded-lg border-2 p-3 text-left transition-all ${
+                              selectedPackage?.id === pkg.id
+                                ? 'border-primary bg-primary/5'
+                                : 'border-slate-200 bg-white hover:border-primary/50'
+                            }`}
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="text-sm font-bold text-slate-900">{pkg.name}</span>
+                                  {selectedCountry.packages && pkg.id === selectedCountry.packages[0]?.id && (
+                                    <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700">
+                                      {locale === 'en' ? 'Popular' : 'Popüler'}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="text-right flex-shrink-0">
+                                <div className="text-lg font-bold text-primary">
+                                  {getCurrencySymbol(pkg.currency_id)}{pkg.price}
+                                </div>
+                                <div className="text-xs text-slate-500">
+                                  {locale === 'en' ? '/ application' : '/ başvuru'}
+                                </div>
+                              </div>
+                            </div>
+                            {selectedPackage?.id === pkg.id && (
+                              <div className="mt-2 text-xs text-primary font-semibold">
+                                ✓ {locale === 'en' ? 'Selected' : 'Seçili'}
+                              </div>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-2 pt-2">
+                    <Link 
+                      href={`/${selectedCountry.slug}`} 
+                      className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border-2 border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition-all hover:border-primary hover:bg-slate-50"
+                    >
                       {locale === 'en' ? 'Details' : 'Detay'}
                     </Link>
-                    <Link href="/vize-basvuru-formu" className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-lg transition-all hover:bg-primary/90 hover:shadow-xl">
+                    <Link 
+                      href={`/vize-basvuru-formu?country_id=${selectedCountry.id}&country_name=${encodeURIComponent(selectedCountry.name)}${selectedPackage ? `&package_id=${selectedPackage.id}&package_name=${encodeURIComponent(selectedPackage.name)}` : ''}`}
+                      className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-lg transition-all hover:bg-primary/90 hover:shadow-xl"
+                    >
                       {locale === 'en' ? 'Apply' : 'Başvur'}
                       <ArrowRight className="h-4 w-4" />
                     </Link>
@@ -295,17 +367,28 @@ export function SlideInVisaWidget({ countries, locale = 'tr', currentCountry }: 
                 </div>
               )}
 
-              {/* CTA */}
-              <Link href="/ulkeler" className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-primary bg-primary/5 px-4 py-3 text-sm font-bold text-primary transition-all hover:bg-primary hover:text-white hover:shadow-lg">
-                {locale === 'en' ? 'View All Countries' : 'Tüm Ülkeleri Görüntüle'}
-                <ArrowRight className="h-4 w-4" />
-              </Link>
+              {/* CTA & Close Buttons */}
+              <div className="flex gap-2">
+                <Link 
+                  href="/ulkeler" 
+                  className="flex flex-1 items-center justify-center gap-2 rounded-lg border-2 border-primary bg-primary/5 px-4 py-3 text-sm font-bold text-primary transition-all hover:bg-primary hover:text-white hover:shadow-lg"
+                >
+                  {locale === 'en' ? 'View All Countries' : 'Tüm Ülkeleri Görüntüle'}
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center justify-center rounded-lg border-2 border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-700 transition-all hover:border-slate-400 hover:bg-slate-50"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Reopen Button - Side tab for all devices */}
+      {/* Reopen Button - Side tab (both mobile & desktop) */}
       {!isOpen && hasScrolled && (
         <button
           onClick={() => setIsOpen(true)}
