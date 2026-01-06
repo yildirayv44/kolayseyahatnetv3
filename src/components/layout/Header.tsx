@@ -20,6 +20,7 @@ const getMenuItems = (locale: 'tr' | 'en') => [
   { path: "blog", label: "Blog" },
   { path: "danismanlar", label: locale === 'en' ? "Consultants" : "Danışmanlar" },
   { path: "hakkimizda", label: locale === 'en' ? "About Us" : "Hakkımızda" },
+  { path: "affiliate", label: locale === 'en' ? "Become a Partner" : "Partner Ol" },
   { path: "iletisim", label: locale === 'en' ? "Contact" : "İletişim" },
 ];
 
