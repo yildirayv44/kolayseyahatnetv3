@@ -66,19 +66,22 @@ export function AffiliateForm() {
 
       // Automatically create partner account with default 10% commission
       try {
-        const { data: partnerIdData } = await supabase.rpc('generate_partner_id');
+        // Generate partner ID in frontend (format: KS + 6 random digits)
+        const partnerId = 'KS' + Math.floor(100000 + Math.random() * 900000);
         
-        if (partnerIdData) {
-          await supabase.from("affiliate_partners").insert({
-            user_affiliate_id: affiliateData.id,
-            partner_id: partnerIdData,
-            name: formData.name,
-            email: formData.email,
-            phone: formData.phone,
-            commission_level: "standard",
-            commission_rate: 10,
-            status: "active"
-          });
+        const { error: partnerError } = await supabase.from("affiliate_partners").insert({
+          user_affiliate_id: affiliateData.id,
+          partner_id: partnerId,
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          commission_level: "standard",
+          commission_rate: 10,
+          status: "active"
+        });
+
+        if (partnerError) {
+          console.error("Partner account creation error:", partnerError);
         }
       } catch (partnerError) {
         console.error("Partner account creation error:", partnerError);
