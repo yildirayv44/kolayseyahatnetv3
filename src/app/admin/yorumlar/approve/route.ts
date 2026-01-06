@@ -4,9 +4,8 @@ import { redirect } from "next/navigation";
 
 export async function POST(request: NextRequest) {
   try {
-    const formData = await request.formData();
-    const id = formData.get("id");
-    const type = formData.get("type");
+    const body = await request.json();
+    const { id, type } = body;
 
     if (!id || !type) {
       return NextResponse.json({ error: "Missing parameters" }, { status: 400 });

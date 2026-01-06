@@ -21,6 +21,7 @@ interface Referral {
   customer_email: string;
   customer_phone: string;
   country_code: string;
+  visa_type: string;
   application_status: string;
   commission_amount: number;
   commission_paid: boolean;
