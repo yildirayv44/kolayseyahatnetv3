@@ -38,9 +38,20 @@ export default function PartnerDashboard() {
   useEffect(() => {
     async function loadPartnerData() {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        // Check localStorage for partner session
+        const sessionStr = localStorage.getItem("partner_session");
+        if (!sessionStr) {
+          window.location.href = "/partner-giris";
+          return;
+        }
 
-        if (!user) {
+        const session = JSON.parse(sessionStr);
+        
+        // Verify session is still valid (not older than 7 days)
+        const loginDate = new Date(session.logged_in_at);
+        const daysSinceLogin = (Date.now() - loginDate.getTime()) / (1000 * 60 * 60 * 24);
+        if (daysSinceLogin > 7) {
+          localStorage.removeItem("partner_session");
           window.location.href = "/partner-giris";
           return;
         }
@@ -48,12 +59,13 @@ export default function PartnerDashboard() {
         const { data: partnerData } = await supabase
           .from("affiliate_partners")
           .select("*")
-          .eq("email", user.email)
+          .eq("email", session.email)
           .eq("status", "active")
           .single();
 
         if (!partnerData) {
-          setLoading(false);
+          localStorage.removeItem("partner_session");
+          window.location.href = "/partner-giris";
           return;
         }
 
@@ -68,6 +80,8 @@ export default function PartnerDashboard() {
         setReferrals(referralsData || []);
       } catch (error) {
         console.error("Error loading partner data:", error);
+        localStorage.removeItem("partner_session");
+        window.location.href = "/partner-giris";
       } finally {
         setLoading(false);
       }

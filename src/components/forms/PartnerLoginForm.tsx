@@ -22,17 +22,43 @@ export function PartnerLoginForm() {
     setLoading(true);
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: formData.email,
-        password: formData.password,
-      });
+      // Check user_affiliates table for email and password
+      const { data: affiliate, error: affiliateError } = await supabase
+        .from("user_affiliates")
+        .select("id, email, password_hash, status, name")
+        .eq("email", formData.email)
+        .eq("password_hash", formData.password)
+        .single();
 
-      if (error) throw error;
-
-      if (data.user) {
-        router.push("/partner");
-        router.refresh();
+      if (affiliateError || !affiliate) {
+        throw new Error("E-posta veya şifre hatalı");
       }
+
+      if (affiliate.status !== 1) {
+        throw new Error("Başvurunuz henüz onaylanmamış. Lütfen admin onayını bekleyin.");
+      }
+
+      // Check if partner account exists
+      const { data: partner, error: partnerError } = await supabase
+        .from("affiliate_partners")
+        .select("partner_id")
+        .eq("email", formData.email)
+        .single();
+
+      if (partnerError || !partner) {
+        throw new Error("Partner hesabınız bulunamadı. Lütfen admin ile iletişime geçin.");
+      }
+
+      // Store partner info in localStorage for session
+      localStorage.setItem("partner_session", JSON.stringify({
+        email: affiliate.email,
+        name: affiliate.name,
+        partner_id: partner.partner_id,
+        logged_in_at: new Date().toISOString()
+      }));
+
+      router.push("/partner");
+      router.refresh();
     } catch (err: any) {
       setError(err.message || "Giriş yapılırken hata oluştu");
     } finally {

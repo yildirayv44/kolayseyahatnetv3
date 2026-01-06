@@ -63,7 +63,7 @@ export default function AffiliateBasvurularPage() {
       // If approved (status = 1), create partner account
       if (newStatus === 1) {
         const shouldCreatePartner = confirm(
-          `${affiliate.name} için partner hesabı oluşturulsun mu?\n\nKomisyon seviyesi seçilecek ve giriş bilgileri e-mail ile gönderilecek.`
+          `${affiliate.name} için partner hesabı oluşturulsun mu?\n\nKomisyon seviyesi seçilecek.`
         );
 
         if (shouldCreatePartner) {
@@ -89,27 +89,7 @@ export default function AffiliateBasvurularPage() {
 
           const partnerId = partnerData;
 
-          // Create Supabase auth user with random password
-          const tempPassword = Math.random().toString(36).slice(-12) + Math.random().toString(36).slice(-12);
-          
-          const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-            email: affiliate.email,
-            password: tempPassword,
-            email_confirm: true,
-            user_metadata: {
-              name: affiliate.name,
-              partner_id: partnerId,
-              role: 'partner'
-            }
-          });
-
-          if (authError) {
-            console.error("Auth error:", authError);
-            alert("Kullanıcı hesabı oluşturulamadı. Lütfen manuel olarak oluşturun.");
-            return;
-          }
-
-          // Create partner
+          // Create partner (no Supabase Auth needed - they already have password)
           const { error: createError } = await supabase
             .from("affiliate_partners")
             .insert({
@@ -125,7 +105,7 @@ export default function AffiliateBasvurularPage() {
 
           if (createError) throw createError;
 
-          // Send password reset email via Edge Function
+          // Send approval email
           try {
             const response = await fetch(
               `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/partner-welcome-email`,
