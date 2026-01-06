@@ -197,7 +197,7 @@ export function ApplicationForm({ locale = "tr" }: ApplicationFormProps) {
       wants_payment: wantsToPayNow,
       payment_method: paymentMethod,
       person_count: personCount,
-      package_price: totalPackagePrice,
+      total_amount: totalPackagePrice,
       package_currency: packageCurrency,
       tl_amount: tlAmount,
       partner_id: partnerId, // Partner referral tracking
