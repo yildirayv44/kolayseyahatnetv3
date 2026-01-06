@@ -151,22 +151,22 @@ export function AffiliateForm() {
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
-          <label htmlFor="phone" className="block text-sm font-semibold text-slate-900">
-            Telefon <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="tel"
-            id="phone"
-            value={formData.phone}
-            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-            placeholder="0555 123 45 67"
-            className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-            required
-          />
-        </div>
+      <div className="space-y-2">
+        <label htmlFor="phone" className="block text-sm font-semibold text-slate-900">
+          Telefon <span className="text-red-500">*</span>
+        </label>
+        <input
+          type="tel"
+          id="phone"
+          value={formData.phone}
+          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+          placeholder="0555 123 45 67"
+          className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          required
+        />
+      </div>
 
+      <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <label htmlFor="password" className="block text-sm font-semibold text-slate-900">
             Şifre <span className="text-red-500">*</span>
@@ -182,9 +182,7 @@ export function AffiliateForm() {
             minLength={6}
           />
         </div>
-      </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <label htmlFor="password_confirm" className="block text-sm font-semibold text-slate-900">
             Şifre Tekrar <span className="text-red-500">*</span>
@@ -200,20 +198,20 @@ export function AffiliateForm() {
             minLength={6}
           />
         </div>
+      </div>
 
-        <div className="space-y-2">
-          <label htmlFor="website" className="block text-sm font-semibold text-slate-900">
-            Website / Blog
-          </label>
-          <input
-            type="url"
-            id="website"
-            value={formData.website}
-            onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-            placeholder="https://www.example.com"
-            className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-          />
-        </div>
+      <div className="space-y-2">
+        <label htmlFor="website" className="block text-sm font-semibold text-slate-900">
+          Website / Blog
+        </label>
+        <input
+          type="url"
+          id="website"
+          value={formData.website}
+          onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+          placeholder="https://www.example.com"
+          className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+        />
       </div>
 
       <div className="space-y-2">
