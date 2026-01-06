@@ -42,13 +42,42 @@ export default function PartnersPage() {
   const fetchPartners = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      const { data: partnersData, error } = await supabase
         .from("affiliate_partners")
         .select("*")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setPartners(data || []);
+
+      // Fetch referral counts for each partner
+      const partnersWithStats = await Promise.all(
+        (partnersData || []).map(async (partner) => {
+          const { data: referrals, error: refError } = await supabase
+            .from("affiliate_referrals")
+            .select("commission_amount, commission_paid")
+            .eq("partner_id", partner.partner_id);
+
+          if (refError) {
+            console.error("Error fetching referrals for partner:", partner.partner_id, refError);
+            return {
+              ...partner,
+              total_referrals: 0,
+              total_earnings: 0,
+            };
+          }
+
+          const total_referrals = referrals?.length || 0;
+          const total_earnings = referrals?.reduce((sum, ref) => sum + (Number(ref.commission_amount) || 0), 0) || 0;
+
+          return {
+            ...partner,
+            total_referrals,
+            total_earnings,
+          };
+        })
+      );
+
+      setPartners(partnersWithStats);
     } catch (error) {
       console.error("Error fetching partners:", error);
       alert("Partnerlar yüklenirken hata oluştu");
