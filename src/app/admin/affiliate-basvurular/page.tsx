@@ -205,8 +205,8 @@ export default function AffiliateBasvurularPage() {
 
   const filteredAffiliates = affiliates.filter((a) => {
     const matchesSearch =
-      a.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      a.email.toLowerCase().includes(searchQuery.toLowerCase());
+      (a.name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+      (a.email?.toLowerCase() || "").includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === "all" || a.status === Number(statusFilter);
     return matchesSearch && matchesStatus;
   });
