@@ -298,9 +298,9 @@ export default function AffiliateBasvurularPage() {
                 {filteredAffiliates.map((affiliate) => (
                   <tr key={affiliate.id} className="hover:bg-slate-50">
                     <td className="px-4 py-4">
-                      <div className="font-medium text-slate-900">{affiliate.name}</div>
-                      <div className="text-xs text-slate-500">{affiliate.email}</div>
-                      <div className="text-xs text-slate-500">{affiliate.phone}</div>
+                      <div className="font-medium text-slate-900">{affiliate.name || "-"}</div>
+                      <div className="text-xs text-slate-500">{affiliate.email || "-"}</div>
+                      <div className="text-xs text-slate-500">{affiliate.phone || "-"}</div>
                     </td>
                     <td className="px-4 py-4">
                       {affiliate.website && (
@@ -391,18 +391,18 @@ export default function AffiliateBasvurularPage() {
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <label className="text-sm font-semibold text-slate-900">Ad Soyad</label>
-                  <p className="text-slate-700">{selectedAffiliate.name}</p>
+                  <p className="text-slate-700">{selectedAffiliate.name || "-"}</p>
                 </div>
                 <div>
                   <label className="text-sm font-semibold text-slate-900">E-posta</label>
-                  <p className="text-slate-700">{selectedAffiliate.email}</p>
+                  <p className="text-slate-700">{selectedAffiliate.email || "-"}</p>
                 </div>
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <label className="text-sm font-semibold text-slate-900">Telefon</label>
-                  <p className="text-slate-700">{selectedAffiliate.phone}</p>
+                  <p className="text-slate-700">{selectedAffiliate.phone || "-"}</p>
                 </div>
                 <div>
                   <label className="text-sm font-semibold text-slate-900">Website</label>
