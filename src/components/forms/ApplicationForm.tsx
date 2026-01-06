@@ -9,6 +9,7 @@ import { t } from "@/i18n/translations";
 import type { Locale } from "@/i18n/translations";
 import { CreditCardForm } from "@/components/payment/CreditCardForm";
 import { PaymentSummary } from "@/components/payment/PaymentSummary";
+import { getReferralPartnerId } from "@/lib/referralTracking";
 
 interface ApplicationFormProps {
   locale?: Locale;
@@ -181,23 +182,25 @@ export function ApplicationForm({ locale = "tr" }: ApplicationFormProps) {
     setError("");
     setSuccess(false);
 
+    // Get partner_id from referral tracking
+    const partnerId = getReferralPartnerId();
+    
     const result = await submitApplication({
       full_name: formData.full_name,
       email: formData.email,
       phone: formData.phone,
-      country_id: formData.country_id ? parseInt(formData.country_id, 10) : null,
-      country_name: formData.country_name || null,
-      package_id: formData.package_id ? parseInt(formData.package_id, 10) : null,
-      package_name: formData.package_name || null,
-      notes: formData.notes || null,
+      country_id: parseInt(formData.country_id, 10) || null,
+      country_name: formData.country_name,
+      package_id: parseInt(formData.package_id, 10) || null,
+      package_name: formData.package_name,
+      notes: formData.notes,
       wants_payment: wantsToPayNow,
-      payment_method: wantsToPayNow && paymentMethod ? paymentMethod : null,
+      payment_method: paymentMethod,
       person_count: personCount,
-      total_amount: totalPackagePrice,
+      package_price: totalPackagePrice,
       package_currency: packageCurrency,
-      usd_rate: currencyRates?.USD.selling || null,
-      eur_rate: currencyRates?.EUR.selling || null,
       tl_amount: tlAmount,
+      partner_id: partnerId, // Partner referral tracking
     });
 
     setLoading(false);

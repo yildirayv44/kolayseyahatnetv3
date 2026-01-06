@@ -1,7 +1,8 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { Users, TrendingUp, DollarSign, Gift, CheckCircle, ArrowRight } from "lucide-react";
+import { Users, TrendingUp, DollarSign, Gift, CheckCircle, ArrowRight, LogIn, UserPlus } from "lucide-react";
 import { AffiliateForm } from "@/components/forms/AffiliateForm";
+import { PartnerLoginForm } from "@/components/forms/PartnerLoginForm";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -54,7 +55,7 @@ export default async function AffiliatePage({ params }: AffiliatePageProps) {
     {
       icon: DollarSign,
       title: "High Commission",
-      description: "Earn up to 15% commission for each successful application"
+      description: "Earn up to 30% commission for each successful application"
     },
     {
       icon: TrendingUp,
@@ -75,7 +76,7 @@ export default async function AffiliatePage({ params }: AffiliatePageProps) {
     {
       icon: DollarSign,
       title: "Yüksek Komisyon",
-      description: "Her başarılı başvuru için %15'e varan komisyon kazanın"
+      description: "Her başarılı başvuru için %30'a varan komisyon kazanın"
     },
     {
       icon: TrendingUp,
@@ -330,30 +331,26 @@ export default async function AffiliatePage({ params }: AffiliatePageProps) {
               <ul className="space-y-2 text-sm text-slate-700">
                 <li className="flex items-start gap-2">
                   <CheckCircle className="h-5 w-5 flex-shrink-0 text-green-600" />
-                  <span>0-10 {t.applicationsMonth}</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="h-5 w-5 flex-shrink-0 text-green-600" />
                   <span>{t.basicSupport}</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle className="h-5 w-5 flex-shrink-0 text-green-600" />
                   <span>{t.monthlyPayment}</span>
                 </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="h-5 w-5 flex-shrink-0 text-green-600" />
+                  <span>Partner ID & Link</span>
+                </li>
               </ul>
             </div>
 
             <div className="card border-2 border-primary bg-primary/5">
               <div className="mb-4 inline-block rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white">
-                {t.midLevel}
+                Enterprise
               </div>
-              <div className="mb-2 text-4xl font-bold text-primary">%12</div>
+              <div className="mb-2 text-4xl font-bold text-primary">%20</div>
               <p className="mb-4 text-sm text-slate-600">{t.commissionRate}</p>
               <ul className="space-y-2 text-sm text-slate-700">
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="h-5 w-5 flex-shrink-0 text-green-600" />
-                  <span>11-25 {t.applicationsMonth}</span>
-                </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle className="h-5 w-5 flex-shrink-0 text-green-600" />
                   <span>{t.prioritySupport}</span>
@@ -362,20 +359,20 @@ export default async function AffiliatePage({ params }: AffiliatePageProps) {
                   <CheckCircle className="h-5 w-5 flex-shrink-0 text-green-600" />
                   <span>{t.specialMaterials}</span>
                 </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="h-5 w-5 flex-shrink-0 text-green-600" />
+                  <span>Dashboard Access</span>
+                </li>
               </ul>
             </div>
 
             <div className="card border-2 border-amber-500 bg-gradient-to-br from-amber-50 to-amber-100">
               <div className="mb-4 inline-block rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-white">
-                {t.premium}
+                Kurumsal
               </div>
-              <div className="mb-2 text-4xl font-bold text-amber-600">%15</div>
+              <div className="mb-2 text-4xl font-bold text-amber-600">%30</div>
               <p className="mb-4 text-sm text-slate-600">{t.commissionRate}</p>
               <ul className="space-y-2 text-sm text-slate-700">
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="h-5 w-5 flex-shrink-0 text-green-600" />
-                  <span>26+ {t.applicationsMonth}</span>
-                </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle className="h-5 w-5 flex-shrink-0 text-green-600" />
                   <span>{t.vipSupport}</span>
@@ -383,6 +380,10 @@ export default async function AffiliatePage({ params }: AffiliatePageProps) {
                 <li className="flex items-start gap-2">
                   <CheckCircle className="h-5 w-5 flex-shrink-0 text-green-600" />
                   <span>{t.specialBonuses}</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="h-5 w-5 flex-shrink-0 text-green-600" />
+                  <span>Dedicated Account Manager</span>
                 </li>
               </ul>
             </div>
@@ -455,14 +456,45 @@ export default async function AffiliatePage({ params }: AffiliatePageProps) {
         </div>
       </section>
 
-      {/* Application Form */}
+      {/* Partner Login & Application */}
       <section id="basvuru" className="container mx-auto px-4">
-        <div className="mx-auto max-w-2xl">
-          <div className="card">
-            <h2 className="mb-6 text-2xl font-bold text-slate-900">
-              {t.applicationForm}
-            </h2>
-            <AffiliateForm />
+        <div className="mx-auto max-w-5xl">
+          <div className="grid gap-6 lg:grid-cols-2">
+            {/* Partner Login */}
+            <div className="card">
+              <div className="mb-6">
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                  <LogIn className="h-6 w-6 text-primary" />
+                </div>
+                <h2 className="mb-2 text-2xl font-bold text-slate-900">
+                  {isEnglish ? "Partner Login" : "Partner Girişi"}
+                </h2>
+                <p className="text-sm text-slate-600">
+                  {isEnglish 
+                    ? "Already a partner? Login to your dashboard" 
+                    : "Zaten partner misiniz? Dashboard'unuza giriş yapın"}
+                </p>
+              </div>
+              <PartnerLoginForm />
+            </div>
+
+            {/* Application Form */}
+            <div className="card">
+              <div className="mb-6">
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-50">
+                  <UserPlus className="h-6 w-6 text-blue-600" />
+                </div>
+                <h2 className="mb-2 text-2xl font-bold text-slate-900">
+                  {t.applicationForm}
+                </h2>
+                <p className="text-sm text-slate-600">
+                  {isEnglish 
+                    ? "Not a partner yet? Apply now" 
+                    : "Henüz partner değil misiniz? Hemen başvurun"}
+                </p>
+              </div>
+              <AffiliateForm />
+            </div>
           </div>
         </div>
       </section>

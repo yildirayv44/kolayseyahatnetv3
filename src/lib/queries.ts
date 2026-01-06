@@ -860,6 +860,28 @@ export async function submitApplication(formData: any) {
     return false;
   }
 
+  // If there's a partner_id, create referral record
+  if (formData.partner_id) {
+    try {
+      await supabase.from("affiliate_referrals").insert({
+        partner_id: formData.partner_id,
+        customer_name: formData.full_name,
+        customer_email: formData.email,
+        customer_phone: formData.phone,
+        country_code: formData.country_name,
+        visa_type: formData.package_name || "Belirtilmedi",
+        application_status: "pending",
+        commission_amount: 0, // Admin tarafından belirlenecek
+        referral_source: "link",
+        notes: `Otomatik kayıt - Form başvurusu`
+      });
+      console.log("✅ Partner referral tracked:", formData.partner_id);
+    } catch (refError) {
+      console.error("Referral tracking error:", refError);
+      // Hata olsa bile başvuru kaydedildi, devam et
+    }
+  }
+
   // Send email notifications (non-blocking)
   try {
     // Send notification to admin

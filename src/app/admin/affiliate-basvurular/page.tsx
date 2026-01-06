@@ -15,7 +15,7 @@ interface Affiliate {
   traffic_source: string | null;
   monthly_visitors: string | null;
   why_join: string | null;
-  status: string;
+  status: number;
   created_at: string;
 }
 
@@ -23,7 +23,7 @@ export default function AffiliateBasvurularPage() {
   const [affiliates, setAffiliates] = useState<Affiliate[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string | number>("all");
   const [selectedAffiliate, setSelectedAffiliate] = useState<Affiliate | null>(null);
 
   useEffect(() => {
@@ -48,18 +48,117 @@ export default function AffiliateBasvurularPage() {
     }
   };
 
-  const updateStatus = async (id: number, status: string) => {
+  const updateStatus = async (id: number, newStatus: number) => {
     try {
+      const affiliate = affiliates.find(a => a.id === id);
+      if (!affiliate) return;
+
       const { error } = await supabase
         .from("user_affiliates")
-        .update({ status })
+        .update({ status: newStatus })
         .eq("id", id);
 
       if (error) throw error;
+
+      // If approved (status = 1), create partner account
+      if (newStatus === 1) {
+        const shouldCreatePartner = confirm(
+          `${affiliate.name} için partner hesabı oluşturulsun mu?\n\nKomisyon seviyesi seçilecek ve giriş bilgileri e-mail ile gönderilecek.`
+        );
+
+        if (shouldCreatePartner) {
+          const level = prompt(
+            "Komisyon seviyesi seçin:\n1 - Standard (%10)\n2 - Enterprise (%20)\n3 - Kurumsal (%30)",
+            "1"
+          );
+
+          const levelMap: Record<string, { name: string; rate: number }> = {
+            "1": { name: "standard", rate: 10 },
+            "2": { name: "enterprise", rate: 20 },
+            "3": { name: "kurumsal", rate: 30 }
+          };
+
+          const selectedLevel = levelMap[level || "1"];
+
+          // Generate partner ID by calling the database function
+          const { data: partnerData, error: partnerError } = await supabase.rpc(
+            'generate_partner_id'
+          );
+
+          if (partnerError) throw partnerError;
+
+          const partnerId = partnerData;
+
+          // Create Supabase auth user with random password
+          const tempPassword = Math.random().toString(36).slice(-12) + Math.random().toString(36).slice(-12);
+          
+          const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+            email: affiliate.email,
+            password: tempPassword,
+            email_confirm: true,
+            user_metadata: {
+              name: affiliate.name,
+              partner_id: partnerId,
+              role: 'partner'
+            }
+          });
+
+          if (authError) {
+            console.error("Auth error:", authError);
+            alert("Kullanıcı hesabı oluşturulamadı. Lütfen manuel olarak oluşturun.");
+            return;
+          }
+
+          // Create partner
+          const { error: createError } = await supabase
+            .from("affiliate_partners")
+            .insert({
+              user_affiliate_id: id,
+              partner_id: partnerId,
+              name: affiliate.name,
+              email: affiliate.email,
+              phone: affiliate.phone,
+              commission_level: selectedLevel.name,
+              commission_rate: selectedLevel.rate,
+              status: "active"
+            });
+
+          if (createError) throw createError;
+
+          // Send password reset email via Edge Function
+          try {
+            const response = await fetch(
+              `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/partner-welcome-email`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`
+                },
+                body: JSON.stringify({
+                  email: affiliate.email,
+                  name: affiliate.name,
+                  partner_id: partnerId,
+                  commission_rate: selectedLevel.rate
+                })
+              }
+            );
+
+            if (!response.ok) {
+              console.error("Email sending failed");
+            }
+          } catch (emailError) {
+            console.error("Email error:", emailError);
+          }
+
+          alert(`Partner hesabı oluşturuldu!\n\nPartner ID: ${partnerId}\nKomisyon: %${selectedLevel.rate}\n\nŞifre sıfırlama linki e-mail ile gönderildi.`);
+        }
+      }
+
       fetchAffiliates();
     } catch (error) {
       console.error("Error updating status:", error);
-      alert("Durum güncellenirken hata oluştu");
+      alert("Durum güncellenirken hata oluştu: " + (error as Error).message);
     }
   };
 
@@ -78,26 +177,26 @@ export default function AffiliateBasvurularPage() {
     }
   };
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: number) => {
     switch (status) {
-      case "approved":
+      case 1:
         return <CheckCircle className="h-4 w-4 text-green-600" />;
-      case "pending":
+      case 0:
         return <Clock className="h-4 w-4 text-amber-600" />;
-      case "rejected":
+      case 2:
         return <XCircle className="h-4 w-4 text-red-600" />;
       default:
         return <Clock className="h-4 w-4 text-slate-400" />;
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: number) => {
     switch (status) {
-      case "approved":
+      case 1:
         return "bg-green-100 text-green-700";
-      case "pending":
+      case 0:
         return "bg-amber-100 text-amber-700";
-      case "rejected":
+      case 2:
         return "bg-red-100 text-red-700";
       default:
         return "bg-slate-100 text-slate-700";
@@ -108,15 +207,15 @@ export default function AffiliateBasvurularPage() {
     const matchesSearch =
       a.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       a.email.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === "all" || a.status === statusFilter;
+    const matchesStatus = statusFilter === "all" || a.status === Number(statusFilter);
     return matchesSearch && matchesStatus;
   });
 
   const stats = {
     total: affiliates.length,
-    pending: affiliates.filter((a) => a.status === "pending").length,
-    approved: affiliates.filter((a) => a.status === "approved").length,
-    rejected: affiliates.filter((a) => a.status === "rejected").length,
+    pending: affiliates.filter((a) => a.status === 0).length,
+    approved: affiliates.filter((a) => a.status === 1).length,
+    rejected: affiliates.filter((a) => a.status === 2).length,
   };
 
   return (
@@ -170,9 +269,9 @@ export default function AffiliateBasvurularPage() {
               className="rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
             >
               <option value="all">Tüm Durumlar</option>
-              <option value="pending">Beklemede</option>
-              <option value="approved">Onaylandı</option>
-              <option value="rejected">Reddedildi</option>
+              <option value="0">Beklemede</option>
+              <option value="1">Onaylandı</option>
+              <option value="2">Reddedildi</option>
             </select>
           </div>
         </div>
@@ -247,12 +346,12 @@ export default function AffiliateBasvurularPage() {
                         {getStatusIcon(affiliate.status)}
                         <select
                           value={affiliate.status}
-                          onChange={(e) => updateStatus(affiliate.id, e.target.value)}
+                          onChange={(e) => updateStatus(affiliate.id, Number(e.target.value))}
                           className="rounded border border-slate-200 px-2 py-1 text-xs focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20"
                         >
-                          <option value="pending">Beklemede</option>
-                          <option value="approved">Onaylandı</option>
-                          <option value="rejected">Reddedildi</option>
+                          <option value="0">Beklemede</option>
+                          <option value="1">Onaylandı</option>
+                          <option value="2">Reddedildi</option>
                         </select>
                       </div>
                     </td>
@@ -373,14 +472,15 @@ export default function AffiliateBasvurularPage() {
                   <select
                     value={selectedAffiliate.status}
                     onChange={(e) => {
-                      updateStatus(selectedAffiliate.id, e.target.value);
-                      setSelectedAffiliate({ ...selectedAffiliate, status: e.target.value });
+                      const newStatus = Number(e.target.value);
+                      updateStatus(selectedAffiliate.id, newStatus);
+                      setSelectedAffiliate({ ...selectedAffiliate, status: newStatus });
                     }}
                     className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                   >
-                    <option value="pending">Beklemede</option>
-                    <option value="approved">Onaylandı</option>
-                    <option value="rejected">Reddedildi</option>
+                    <option value="0">Beklemede</option>
+                    <option value="1">Onaylandı</option>
+                    <option value="2">Reddedildi</option>
                   </select>
                 </div>
                 <div>

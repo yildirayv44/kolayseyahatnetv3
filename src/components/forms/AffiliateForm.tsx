@@ -45,15 +45,43 @@ export function AffiliateForm() {
         traffic_source: formData.traffic_source || null,
         monthly_visitors: formData.monthly_visitors || null,
         why_join: formData.why_join || null,
-        status: "pending",
+        status: 0,
         created_at: new Date().toISOString(),
       });
 
       if (error) throw error;
 
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/affiliate-application-notification`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              name: formData.name,
+              email: formData.email,
+              phone: formData.phone,
+              website: formData.website,
+              social_media: formData.social_media,
+              experience: formData.experience,
+              traffic_source: formData.traffic_source,
+              monthly_visitors: formData.monthly_visitors,
+              why_join: formData.why_join,
+            }),
+          }
+        );
+
+        if (!response.ok) {
+          console.error("Email notification failed:", await response.text());
+        }
+      } catch (emailError) {
+        console.error("Email notification error:", emailError);
+      }
+
       alert("Başvurunuz başarıyla gönderildi! En kısa sürede size geri dönüş yapacağız.");
       
-      // Reset form
       setFormData({
         name: "",
         email: "",

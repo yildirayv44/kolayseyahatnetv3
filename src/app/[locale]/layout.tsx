@@ -13,6 +13,7 @@ import { PageLoadingBar } from "@/components/shared/PageLoadingBar";
 import { generateSEOMetadata, generateOrganizationSchema } from "@/components/shared/SEOHead";
 import { locales, type Locale } from "@/i18n/config";
 import { WebVitals } from "@/app/web-vitals";
+import { ReferralTracker } from "@/components/ReferralTracker";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -127,6 +128,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           />
         </noscript>
         {/* End Google Tag Manager (noscript) */}
+        <ReferralTracker />
         <WebVitals />
         <PageLoadingBar />
         <Header />

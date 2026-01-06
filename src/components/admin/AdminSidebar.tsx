@@ -43,6 +43,7 @@ const menuItems = [
   { href: "/admin/basvurular", label: "Başvurular", icon: ClipboardList },
   { href: "/admin/geri-bildirimler", label: "Geri Bildirimler", icon: Mail },
   { href: "/admin/affiliate-basvurular", label: "Affiliate Başvuruları", icon: UserPlus },
+  { href: "/admin/partnerler", label: "Partner Yönetimi", icon: Users },
   { href: "/admin/yorumlar", label: "Yorumlar", icon: MessageSquare },
   { href: "/admin/ayarlar", label: "Ayarlar", icon: Settings },
   { href: "/admin/fix-taxonomies", label: "🔧 Taxonomy Düzelt", icon: Settings, divider: true },
