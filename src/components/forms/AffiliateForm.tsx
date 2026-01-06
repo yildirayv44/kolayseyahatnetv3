@@ -47,7 +47,7 @@ export function AffiliateForm() {
     try {
       setLoading(true);
 
-      const { error } = await supabase.from("user_affiliates").insert({
+      const { data: affiliateData, error } = await supabase.from("user_affiliates").insert({
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
@@ -58,11 +58,31 @@ export function AffiliateForm() {
         traffic_source: formData.traffic_source || null,
         monthly_visitors: formData.monthly_visitors || null,
         why_join: formData.why_join || null,
-        status: 0,
+        status: 1,
         created_at: new Date().toISOString(),
-      });
+      }).select().single();
 
       if (error) throw error;
+
+      // Automatically create partner account with default 10% commission
+      try {
+        const { data: partnerIdData } = await supabase.rpc('generate_partner_id');
+        
+        if (partnerIdData) {
+          await supabase.from("affiliate_partners").insert({
+            user_affiliate_id: affiliateData.id,
+            partner_id: partnerIdData,
+            name: formData.name,
+            email: formData.email,
+            phone: formData.phone,
+            commission_level: "standard",
+            commission_rate: 10,
+            status: "active"
+          });
+        }
+      } catch (partnerError) {
+        console.error("Partner account creation error:", partnerError);
+      }
 
       try {
         const response = await fetch(
@@ -93,7 +113,7 @@ export function AffiliateForm() {
         console.error("Email notification error:", emailError);
       }
 
-      alert("Başvurunuz başarıyla gönderildi! En kısa sürede size geri dönüş yapacağız.");
+      alert("Başvurunuz başarıyla gönderildi ve onaylandı! Şimdi giriş yapabilirsiniz.");
       
       setFormData({
         name: "",
