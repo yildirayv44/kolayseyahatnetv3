@@ -244,21 +244,44 @@ export async function GET(request: NextRequest) {
     console.log('🔍 Detecting duplicate images...');
     const urlMap = new Map<string, DetectedImage[]>();
     
-    // Group images by URL
+    // Helper function to normalize URL (remove query params, trailing slashes)
+    const normalizeUrl = (url: string): string => {
+      try {
+        const urlObj = new URL(url);
+        // Remove query parameters and hash
+        return `${urlObj.origin}${urlObj.pathname}`.replace(/\/$/, '');
+      } catch {
+        // If URL parsing fails, just clean it up
+        return url.split('?')[0].split('#')[0].replace(/\/$/, '');
+      }
+    };
+    
+    // Group images by normalized URL (include all images with URLs, not just OK ones)
     detectedImages.forEach(img => {
-      if (img.url && img.status === 'ok') {
-        if (!urlMap.has(img.url)) {
-          urlMap.set(img.url, []);
+      if (img.url && img.url.trim() !== '') {
+        const normalizedUrl = normalizeUrl(img.url);
+        if (!urlMap.has(normalizedUrl)) {
+          urlMap.set(normalizedUrl, []);
         }
-        urlMap.get(img.url)!.push(img);
+        urlMap.get(normalizedUrl)!.push(img);
       }
     });
     
+    console.log(`📊 Found ${urlMap.size} unique URLs`);
+    
     // Mark duplicates
     let duplicateCount = 0;
+    let duplicateGroupCount = 0;
+    
     urlMap.forEach((images, url) => {
       if (images.length > 1) {
-        const duplicateGroup = `dup-${url.split('/').pop()?.split('.')[0] || Math.random().toString(36).substring(7)}`;
+        duplicateGroupCount++;
+        const filename = url.split('/').pop()?.split('.')[0] || Math.random().toString(36).substring(7);
+        const duplicateGroup = `dup-${filename}`;
+        
+        console.log(`🔄 Duplicate found: ${filename} used ${images.length} times`);
+        console.log(`   Sources: ${images.map(i => `${i.source.type}:${i.source.id}`).join(', ')}`);
+        
         images.forEach(img => {
           img.isDuplicate = true;
           img.duplicateCount = images.length;
