@@ -107,9 +107,6 @@ export default async function BlogPage({ params }: BlogPageProps) {
   // Get comments
   const comments = await getBlogComments(blog.id);
 
-  // Get countries for widget
-  const countries = await getCountries();
-
   // Calculate reading time
   const readingTime = blog.contents ? getReadingTime(blog.contents, locale as 'tr' | 'en') : { minutes: 5, formatted: '5 dakika okuma' };
 
@@ -158,7 +155,6 @@ export default async function BlogPage({ params }: BlogPageProps) {
 
       {/* Slide-in Visa Widget */}
       <SlideInVisaWidget
-        countries={countries as any}
         locale={locale as 'tr' | 'en'}
       />
 

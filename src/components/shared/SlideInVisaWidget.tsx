@@ -23,13 +23,13 @@ interface Country {
 }
 
 interface SlideInVisaWidgetProps {
-  countries: Country[];
+  countries?: Country[];
   locale?: 'tr' | 'en';
   currentCountry?: string;
   autoOpen?: boolean;
 }
 
-export function SlideInVisaWidget({ countries, locale = 'tr', currentCountry, autoOpen = true }: SlideInVisaWidgetProps) {
+export function SlideInVisaWidget({ countries: initialCountries, locale = 'tr', currentCountry, autoOpen = true }: SlideInVisaWidgetProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [hasScrolled, setHasScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -41,6 +41,24 @@ export function SlideInVisaWidget({ countries, locale = 'tr', currentCountry, au
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+  const [countries, setCountries] = useState<Country[]>(initialCountries || []);
+  const [isLoadingCountries, setIsLoadingCountries] = useState(!initialCountries);
+
+  // Fetch countries client-side if not provided
+  useEffect(() => {
+    if (!initialCountries) {
+      fetch('/api/countries')
+        .then(res => res.json())
+        .then(data => {
+          setCountries(data);
+          setIsLoadingCountries(false);
+        })
+        .catch(err => {
+          console.error('Failed to fetch countries:', err);
+          setIsLoadingCountries(false);
+        });
+    }
+  }, [initialCountries]);
 
   // Detect mobile on mount
   useEffect(() => {
@@ -236,6 +254,14 @@ export function SlideInVisaWidget({ countries, locale = 'tr', currentCountry, au
 
           {/* Content - Scrollable */}
           <div className="flex-1 overflow-y-auto p-4">
+            {isLoadingCountries ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="text-center">
+                  <div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+                  <p className="text-sm text-slate-600">{locale === 'en' ? 'Loading countries...' : 'Ülkeler yükleniyor...'}</p>
+                </div>
+              </div>
+            ) : (
             <div className="space-y-4">
 
               {/* Mini Stats - Compact */}
@@ -400,6 +426,7 @@ export function SlideInVisaWidget({ countries, locale = 'tr', currentCountry, au
                 </button>
               </div>
             </div>
+            )}
           </div>
         </div>
       </div>
