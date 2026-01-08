@@ -542,16 +542,38 @@ export default function ImageDetectionPage() {
       
       const data = await response.json();
       if (data.success) {
-        alert('Görsel başarıyla değiştirildi!');
+        // Update local state instead of full page reload
+        setImages(prevImages => 
+          prevImages.map(img => 
+            img.id === selectedImage.id 
+              ? { ...img, url: newImageUrl, status: 'ok' as const }
+              : img
+          )
+        );
+        
+        // Update similar groups if they exist
+        if (similarGroups.length > 0) {
+          setSimilarGroups(prevGroups =>
+            prevGroups.map(group => ({
+              ...group,
+              images: group.images.map((img: any) =>
+                img.id === selectedImage.id
+                  ? { ...img, url: newImageUrl }
+                  : img
+              )
+            }))
+          );
+        }
+        
+        alert('✅ Görsel başarıyla değiştirildi!');
         setShowReplaceModal(false);
         setSelectedImage(null);
-        fetchImages(); // Refresh list
       } else {
-        alert('Hata: ' + data.error);
+        alert('❌ Hata: ' + data.error);
       }
     } catch (error) {
       console.error('Error replacing image:', error);
-      alert('Görsel değiştirme başarısız');
+      alert('❌ Görsel değiştirme başarısız');
     } finally {
       setReplacingImage(false);
     }
@@ -809,8 +831,8 @@ export default function ImageDetectionPage() {
               </button>
             </div>
 
-            <div className="flex gap-2">
-              <div className="relative flex-1 sm:w-64">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <div className="relative flex-1 sm:max-w-xs">
                 <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
                 <input
                   type="text"
@@ -821,11 +843,11 @@ export default function ImageDetectionPage() {
                 />
               </div>
               
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <button
                   onClick={selectAll}
                   disabled={filteredImages.length === 0}
-                  className="rounded-lg bg-gray-600 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 disabled:opacity-50"
+                  className="rounded-lg bg-gray-600 px-3 py-2 text-sm font-medium text-white hover:bg-gray-700 disabled:opacity-50 whitespace-nowrap"
                 >
                   Tümünü Seç
                 </button>
@@ -833,14 +855,14 @@ export default function ImageDetectionPage() {
                 <button
                   onClick={findSimilarImages}
                   disabled={findingSimilar}
-                  className="flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 disabled:opacity-50"
+                  className="flex items-center gap-2 rounded-lg bg-purple-600 px-3 py-2 text-sm font-medium text-white hover:bg-purple-700 disabled:opacity-50 whitespace-nowrap"
                 >
                   {findingSimilar ? (
-                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
-                    <Search className="h-5 w-5" />
+                    <Search className="h-4 w-4" />
                   )}
-                  Benzer Görselleri Bul
+                  Benzer Bul
                 </button>
                 
                 {showSimilarOnly && (
@@ -849,7 +871,7 @@ export default function ImageDetectionPage() {
                       setShowSimilarOnly(false);
                       setSimilarGroups([]);
                     }}
-                    className="rounded-lg bg-orange-600 px-4 py-2 text-sm font-medium text-white hover:bg-orange-700"
+                    className="rounded-lg bg-orange-600 px-3 py-2 text-sm font-medium text-white hover:bg-orange-700 whitespace-nowrap"
                   >
                     Filtreyi Kaldır
                   </button>
@@ -858,22 +880,22 @@ export default function ImageDetectionPage() {
                 <button
                   onClick={autoFixAllErrors}
                   disabled={autoFixing || stats.error === 0}
-                  className="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+                  className="flex items-center gap-2 rounded-lg bg-green-600 px-3 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50 whitespace-nowrap"
                 >
                   {autoFixing ? (
-                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
-                    <Check className="h-5 w-5" />
+                    <Check className="h-4 w-4" />
                   )}
-                  Otomatik Tamir ({stats.error})
+                  Tamir ({stats.error})
                 </button>
 
                 <button
                   onClick={fetchImages}
                   disabled={loading}
-                  className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
+                  className="flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50 whitespace-nowrap"
                 >
-                  <RefreshCw className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
+                  <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
                   Yenile
                 </button>
               </div>
