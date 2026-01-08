@@ -52,6 +52,11 @@ export default function ImageDetectionPage() {
   // Optimization
   const [optimizing, setOptimizing] = useState(false);
   const [optimizeProgress, setOptimizeProgress] = useState({ current: 0, total: 0 });
+  
+  // Similar images detection
+  const [findingSimilar, setFindingSimilar] = useState(false);
+  const [showSimilarOnly, setShowSimilarOnly] = useState(false);
+  const [similarGroups, setSimilarGroups] = useState<any[]>([]);
 
   // Fetch all images
   const fetchImages = async () => {
@@ -127,7 +132,7 @@ export default function ImageDetectionPage() {
   });
 
   // Sort duplicates together when showing duplicates filter
-  const sortedImages = filter === 'duplicates' 
+  let sortedImages = filter === 'duplicates' 
     ? [...filteredImages].sort((a, b) => {
         if (a.duplicateGroup && b.duplicateGroup) {
           return a.duplicateGroup.localeCompare(b.duplicateGroup);
@@ -135,6 +140,24 @@ export default function ImageDetectionPage() {
         return 0;
       })
     : filteredImages;
+
+  // Filter to show only similar images if enabled
+  if (showSimilarOnly && similarGroups.length > 0) {
+    const similarImageIds = new Set(
+      similarGroups.flatMap(group => group.images.map((img: any) => img.id))
+    );
+    sortedImages = sortedImages.filter(img => similarImageIds.has(img.id));
+    
+    // Sort by similar groups
+    sortedImages.sort((a, b) => {
+      const groupA = similarGroups.find(g => g.images.some((i: any) => i.id === a.id));
+      const groupB = similarGroups.find(g => g.images.some((i: any) => i.id === b.id));
+      if (groupA && groupB) {
+        return groupA.groupId.localeCompare(groupB.groupId);
+      }
+      return 0;
+    });
+  }
 
   // Bulk selection handlers
   const toggleImageSelection = (imageId: string) => {
@@ -154,6 +177,51 @@ export default function ImageDetectionPage() {
 
   const clearSelection = () => {
     setSelectedImages(new Set());
+  };
+
+  // Find visually similar images
+  const findSimilarImages = async () => {
+    setFindingSimilar(true);
+    
+    try {
+      // Only send images with file size info
+      const imagesWithSize = images.filter(img => img.fileSize && img.format && img.status === 'ok');
+      
+      if (imagesWithSize.length === 0) {
+        alert('Dosya boyutu bilgisi olan görsel bulunamadı!');
+        return;
+      }
+
+      const response = await fetch('/api/admin/images/find-similar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ images: imagesWithSize }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setSimilarGroups(data.similarGroups);
+        setShowSimilarOnly(true);
+        
+        const { summary } = data;
+        alert(
+          `🔍 Benzer Görsel Analizi Tamamlandı!\n\n` +
+          `📊 Bulunan Gruplar:\n` +
+          `• Yüksek Güven: ${summary.highConfidence}\n` +
+          `• Orta Güven: ${summary.mediumConfidence}\n` +
+          `• Düşük Güven: ${summary.lowConfidence}\n\n` +
+          `Toplam ${summary.totalGroups} benzer görsel grubu bulundu.`
+        );
+      } else {
+        alert(`❌ Hata: ${data.error}`);
+      }
+    } catch (error) {
+      console.error('Find similar error:', error);
+      alert('Benzer görseller aranırken hata oluştu!');
+    } finally {
+      setFindingSimilar(false);
+    }
   };
 
   // Bulk optimize selected images
@@ -763,6 +831,31 @@ export default function ImageDetectionPage() {
                 </button>
                 
                 <button
+                  onClick={findSimilarImages}
+                  disabled={findingSimilar}
+                  className="flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 disabled:opacity-50"
+                >
+                  {findingSimilar ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <Search className="h-5 w-5" />
+                  )}
+                  Benzer Görselleri Bul
+                </button>
+                
+                {showSimilarOnly && (
+                  <button
+                    onClick={() => {
+                      setShowSimilarOnly(false);
+                      setSimilarGroups([]);
+                    }}
+                    className="rounded-lg bg-orange-600 px-4 py-2 text-sm font-medium text-white hover:bg-orange-700"
+                  >
+                    Filtreyi Kaldır
+                  </button>
+                )}
+                
+                <button
                   onClick={autoFixAllErrors}
                   disabled={autoFixing || stats.error === 0}
                   className="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
@@ -857,6 +950,12 @@ export default function ImageDetectionPage() {
                       <span className="flex items-center gap-1 rounded-full bg-orange-600 px-2 py-1 text-xs font-medium text-white">
                         <AlertCircle className="h-3 w-3" />
                         {img.duplicateCount}x Kopya
+                      </span>
+                    )}
+                    {showSimilarOnly && similarGroups.some(g => g.images.some((i: any) => i.id === img.id)) && (
+                      <span className="flex items-center gap-1 rounded-full bg-purple-600 px-2 py-1 text-xs font-medium text-white">
+                        <Search className="h-3 w-3" />
+                        Benzer
                       </span>
                     )}
                   </div>
