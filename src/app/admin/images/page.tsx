@@ -9,6 +9,9 @@ interface DetectedImage {
   url: string;
   alt: string;
   status: 'ok' | 'error' | 'checking' | 'missing';
+  fileSize?: number;
+  format?: string;
+  isOptimized?: boolean;
   source: {
     type: 'blog' | 'country';
     id: number;
@@ -28,7 +31,7 @@ export default function ImageDetectionPage() {
   const [images, setImages] = useState<DetectedImage[]>([]);
   const [stats, setStats] = useState<Stats>({ total: 0, ok: 0, error: 0, missing: 0 });
   const [loading, setLoading] = useState(false);
-  const [filter, setFilter] = useState<'all' | 'ok' | 'error' | 'missing'>('all');
+  const [filter, setFilter] = useState<'all' | 'ok' | 'error' | 'missing' | 'needs-optimization'>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedImage, setSelectedImage] = useState<DetectedImage | null>(null);
   const [showReplaceModal, setShowReplaceModal] = useState(false);
@@ -96,7 +99,17 @@ export default function ImageDetectionPage() {
 
   // Filter images
   const filteredImages = images.filter(img => {
-    const matchesFilter = filter === 'all' || img.status === filter;
+    let matchesFilter = false;
+    
+    if (filter === 'all') {
+      matchesFilter = true;
+    } else if (filter === 'needs-optimization') {
+      // Show images that are OK but not optimized (not webp or > 500KB)
+      matchesFilter = img.status === 'ok' && !img.isOptimized;
+    } else {
+      matchesFilter = img.status === filter;
+    }
+    
     const matchesSearch = 
       img.url.toLowerCase().includes(searchTerm.toLowerCase()) ||
       img.alt.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -133,8 +146,27 @@ export default function ImageDetectionPage() {
       return;
     }
 
-    // Extract storage info from URLs
-    const imagesToOptimize = selectedImgs.map(img => {
+    // Filter out already optimized images
+    const needsOptimization = selectedImgs.filter(img => !img.isOptimized);
+    const alreadyOptimized = selectedImgs.filter(img => img.isOptimized);
+    
+    if (alreadyOptimized.length > 0) {
+      const proceed = confirm(
+        `⚠️ Uyarı: ${alreadyOptimized.length} görsel zaten optimize edilmiş (WebP, <500KB).\n\n` +
+        `Sadece optimize edilmemiş ${needsOptimization.length} görsel işlenecek.\n\n` +
+        `Devam etmek istiyor musunuz?`
+      );
+      
+      if (!proceed) return;
+    }
+    
+    if (needsOptimization.length === 0) {
+      alert('✅ Seçili tüm görseller zaten optimize edilmiş!');
+      return;
+    }
+
+    // Extract storage info from URLs (only non-optimized)
+    const imagesToOptimize = needsOptimization.map(img => {
       const url = new URL(img.url);
       const pathParts = url.pathname.split('/');
       const bucketIndex = pathParts.indexOf('public') + 1;
@@ -656,6 +688,16 @@ export default function ImageDetectionPage() {
               >
                 Eksik ({stats.missing})
               </button>
+              <button
+                onClick={() => setFilter('needs-optimization')}
+                className={`rounded-lg px-4 py-2 text-sm font-medium ${
+                  filter === 'needs-optimization'
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                Optimize Edilmeli ({images.filter(img => img.status === 'ok' && !img.isOptimized).length})
+              </button>
             </div>
 
             <div className="flex gap-2">
@@ -781,6 +823,39 @@ export default function ImageDetectionPage() {
                       </p>
                     </div>
                   </div>
+
+                  {/* File Info */}
+                  {img.fileSize !== undefined && (
+                    <div className="mb-2 flex items-center gap-2 text-xs">
+                      <span className={`inline-flex items-center gap-1 rounded px-2 py-1 font-medium ${
+                        img.isOptimized 
+                          ? 'bg-green-100 text-green-700'
+                          : img.fileSize > 1024 * 1024
+                          ? 'bg-red-100 text-red-700'
+                          : img.fileSize > 500 * 1024
+                          ? 'bg-orange-100 text-orange-700'
+                          : 'bg-blue-100 text-blue-700'
+                      }`}>
+                        {img.fileSize > 1024 * 1024 
+                          ? `${(img.fileSize / 1024 / 1024).toFixed(2)} MB`
+                          : `${(img.fileSize / 1024).toFixed(0)} KB`
+                        }
+                      </span>
+                      <span className={`inline-flex items-center gap-1 rounded px-2 py-1 font-medium uppercase ${
+                        img.format === 'webp'
+                          ? 'bg-purple-100 text-purple-700'
+                          : 'bg-gray-100 text-gray-700'
+                      }`}>
+                        {img.format || 'unknown'}
+                      </span>
+                      {img.isOptimized && (
+                        <span className="inline-flex items-center gap-1 rounded bg-green-100 px-2 py-1 font-medium text-green-700">
+                          <Check className="h-3 w-3" />
+                          Optimize
+                        </span>
+                      )}
+                    </div>
+                  )}
 
                   <p className="mb-3 truncate text-xs text-gray-600" title={img.url}>
                     {img.url || 'Görsel URL yok'}

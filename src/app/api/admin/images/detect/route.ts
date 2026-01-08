@@ -10,6 +10,9 @@ export interface DetectedImage {
   url: string;
   alt: string;
   status: 'ok' | 'error' | 'checking' | 'missing';
+  fileSize?: number; // in bytes
+  format?: string; // jpg, png, webp, etc.
+  isOptimized?: boolean; // true if already in webp format and small size
   source: {
     type: 'blog' | 'country';
     id: number;
@@ -37,14 +40,41 @@ function extractImagesFromHTML(html: string): Array<{ url: string; alt: string }
 }
 
 /**
- * Check if image URL is accessible
+ * Check if image URL is accessible and get file info
  */
-async function checkImageStatus(url: string): Promise<'ok' | 'error'> {
+async function checkImageStatus(url: string): Promise<{
+  status: 'ok' | 'error';
+  fileSize?: number;
+  format?: string;
+}> {
   try {
     const response = await fetch(url, { method: 'HEAD', signal: AbortSignal.timeout(5000) });
-    return response.ok ? 'ok' : 'error';
+    
+    if (!response.ok) {
+      return { status: 'error' };
+    }
+    
+    const contentLength = response.headers.get('content-length');
+    const contentType = response.headers.get('content-type');
+    
+    // Extract format from URL or content-type
+    let format = 'unknown';
+    if (url.includes('.webp')) format = 'webp';
+    else if (url.includes('.jpg') || url.includes('.jpeg')) format = 'jpg';
+    else if (url.includes('.png')) format = 'png';
+    else if (url.includes('.gif')) format = 'gif';
+    else if (contentType?.includes('webp')) format = 'webp';
+    else if (contentType?.includes('jpeg') || contentType?.includes('jpg')) format = 'jpg';
+    else if (contentType?.includes('png')) format = 'png';
+    else if (contentType?.includes('gif')) format = 'gif';
+    
+    return {
+      status: 'ok',
+      fileSize: contentLength ? parseInt(contentLength, 10) : undefined,
+      format,
+    };
   } catch {
-    return 'error';
+    return { status: 'error' };
   }
 }
 
@@ -183,14 +213,25 @@ export async function GET(request: NextRequest) {
 
     // ⚡ OPTIMIZATION: Check all image statuses in parallel (batched)
     const BATCH_SIZE = 50; // Check 50 images at a time
+    const OPTIMIZED_SIZE_THRESHOLD = 500 * 1024; // 500KB
+    
     for (let i = 0; i < imagesToCheck.length; i += BATCH_SIZE) {
       const batch = imagesToCheck.slice(i, i + BATCH_SIZE);
-      const statuses = await Promise.all(
+      const results = await Promise.all(
         batch.map(({ url }) => checkImageStatus(url))
       );
       
       batch.forEach(({ image }, index) => {
-        image.status = statuses[index];
+        const result = results[index];
+        image.status = result.status;
+        image.fileSize = result.fileSize;
+        image.format = result.format;
+        
+        // Mark as optimized if it's webp and under threshold
+        image.isOptimized = 
+          result.format === 'webp' && 
+          result.fileSize !== undefined && 
+          result.fileSize < OPTIMIZED_SIZE_THRESHOLD;
       });
 
       console.log(`✅ Checked ${Math.min(i + BATCH_SIZE, imagesToCheck.length)}/${imagesToCheck.length} images`);
