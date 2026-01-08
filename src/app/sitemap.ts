@@ -13,16 +13,25 @@ async function getCustomPages() {
   return data || [];
 }
 
+async function getCountryMenus() {
+  const { data } = await supabase
+    .from("taxonomies")
+    .select("slug, updated_at")
+    .eq("type", "Country\\CountryController@menuDetail");
+  return data || [];
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   console.log('🗺️ Generating sitemap...');
   const startTime = Date.now();
   const baseUrl = "https://www.kolayseyahat.net";
   const locales = ["tr", "en"];
 
-  const [countries, blogs, customPages] = await Promise.all([
+  const [countries, blogs, customPages, countryMenus] = await Promise.all([
     getCountries(), 
     getBlogs(),
-    getCustomPages()
+    getCustomPages(),
+    getCountryMenus()
   ]);
 
   // Static pages with both TR and EN versions
@@ -158,7 +167,36 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ];
   });
 
-  const allPages = [...staticPages, ...countryPages, ...blogPages, ...dynamicPages];
+  // Country menu pages (sub-pages like kuveyt-turist-vizesi, belge-tasdik-islemleri)
+  const countryMenuPages = countryMenus
+    .filter((menu: any) => {
+      if (!menu.slug) {
+        console.warn(`Country menu has no slug, skipping sitemap`);
+        return false;
+      }
+      return true;
+    })
+    .flatMap((menu: any) => {
+      const lastModified = getValidDate(menu.updated_at);
+      return [
+        // Turkish version
+        {
+          url: `${baseUrl}/${menu.slug}`,
+          lastModified,
+          changeFrequency: "weekly" as const,
+          priority: 0.7,
+        },
+        // English version
+        {
+          url: `${baseUrl}/en/${menu.slug}`,
+          lastModified,
+          changeFrequency: "weekly" as const,
+          priority: 0.7,
+        },
+      ];
+    });
+
+  const allPages = [...staticPages, ...countryPages, ...countryMenuPages, ...blogPages, ...dynamicPages];
   
   const endTime = Date.now();
   console.log(`✅ Sitemap generated in ${endTime - startTime}ms with ${allPages.length} URLs`);

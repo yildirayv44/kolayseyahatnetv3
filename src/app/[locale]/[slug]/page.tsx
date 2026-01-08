@@ -299,6 +299,21 @@ export async function generateMetadata({ params }: CountryPageParams): Promise<M
     return {
       title: fullMenuTitle,
       description,
+      openGraph: {
+        title: fullMenuTitle,
+        description,
+        type: 'website',
+        url: menuUrl,
+        siteName: 'Kolay Seyahat',
+        locale: locale === 'en' ? 'en_US' : 'tr_TR',
+        images: [{ url: 'https://www.kolayseyahat.net/opengraph-image.png', width: 1200, height: 630, alt: fullMenuTitle }],
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: fullMenuTitle,
+        description,
+        images: ['https://www.kolayseyahat.net/opengraph-image.png'],
+      },
       alternates: {
         canonical: menuUrl,
         languages: {
