@@ -49,12 +49,15 @@ export function SlideInVisaWidget({ countries: initialCountries, locale = 'tr', 
     if (!initialCountries) {
       fetch('/api/countries')
         .then(res => res.json())
-        .then(data => {
-          setCountries(data);
+        .then(response => {
+          // API returns { success: true, data: [...] }
+          const countriesData = response.success && response.data ? response.data : [];
+          setCountries(countriesData);
           setIsLoadingCountries(false);
         })
         .catch(err => {
           console.error('Failed to fetch countries:', err);
+          setCountries([]);
           setIsLoadingCountries(false);
         });
     }

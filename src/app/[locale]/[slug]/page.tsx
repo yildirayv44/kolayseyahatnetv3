@@ -41,23 +41,23 @@ import { SlideInVisaWidget } from "@/components/shared/SlideInVisaWidget";
 import { getReadingTime } from "@/lib/reading-time";
 import { optimizeHtmlContent } from "@/lib/optimize-html-images";
 
-// ⚡ PERFORMANCE: Revalidate every 2 hours (7200 seconds) to reduce database load
-export const revalidate = 7200;
+// ⚡ PERFORMANCE: Revalidate every 24 hours (86400 seconds) since country content rarely changes
+// Admin can trigger on-demand revalidation when content is updated
+export const revalidate = 86400;
 
-// ⚡ OPTIMIZATION: Static generation for popular countries
+// ⚡ STATIC GENERATION: Pre-generate all countries at build time
 export async function generateStaticParams() {
   const supabaseClient = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 
-  // Fetch popular countries (top 20 by views)
+  // Fetch all active countries
   const { data: countries } = await supabaseClient
     .from("countries")
     .select("slug")
     .eq("status", 1)
-    .order("views", { ascending: false })
-    .limit(20);
+    .order("views", { ascending: false });
 
   if (!countries) return [];
 

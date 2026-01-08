@@ -23,8 +23,22 @@ interface BlogPageProps {
   params: Promise<{ slug: string[]; locale: string }>;
 }
 
-// ⚡ PERFORMANCE: Revalidate every 1 hour (3600 seconds)
-export const revalidate = 3600;
+// ⚡ PERFORMANCE: Revalidate every 24 hours (86400 seconds) since blog content rarely changes
+// Admin can trigger on-demand revalidation when content is updated
+export const revalidate = 86400;
+
+// ⚡ STATIC GENERATION: Pre-generate all blog posts at build time
+export async function generateStaticParams() {
+  const blogs = await getBlogs({ limit: 1000 });
+  
+  return blogs.flatMap((blog: any) => {
+    const slugParts = (blog.taxonomy_slug || blog.slug || `blog/${blog.id}`).replace('blog/', '').split('/');
+    return [
+      { locale: 'tr', slug: slugParts },
+      { locale: 'en', slug: slugParts },
+    ];
+  });
+}
 
 export async function generateMetadata({ params }: BlogPageProps): Promise<Metadata> {
   const { slug, locale } = await params;

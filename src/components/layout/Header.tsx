@@ -34,7 +34,6 @@ export function Header() {
   const [countries, setCountries] = useState<any[]>([]);
   const [filteredCountries, setFilteredCountries] = useState<any[]>([]);
   const [user, setUser] = useState<any>(null);
-  const [isNavigating, setIsNavigating] = useState(false);
   const { count: favoritesCount } = useFavorites();
   
   // Typewriter effect states
@@ -169,13 +168,11 @@ export function Header() {
     }
   }, [searchQuery, countries]);
 
-  const handleCountrySelect = (country: any) => {
-    setIsNavigating(true);
-    router.push(getLocalizedUrl(country.slug || getCountrySlug(country.id), locale));
-    setSearchOpen(false);
-    setSearchQuery("");
-    // Reset after navigation (fallback)
-    setTimeout(() => setIsNavigating(false), 3000);
+  const handleSignOut = async () => {
+    await signOut();
+    setUser(null);
+    router.push("/");
+    router.refresh();
   };
 
   return (
@@ -281,9 +278,14 @@ export function Header() {
                     .filter((c: any) => ['Amerika', 'İngiltere', 'Kanada', 'Almanya', 'Fransa', 'İtalya'].includes(c.name))
                     .slice(0, 6)
                     .map((country: any) => (
-                      <button
+                      <Link
                         key={country.id}
-                        onClick={() => handleCountrySelect(country)}
+                        href={getLocalizedUrl(country.slug || getCountrySlug(country.id), locale)}
+                        onClick={() => {
+                          setSearchOpen(false);
+                          setSearchQuery("");
+                        }}
+                        prefetch={false}
                         className="flex w-full items-center gap-3 border-b border-slate-100 px-4 py-3 text-left hover:bg-primary/5 last:border-0"
                       >
                         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
@@ -295,7 +297,7 @@ export function Header() {
                             {country.description || `${country.name} vizesi başvurunuz için bizi hemen...`}
                           </div>
                         </div>
-                      </button>
+                      </Link>
                     ))}
                 </>
               )}
@@ -307,9 +309,14 @@ export function Header() {
                     <h3 className="text-xs font-semibold text-slate-700">{t(locale as Locale, "searchResults")} ({filteredCountries.length})</h3>
                   </div>
                   {filteredCountries.map((country) => (
-                    <button
+                    <Link
                       key={country.id}
-                      onClick={() => handleCountrySelect(country)}
+                      href={getLocalizedUrl(country.slug || getCountrySlug(country.id), locale)}
+                      onClick={() => {
+                        setSearchOpen(false);
+                        setSearchQuery("");
+                      }}
+                      prefetch={false}
                       className="flex w-full items-center gap-3 border-b border-slate-100 px-4 py-3 text-left hover:bg-slate-50 last:border-0"
                     >
                       <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
@@ -322,7 +329,7 @@ export function Header() {
                         </div>
                       </div>
                       <Search className="h-4 w-4 text-slate-400" />
-                    </button>
+                    </Link>
                   ))}
                 </>
               )}
@@ -428,24 +435,6 @@ export function Header() {
               Hemen Başvur
             </Link>
           </nav>
-        </div>
-      )}
-
-      {/* Loading Overlay */}
-      {isNavigating && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="rounded-lg bg-white p-6 shadow-xl">
-            <div className="flex flex-col items-center gap-4">
-              <div className="relative">
-                <div className="h-12 w-12 animate-spin rounded-full border-4 border-slate-200 border-t-primary" />
-                <div className="absolute inset-0 h-12 w-12 animate-ping rounded-full bg-primary/20" />
-              </div>
-              <div className="text-center">
-                <p className="text-lg font-semibold text-slate-900">Sayfa Yükleniyor</p>
-                <p className="text-sm text-slate-600">Lütfen bekleyiniz...</p>
-              </div>
-            </div>
-          </div>
         </div>
       )}
     </header>
