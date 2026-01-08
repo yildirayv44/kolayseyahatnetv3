@@ -40,6 +40,10 @@ export default function ImageDetectionPage() {
   const [selectedImages, setSelectedImages] = useState<Set<string>>(new Set());
   const [autoFixing, setAutoFixing] = useState(false);
   const [autoFixProgress, setAutoFixProgress] = useState({ current: 0, total: 0, currentTitle: '' });
+  
+  // Optimization
+  const [optimizing, setOptimizing] = useState(false);
+  const [optimizeProgress, setOptimizeProgress] = useState({ current: 0, total: 0 });
 
   // Fetch all images
   const fetchImages = async () => {
@@ -119,6 +123,76 @@ export default function ImageDetectionPage() {
 
   const clearSelection = () => {
     setSelectedImages(new Set());
+  };
+
+  // Bulk optimize selected images
+  const optimizeSelected = async () => {
+    const selectedImgs = images.filter(img => selectedImages.has(img.id));
+    if (selectedImgs.length === 0) {
+      alert('Lütfen en az bir görsel seçin!');
+      return;
+    }
+
+    // Extract storage info from URLs
+    const imagesToOptimize = selectedImgs.map(img => {
+      const url = new URL(img.url);
+      const pathParts = url.pathname.split('/');
+      const bucketIndex = pathParts.indexOf('public') + 1;
+      const bucket = pathParts[bucketIndex];
+      const path = pathParts.slice(bucketIndex + 1).join('/');
+      
+      return {
+        url: img.url,
+        bucket: bucket || 'uploads',
+        path: path,
+      };
+    });
+
+    const totalSize = imagesToOptimize.length;
+    const sizeText = totalSize === 1 ? '1 görseli' : `${totalSize} görseli`;
+    
+    if (!confirm(`${sizeText} optimize etmek istiyor musunuz?\n\nGörseller WebP formatına dönüştürülecek ve sıkıştırılacak. Bu işlem geri alınamaz.`)) {
+      return;
+    }
+
+    setOptimizing(true);
+    setOptimizeProgress({ current: 0, total: totalSize });
+
+    try {
+      const response = await fetch('/api/admin/images/optimize-bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ images: imagesToOptimize }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        const { summary } = data;
+        const savingsMB = ((summary.totalOriginalSize - summary.totalOptimizedSize) / 1024 / 1024).toFixed(2);
+        const savingsPercent = summary.totalSavings.toFixed(2);
+        
+        alert(
+          `✅ Optimizasyon tamamlandı!\n\n` +
+          `📊 İstatistikler:\n` +
+          `• Başarılı: ${summary.successful}/${summary.total}\n` +
+          `• Başarısız: ${summary.failed}\n` +
+          `• Tasarruf: ${savingsMB}MB (%${savingsPercent})\n\n` +
+          `Sayfa yenileniyor...`
+        );
+        
+        clearSelection();
+        fetchImages();
+      } else {
+        alert(`❌ Hata: ${data.error}`);
+      }
+    } catch (error) {
+      console.error('Optimization error:', error);
+      alert('Optimizasyon sırasında hata oluştu!');
+    } finally {
+      setOptimizing(false);
+      setOptimizeProgress({ current: 0, total: 0 });
+    }
   };
 
   // Auto-fix all errors
@@ -475,23 +549,42 @@ export default function ImageDetectionPage() {
                   Seçimi Temizle
                 </button>
               </div>
-              <button
-                onClick={autoFixSelected}
-                disabled={autoFixing}
-                className="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-50"
-              >
-                {autoFixing ? (
-                  <>
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                    Düzeltiliyor...
-                  </>
-                ) : (
-                  <>
-                    <Check className="h-5 w-5" />
-                    Seçilenleri Otomatik Düzelt
-                  </>
-                )}
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={optimizeSelected}
+                  disabled={optimizing || autoFixing}
+                  className="flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white hover:bg-purple-700 disabled:opacity-50"
+                >
+                  {optimizing ? (
+                    <>
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                      Optimize Ediliyor...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="h-5 w-5" />
+                      Seçilenleri Optimize Et
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={autoFixSelected}
+                  disabled={autoFixing || optimizing}
+                  className="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-50"
+                >
+                  {autoFixing ? (
+                    <>
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                      Düzeltiliyor...
+                    </>
+                  ) : (
+                    <>
+                      <Check className="h-5 w-5" />
+                      Seçilenleri Otomatik Düzelt
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         )}

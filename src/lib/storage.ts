@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { optimizeImage } from "./image-optimizer";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -22,18 +23,31 @@ export async function uploadImage(
   path?: string
 ): Promise<{ url: string; path: string } | { error: string }> {
   try {
-    // Generate unique filename
+    // Convert File to Buffer for optimization
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    
+    // Optimize image (compress and resize)
+    console.log(`🖼️ Optimizing image: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB)`);
+    const optimizedBuffer = await optimizeImage(buffer, {
+      maxWidth: 1920,
+      maxHeight: 1080,
+      quality: 85,
+      format: 'webp',
+    });
+
+    // Generate unique filename with .webp extension
     const timestamp = Date.now();
     const randomStr = Math.random().toString(36).substring(7);
-    const ext = file.name.split(".").pop();
-    const filename = `${timestamp}-${randomStr}.${ext}`;
+    const filename = `${timestamp}-${randomStr}.webp`;
     const filePath = path ? `${path}/${filename}` : filename;
 
-    // Upload file
+    // Upload optimized file
     const { data, error } = await supabaseAdmin.storage
       .from(bucket)
-      .upload(filePath, file, {
-        cacheControl: "3600",
+      .upload(filePath, optimizedBuffer, {
+        contentType: 'image/webp',
+        cacheControl: "31536000", // 1 year
         upsert: false,
       });
 
@@ -138,6 +152,7 @@ export async function downloadAndUploadImage(
 ): Promise<{ url: string; path: string } | { error: string }> {
   try {
     // Download image
+    console.log(`📥 Downloading image from: ${imageUrl}`);
     const response = await fetch(imageUrl);
     if (!response.ok) {
       return { error: "Görsel indirilemedi" };
@@ -147,22 +162,27 @@ export async function downloadAndUploadImage(
     const arrayBuffer = await response.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Determine file extension from content-type or URL
-    const contentType = response.headers.get("content-type") || "image/jpeg";
-    const ext = contentType.split("/")[1] || "jpg";
+    // Optimize image (compress and resize)
+    console.log(`🖼️ Optimizing downloaded image (${(buffer.length / 1024 / 1024).toFixed(2)}MB)`);
+    const optimizedBuffer = await optimizeImage(buffer, {
+      maxWidth: 1920,
+      maxHeight: 1080,
+      quality: 85,
+      format: 'webp',
+    });
 
-    // Generate unique filename
+    // Generate unique filename with .webp extension
     const timestamp = Date.now();
     const randomStr = Math.random().toString(36).substring(7);
-    const filename = `${timestamp}-${randomStr}.${ext}`;
+    const filename = `${timestamp}-${randomStr}.webp`;
     const filePath = path ? `${path}/${filename}` : filename;
 
     // Upload to Supabase Storage
     const { data, error } = await supabaseAdmin.storage
       .from(bucket)
-      .upload(filePath, buffer, {
-        contentType,
-        cacheControl: "3600",
+      .upload(filePath, optimizedBuffer, {
+        contentType: 'image/webp',
+        cacheControl: "31536000", // 1 year
         upsert: false,
       });
 
