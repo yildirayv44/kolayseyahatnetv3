@@ -380,7 +380,7 @@ export function Header() {
               )}
             </Link>
 
-            <Link href={getLocalizedUrl("basvuru", locale)} className="btn-primary text-sm">
+            <Link href={getLocalizedUrl("vize-basvuru-formu", locale)} className="btn-primary text-sm">
               {t(locale as Locale, "applyNow")}
             </Link>
           </div>
@@ -421,7 +421,7 @@ export function Header() {
             </div>
 
             <Link
-              href={getLocalizedUrl("basvuru", locale)}
+              href={getLocalizedUrl("vize-basvuru-formu", locale)}
               onClick={() => setMenuOpen(false)}
               className="mt-3 inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white"
             >

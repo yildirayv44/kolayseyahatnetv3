@@ -458,7 +458,16 @@ export default async function CountryPage({ params }: CountryPageParams) {
     // ⚡ OPTIMIZATION: Paralel country sorgularını tek seferde yap
     const countrySlugFromMenu = decodedSlug.split('-')[0];
     
-    const [parentCountry, slugBasedCountry] = await Promise.all([
+    const [countryIdBasedCountry, parentCountry, slugBasedCountry] = await Promise.all([
+      menu.country_id
+        ? supabase
+            .from("countries")
+            .select("*")
+            .eq("id", menu.country_id)
+            .eq("status", 1)
+            .maybeSingle()
+            .then(({ data }) => data)
+        : Promise.resolve(null),
       menu.parent_id 
         ? supabase
             .from("countries")
@@ -477,8 +486,8 @@ export default async function CountryPage({ params }: CountryPageParams) {
         .then(({ data }) => data)
     ]);
     
-    // Prefer slug-based country over parent_id based country
-    const menuCountry = slugBasedCountry || parentCountry;
+    // Priority: country_id > slug-based > parent_id
+    const menuCountry = countryIdBasedCountry || slugBasedCountry || parentCountry;
       
       // Fix image URLs in menu content
       const fixedMenuContents = menu.contents ? fixHtmlImageUrls(menu.contents, menuCountry?.name) : null;
