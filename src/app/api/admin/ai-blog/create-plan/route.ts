@@ -116,39 +116,41 @@ KONU DAĞILIMI (${topic_count} konu):
 - Kültür & Yaşam (10%): Yemek, gelenek, görgü kuralları
 - Karşılaştırma & Listicle (5%): Top 10, karşılaştırmalar
 
-HER KONU İÇİN ÇIKTI (JSON Array):
-[
-  {
-    "title": "New York'ta 3 Gün: Günlük 100 Dolara Gezi Planı",
-    "title_en": "3 Days in New York: $100 Daily Budget Plan",
-    "slug": "new-york-3-gun-100-dolar-gezi-plani",
-    "description": "New York'ta bütçe dostu 3 günlük gezi planı, ücretsiz aktiviteler ve tasarruf ipuçları",
-    "category": "travel_planning",
-    "search_intent": "informational",
-    "target_keywords": ["new york gezilecek yerler", "new york bütçe gezi", "new york 3 gün"],
-    "estimated_search_volume": 2400,
-    "keyword_difficulty": 35,
-    "content_angle": "practical_budget_guide",
-    "target_word_count": 1800,
-    "priority": 8,
-    "outline": [
-      "Giriş: New York'ta Bütçe Dostu Gezi Mümkün mü?",
-      "1. Gün: Manhattan'ın Ücretsiz Cazibe Merkezleri",
-      "2. Gün: Brooklyn ve Queens Keşfi",
-      "3. Gün: Müzeler ve Son Alışveriş",
-      "Bütçe Özeti: Nereye Ne Kadar Harcadık?",
-      "Bonus İpuçları: Daha Fazla Tasarruf İçin"
-    ],
-    "internal_link_opportunities": [
-      {"anchor": "${country.name} vizesi", "context": "Gezi öncesi vize başvurusu"},
-      {"anchor": "${country.name} vize ücretleri", "context": "Toplam seyahat bütçesi"}
-    ],
-    "data_source": "ai_generated",
-    "reasoning": "Popüler şehir, pratik bilgi, bütçe odaklı içerik"
-  }
-]
+ÇIKTI FORMATI (JSON Object):
+{
+  "topics": [
+    {
+      "title": "New York'ta 3 Gün: Günlük 100 Dolara Gezi Planı",
+      "title_en": "3 Days in New York: $100 Daily Budget Plan",
+      "slug": "new-york-3-gun-100-dolar-gezi-plani",
+      "description": "New York'ta bütçe dostu 3 günlük gezi planı, ücretsiz aktiviteler ve tasarruf ipuçları",
+      "category": "travel_planning",
+      "search_intent": "informational",
+      "target_keywords": ["new york gezilecek yerler", "new york bütçe gezi", "new york 3 gün"],
+      "estimated_search_volume": 2400,
+      "keyword_difficulty": 35,
+      "content_angle": "practical_budget_guide",
+      "target_word_count": 1800,
+      "priority": 8,
+      "outline": [
+        "Giriş: New York'ta Bütçe Dostu Gezi Mümkün mü?",
+        "1. Gün: Manhattan'ın Ücretsiz Cazibe Merkezleri",
+        "2. Gün: Brooklyn ve Queens Keşfi",
+        "3. Gün: Müzeler ve Son Alışveriş",
+        "Bütçe Özeti: Nereye Ne Kadar Harcadık?",
+        "Bonus İpuçları: Daha Fazla Tasarruf İçin"
+      ],
+      "internal_link_opportunities": [
+        {"anchor": "${country.name} vizesi", "context": "Gezi öncesi vize başvurusu"},
+        {"anchor": "${country.name} vize ücretleri", "context": "Toplam seyahat bütçesi"}
+      ],
+      "data_source": "ai_generated",
+      "reasoning": "Popüler şehir, pratik bilgi, bütçe odaklı içerik"
+    }
+  ]
+}
 
-ÖNEMLI: Sadece JSON array döndür, başka açıklama ekleme. ${topic_count} adet konu oluştur.`;
+ÖNEMLI: Sadece JSON object döndür, başka açıklama ekleme. topics array'inde ${topic_count} adet konu oluştur.`;
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o',
