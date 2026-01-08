@@ -26,38 +26,40 @@ export async function POST(request: NextRequest) {
       content: from === 'tr' && to === 'en'
         ? `You are a professional translator specializing in travel and visa content.
 
-IMPORTANT: The input is a JSON array of strings. You MUST return a valid JSON array of translated strings.
+Translate the following HTML content from Turkish to English.
 
-Example input: ["Merhaba", "Dünya"]
-Example output: ["Hello", "World"]
-
-Rules:
-1. Return ONLY a valid JSON array - no markdown, no explanations
-2. Translate each string in the array to English
-3. Maintain the same number of items
-4. Keep the same order
-5. Use natural, fluent English
+CRITICAL RULES:
+1. Preserve ALL HTML tags, attributes, and structure EXACTLY as they are
+2. Only translate the TEXT content between HTML tags
+3. Do NOT translate HTML tag names, attributes, or CSS classes
+4. Maintain all formatting, line breaks, and whitespace
+5. Use natural, fluent English for the translated text
 6. Preserve technical terms (visa, passport, etc.)
 7. Professional tone
-8. Do NOT add bullet points, dashes, or markdown formatting
-9. Return pure JSON array like: ["item1", "item2", "item3"]`
+8. Return ONLY the translated HTML - no markdown code blocks, no explanations
+9. If the input is already in English, return it unchanged
+
+Example:
+Input: <p>Merhaba <strong>dünya</strong></p>
+Output: <p>Hello <strong>world</strong></p>`
         : `Sen profesyonel bir çevirmensin, seyahat ve vize içerikleri konusunda uzmansın.
 
-ÖNEMLİ: Girdi bir JSON string dizisidir. Geçerli bir JSON string dizisi döndürmelisin.
+Aşağıdaki HTML içeriğini İngilizce'den Türkçe'ye çevir.
 
-Örnek girdi: ["Hello", "World"]
-Örnek çıktı: ["Merhaba", "Dünya"]
-
-Kurallar:
-1. SADECE geçerli bir JSON dizisi döndür - markdown yok, açıklama yok
-2. Dizideki her stringi Türkçe'ye çevir
-3. Aynı sayıda öğe olmalı
-4. Aynı sırayı koru
-5. Doğal, akıcı Türkçe kullan
+KRİTİK KURALLAR:
+1. TÜM HTML etiketlerini, özelliklerini ve yapısını AYNEN koru
+2. Sadece HTML etiketleri arasındaki METİN içeriğini çevir
+3. HTML etiket isimlerini, özelliklerini veya CSS sınıflarını çevirme
+4. Tüm formatlama, satır sonları ve boşlukları koru
+5. Çevrilen metin için doğal, akıcı Türkçe kullan
 6. Teknik terimleri koru (vize, pasaport, vb.)
 7. Profesyonel ton
-8. Madde işaretleri, tire veya markdown formatı EKLEME
-9. Saf JSON dizisi döndür: ["öğe1", "öğe2", "öğe3"]`,
+8. SADECE çevrilmiş HTML'i döndür - markdown kod blokları yok, açıklama yok
+9. Girdi zaten Türkçe ise, değiştirmeden döndür
+
+Örnek:
+Girdi: <p>Hello <strong>world</strong></p>
+Çıktı: <p>Merhaba <strong>dünya</strong></p>`,
       
       title: from === 'tr' && to === 'en'
         ? 'Translate this Turkish title to English. Keep it concise and SEO-friendly. Return ONLY the translated title.'
