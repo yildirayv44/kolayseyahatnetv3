@@ -39,6 +39,7 @@ import { RelatedContentCarousel } from "@/components/shared/RelatedContentCarous
 import { SocialProofNotifications } from "@/components/shared/SocialProofNotifications";
 import { SlideInVisaWidget } from "@/components/shared/SlideInVisaWidget";
 import { getReadingTime } from "@/lib/reading-time";
+import { optimizeHtmlContent } from "@/lib/optimize-html-images";
 
 // ⚡ PERFORMANCE: Revalidate every 2 hours (7200 seconds) to reduce database load
 export const revalidate = 7200;

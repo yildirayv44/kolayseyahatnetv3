@@ -6,18 +6,35 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const { locale } = await params;
   const isEnglish = locale === 'en';
   
+  const title = isEnglish ? "Frequently Asked Questions (FAQ) | Kolay Seyahat" : "Sıkça Sorulan Sorular (SSS) | Kolay Seyahat";
+  const description = isEnglish
+    ? "Most frequently asked questions and answers about visa applications, processing times, documents and fees."
+    : "Vize başvuruları, işlem süreleri, belgeler ve ücretler hakkında en çok sorulan sorular ve cevapları.";
+  const url = `https://www.kolayseyahat.net${isEnglish ? '/en' : ''}/sikca-sorulan-sorular`;
+  
   return {
-    title: isEnglish ? "Frequently Asked Questions (FAQ) | Kolay Seyahat" : "Sıkça Sorulan Sorular (SSS) | Kolay Seyahat",
-    description: isEnglish
-      ? "Most frequently asked questions and answers about visa applications, processing times, documents and fees."
-      : "Vize başvuruları, işlem süreleri, belgeler ve ücretler hakkında en çok sorulan sorular ve cevapları.",
+    title,
+    description,
     alternates: {
-      canonical: `https://www.kolayseyahat.net${isEnglish ? '/en' : ''}/sikca-sorulan-sorular`,
+      canonical: url,
       languages: {
         'tr': 'https://www.kolayseyahat.net/sikca-sorulan-sorular',
         'en': 'https://www.kolayseyahat.net/en/sikca-sorulan-sorular',
         'x-default': 'https://www.kolayseyahat.net/sikca-sorulan-sorular',
       },
+    },
+    openGraph: {
+      title,
+      description,
+      url,
+      siteName: 'Kolay Seyahat',
+      locale: isEnglish ? 'en_US' : 'tr_TR',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
     },
   };
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { optimizeHtmlContent } from "@/lib/optimize-html-images";
 
 interface ContentWithIdsProps {
   html: string;
@@ -8,6 +9,9 @@ interface ContentWithIdsProps {
 
 export function ContentWithIds({ html }: ContentWithIdsProps) {
   const contentRef = useRef<HTMLDivElement>(null);
+  
+  // Optimize HTML content before rendering
+  const optimizedHtml = optimizeHtmlContent(html);
 
   useEffect(() => {
     if (!contentRef.current) return;
@@ -26,6 +30,26 @@ export function ContentWithIds({ html }: ContentWithIdsProps) {
       if (id) {
         h2.id = id;
         h2.classList.add("scroll-mt-20");
+      }
+    });
+
+    // Optimize images in content
+    const images = contentRef.current.querySelectorAll("img");
+    images.forEach((img) => {
+      // Add loading lazy if not present
+      if (!img.getAttribute("loading")) {
+        img.setAttribute("loading", "lazy");
+      }
+      
+      // Add decoding async for better performance
+      if (!img.getAttribute("decoding")) {
+        img.setAttribute("decoding", "async");
+      }
+      
+      // Add responsive image styles
+      if (!img.style.maxWidth) {
+        img.style.maxWidth = "100%";
+        img.style.height = "auto";
       }
     });
 
@@ -50,13 +74,13 @@ export function ContentWithIds({ html }: ContentWithIdsProps) {
         }
       }
     });
-  }, [html]);
+  }, [optimizedHtml]);
 
   return (
     <div
       ref={contentRef}
       className="prose-content"
-      dangerouslySetInnerHTML={{ __html: html }}
+      dangerouslySetInnerHTML={{ __html: optimizedHtml }}
     />
   );
 }
