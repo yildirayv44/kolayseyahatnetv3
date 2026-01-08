@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useMemo } from "react";
 import { optimizeHtmlContent } from "@/lib/optimize-html-images";
+import { compressHtml } from "@/lib/compress-html";
 
 interface ContentWithIdsProps {
   html: string;
@@ -10,8 +11,11 @@ interface ContentWithIdsProps {
 export function ContentWithIds({ html }: ContentWithIdsProps) {
   const contentRef = useRef<HTMLDivElement>(null);
   
-  // Optimize HTML content before rendering
-  const optimizedHtml = optimizeHtmlContent(html);
+  // Optimize and compress HTML content before rendering
+  const optimizedHtml = useMemo(() => {
+    const compressed = compressHtml(html);
+    return optimizeHtmlContent(compressed);
+  }, [html]);
 
   useEffect(() => {
     if (!contentRef.current) return;

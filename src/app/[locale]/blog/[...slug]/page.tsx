@@ -195,6 +195,8 @@ export default async function BlogPage({ params }: BlogPageProps) {
             fill
             className="object-cover"
             priority
+            fetchPriority="high"
+            quality={85}
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
           />
         </div>

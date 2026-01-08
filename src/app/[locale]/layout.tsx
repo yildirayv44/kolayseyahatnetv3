@@ -86,8 +86,9 @@ export default async function LocaleLayout({
         {/* DNS Prefetch & Preconnect for faster external resources */}
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         <link rel="dns-prefetch" href="https://analytics.ahrefs.com" />
-        <link rel="dns-prefetch" href="https://images.unsplash.com" />
+        <link rel="dns-prefetch" href="https://kcocpunrmubppaskklzo.supabase.co" />
         <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://kcocpunrmubppaskklzo.supabase.co" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://fonts.googleapis.com" crossOrigin="anonymous" />
         
         {/* Google Tag Manager */}
