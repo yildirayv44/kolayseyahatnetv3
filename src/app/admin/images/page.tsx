@@ -12,6 +12,9 @@ interface DetectedImage {
   fileSize?: number;
   format?: string;
   isOptimized?: boolean;
+  isDuplicate?: boolean;
+  duplicateCount?: number;
+  duplicateGroup?: string;
   source: {
     type: 'blog' | 'country';
     id: number;
@@ -25,13 +28,15 @@ interface Stats {
   ok: number;
   error: number;
   missing: number;
+  duplicates?: number;
+  duplicateGroups?: number;
 }
 
 export default function ImageDetectionPage() {
   const [images, setImages] = useState<DetectedImage[]>([]);
   const [stats, setStats] = useState<Stats>({ total: 0, ok: 0, error: 0, missing: 0 });
   const [loading, setLoading] = useState(false);
-  const [filter, setFilter] = useState<'all' | 'ok' | 'error' | 'missing' | 'needs-optimization'>('all');
+  const [filter, setFilter] = useState<'all' | 'ok' | 'error' | 'missing' | 'needs-optimization' | 'duplicates'>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedImage, setSelectedImage] = useState<DetectedImage | null>(null);
   const [showReplaceModal, setShowReplaceModal] = useState(false);
@@ -106,6 +111,9 @@ export default function ImageDetectionPage() {
     } else if (filter === 'needs-optimization') {
       // Show images that are OK but not optimized (not webp or > 500KB)
       matchesFilter = img.status === 'ok' && !img.isOptimized;
+    } else if (filter === 'duplicates') {
+      // Show only duplicate images
+      matchesFilter = img.isDuplicate === true;
     } else {
       matchesFilter = img.status === filter;
     }
@@ -117,6 +125,16 @@ export default function ImageDetectionPage() {
     
     return matchesFilter && matchesSearch;
   });
+
+  // Sort duplicates together when showing duplicates filter
+  const sortedImages = filter === 'duplicates' 
+    ? [...filteredImages].sort((a, b) => {
+        if (a.duplicateGroup && b.duplicateGroup) {
+          return a.duplicateGroup.localeCompare(b.duplicateGroup);
+        }
+        return 0;
+      })
+    : filteredImages;
 
   // Bulk selection handlers
   const toggleImageSelection = (imageId: string) => {
@@ -555,6 +573,19 @@ export default function ImageDetectionPage() {
             </div>
           </div>
 
+          <div className="rounded-lg bg-white p-6 shadow">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Tekrarlanan</p>
+                <p className="mt-2 text-3xl font-bold text-orange-600">{stats.duplicates || 0}</p>
+                {stats.duplicateGroups && stats.duplicateGroups > 0 && (
+                  <p className="text-xs text-gray-500 mt-1">{stats.duplicateGroups} grup</p>
+                )}
+              </div>
+              <AlertCircle className="h-8 w-8 text-orange-500" />
+            </div>
+          </div>
+
           <div className="rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 p-6 shadow">
             <div className="flex items-center justify-between">
               <div>
@@ -698,6 +729,16 @@ export default function ImageDetectionPage() {
               >
                 Optimize Edilmeli ({images.filter(img => img.status === 'ok' && !img.isOptimized).length})
               </button>
+              <button
+                onClick={() => setFilter('duplicates')}
+                className={`rounded-lg px-4 py-2 text-sm font-medium ${
+                  filter === 'duplicates'
+                    ? 'bg-orange-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                Tekrarlananlar ({stats.duplicates || 0})
+              </button>
             </div>
 
             <div className="flex gap-2">
@@ -754,12 +795,13 @@ export default function ImageDetectionPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {filteredImages.map((img) => (
+            {sortedImages.map((img) => (
               <div
                 key={img.id}
                 className={`relative overflow-hidden rounded-lg bg-white shadow transition-all hover:shadow-lg ${
                   img.status === 'error' ? 'border-2 border-red-300' : 
-                  img.status === 'missing' ? 'border-2 border-orange-300' : 
+                  img.status === 'missing' ? 'border-2 border-orange-300' :
+                  img.isDuplicate ? 'border-2 border-orange-400' :
                   'border border-gray-200'
                 } ${selectedImages.has(img.id) ? 'ring-4 ring-blue-500' : ''}`}
               >
@@ -794,7 +836,7 @@ export default function ImageDetectionPage() {
                     </div>
                   )}
                   
-                  <div className="absolute right-2 top-2">
+                  <div className="absolute right-2 top-2 flex flex-col gap-1 items-end">
                     {img.status === 'ok' ? (
                       <span className="flex items-center gap-1 rounded-full bg-green-500 px-2 py-1 text-xs font-medium text-white">
                         <Check className="h-3 w-3" />
@@ -809,6 +851,12 @@ export default function ImageDetectionPage() {
                       <span className="flex items-center gap-1 rounded-full bg-red-500 px-2 py-1 text-xs font-medium text-white">
                         <X className="h-3 w-3" />
                         Hata
+                      </span>
+                    )}
+                    {img.isDuplicate && img.duplicateCount && (
+                      <span className="flex items-center gap-1 rounded-full bg-orange-600 px-2 py-1 text-xs font-medium text-white">
+                        <AlertCircle className="h-3 w-3" />
+                        {img.duplicateCount}x Kopya
                       </span>
                     )}
                   </div>

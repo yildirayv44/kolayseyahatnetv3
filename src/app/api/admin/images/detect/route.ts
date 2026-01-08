@@ -13,6 +13,9 @@ export interface DetectedImage {
   fileSize?: number; // in bytes
   format?: string; // jpg, png, webp, etc.
   isOptimized?: boolean; // true if already in webp format and small size
+  isDuplicate?: boolean; // true if this URL is used by multiple sources
+  duplicateCount?: number; // number of times this URL appears
+  duplicateGroup?: string; // unique identifier for duplicate group
   source: {
     type: 'blog' | 'country';
     id: number;
@@ -237,15 +240,45 @@ export async function GET(request: NextRequest) {
       console.log(`✅ Checked ${Math.min(i + BATCH_SIZE, imagesToCheck.length)}/${imagesToCheck.length} images`);
     }
 
+    // Detect duplicates (same URL used by multiple sources)
+    console.log('🔍 Detecting duplicate images...');
+    const urlMap = new Map<string, DetectedImage[]>();
+    
+    // Group images by URL
+    detectedImages.forEach(img => {
+      if (img.url && img.status === 'ok') {
+        if (!urlMap.has(img.url)) {
+          urlMap.set(img.url, []);
+        }
+        urlMap.get(img.url)!.push(img);
+      }
+    });
+    
+    // Mark duplicates
+    let duplicateCount = 0;
+    urlMap.forEach((images, url) => {
+      if (images.length > 1) {
+        const duplicateGroup = `dup-${url.split('/').pop()?.split('.')[0] || Math.random().toString(36).substring(7)}`;
+        images.forEach(img => {
+          img.isDuplicate = true;
+          img.duplicateCount = images.length;
+          img.duplicateGroup = duplicateGroup;
+        });
+        duplicateCount += images.length;
+      }
+    });
+
     // Calculate statistics
     const stats = {
       total: detectedImages.length,
       ok: detectedImages.filter(img => img.status === 'ok').length,
       error: detectedImages.filter(img => img.status === 'error').length,
       missing: detectedImages.filter(img => img.status === 'missing').length,
+      duplicates: duplicateCount,
+      duplicateGroups: Array.from(urlMap.values()).filter(imgs => imgs.length > 1).length,
     };
 
-    console.log(`📊 Stats: ${stats.ok} OK, ${stats.error} errors, ${stats.missing} missing, ${stats.total} total`);
+    console.log(`📊 Stats: ${stats.ok} OK, ${stats.error} errors, ${stats.missing} missing, ${stats.duplicates} duplicates in ${stats.duplicateGroups} groups, ${stats.total} total`);
 
     return NextResponse.json({
       success: true,
