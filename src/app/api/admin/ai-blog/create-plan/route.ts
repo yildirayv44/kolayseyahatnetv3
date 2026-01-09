@@ -40,23 +40,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if plan already exists
-    const { data: existingPlan } = await supabase
-      .from('ai_blog_plans')
-      .select('id, status')
-      .eq('country_id', country_id)
-      .eq('month', month)
-      .eq('year', year)
-      .single();
-
-    if (existingPlan) {
-      return NextResponse.json(
-        { error: 'Plan already exists for this country and period', plan_id: existingPlan.id },
-        { status: 409 }
-      );
-    }
-
-    // Create plan
+    // Create plan (allow multiple plans for same country/period)
     const { data: plan, error: planError } = await supabase
       .from('ai_blog_plans')
       .insert({

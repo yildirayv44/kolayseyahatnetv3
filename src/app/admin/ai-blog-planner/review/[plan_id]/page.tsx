@@ -52,6 +52,10 @@ export default function PlanReviewPage() {
   const [editingTopic, setEditingTopic] = useState<Topic | null>(null);
   const [isApproving, setIsApproving] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isEditingPlan, setIsEditingPlan] = useState(false);
+  const [editedMonth, setEditedMonth] = useState<number>(1);
+  const [editedYear, setEditedYear] = useState<number>(2026);
+  const [editedTopicCount, setEditedTopicCount] = useState<number>(30);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
@@ -70,9 +74,63 @@ export default function PlanReviewPage() {
       if (result.success) {
         setPlan(result.plan);
         setTopics(result.topics || []);
+        // Initialize edit values
+        setEditedMonth(result.plan.month);
+        setEditedYear(result.plan.year);
+        setEditedTopicCount(result.plan.total_topics);
       }
     } catch (error) {
       console.error('Error loading plan:', error);
+    }
+  };
+
+  const updatePlan = async () => {
+    try {
+      const response = await fetch('/api/admin/ai-blog/update-plan', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          plan_id,
+          month: editedMonth,
+          year: editedYear,
+          total_topics: editedTopicCount
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setMessage({ type: 'success', text: 'Plan başarıyla güncellendi!' });
+        setIsEditingPlan(false);
+        loadPlanDetails();
+      } else {
+        setMessage({ type: 'error', text: result.error || 'Güncelleme başarısız' });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Bir hata oluştu' });
+    }
+  };
+
+  const deletePlan = async () => {
+    if (!confirm('Bu planı silmek istediğinizden emin misiniz? Tüm konular ve içerikler silinecek!')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/ai-blog/update-plan?plan_id=${plan_id}`, {
+        method: 'DELETE'
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setMessage({ type: 'success', text: 'Plan silindi!' });
+        setTimeout(() => router.push('/admin/ai-blog-planner'), 1500);
+      } else {
+        setMessage({ type: 'error', text: result.error || 'Silme başarısız' });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Bir hata oluştu' });
     }
   };
 
@@ -222,12 +280,31 @@ export default function PlanReviewPage() {
           ← Geri Dön
         </button>
         
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          📋 Plan İnceleme: {plan.country_name}
-        </h1>
-        <p className="text-gray-600">
-          {months[plan.month - 1]} {plan.year} • {plan.generated_topics} konu üretildi
-        </p>
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              📋 Plan İnceleme: {plan.country_name}
+            </h1>
+            <p className="text-gray-600">
+              {months[plan.month - 1]} {plan.year} • {plan.generated_topics} konu üretildi
+            </p>
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              onClick={() => setIsEditingPlan(true)}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700"
+            >
+              ✏️ Planı Düzenle
+            </button>
+            <button
+              onClick={deletePlan}
+              className="px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700"
+            >
+              🗑️ Planı Sil
+            </button>
+          </div>
+        </div>
       </div>
 
       {message && (
@@ -462,6 +539,69 @@ export default function PlanReviewPage() {
               <button
                 onClick={() => setEditingTopic(null)}
                 className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300"
+              >
+                İptal
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Plan Modal */}
+      {isEditingPlan && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">✏️ Planı Düzenle</h2>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Ay</label>
+                <select
+                  value={editedMonth}
+                  onChange={(e) => setEditedMonth(parseInt(e.target.value))}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                >
+                  {months.map((month, index) => (
+                    <option key={index} value={index + 1}>{month}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Yıl</label>
+                <input
+                  type="number"
+                  value={editedYear}
+                  onChange={(e) => setEditedYear(parseInt(e.target.value))}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                  min="2024"
+                  max="2030"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Hedef Konu Sayısı</label>
+                <input
+                  type="number"
+                  value={editedTopicCount}
+                  onChange={(e) => setEditedTopicCount(parseInt(e.target.value))}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                  min="1"
+                  max="100"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={updatePlan}
+                className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700"
+              >
+                💾 Kaydet
+              </button>
+              <button
+                onClick={() => setIsEditingPlan(false)}
+                className="flex-1 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300"
               >
                 İptal
               </button>
