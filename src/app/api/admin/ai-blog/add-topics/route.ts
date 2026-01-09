@@ -170,8 +170,11 @@ ZORUNLU: JSON formatında döndür, topics array içinde ${topic_count} konu olm
 
     // Helper function to safely parse numbers
     const safeNumber = (value: any, defaultValue: number): number => {
-      const parsed = parseInt(value);
-      return isNaN(parsed) ? defaultValue : parsed;
+      if (value === null || value === undefined || value === '') {
+        return defaultValue;
+      }
+      const parsed = typeof value === 'number' ? value : parseInt(String(value), 10);
+      return isNaN(parsed) || !isFinite(parsed) ? defaultValue : parsed;
     };
 
     // Filter out duplicates and insert new topics

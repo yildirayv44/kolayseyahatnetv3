@@ -147,12 +147,45 @@ SEO:
 - Meta title: "${topic.title} - Kolay Seyahat" (max 60 karakter)
 - Meta description: 150-160 karakter, CTA içermeli
 
+HTML FORMAT KURALLARI:
+✅ KULLAN:
+- <h1> Ana başlık için (sadece 1 tane)
+- <h2> Alt başlıklar için (💰, 📋, ✈️ gibi emoji ekle)
+- <h3> Alt-alt başlıklar için
+- <p> Paragraflar için
+- <strong> Vurgulu metinler için
+- <em> İtalik metinler için
+- <a href="url"> Linkler için
+- <ul><li> Madde listeleri için
+- <ol><li> Numaralı listeler için
+
+❌ KULLANMA:
+- Markdown syntax (##, **, *, [](url))
+- Escape karakterler (\\n yerine gerçek HTML)
+- Inline CSS veya style attribute
+
+HTML ÖRNEK:
+<h1>Benin Vizesi Nasıl Alınır?</h1>
+
+<p>Benin vizesi almak için ihtiyacınız olan tüm bilgileri bu rehberde bulabilirsiniz. Başvuru süreci, gerekli belgeler ve daha fazlası!</p>
+
+<h2>💰 Vize Ücretleri ve Ödeme Yöntemleri</h2>
+
+<p>Benin vizesi ücretleri genellikle vize türüne göre değişiklik gösterir. İşte güncel ücretler:</p>
+
+<ul>
+<li><strong>Turistik Vize:</strong> Tatil ya da geziler için idealdir.</li>
+<li><strong>İş Vizesi:</strong> İş amaçlı seyahat edenler için.</li>
+</ul>
+
+<p>Profesyonel destek almak isterseniz, <a href="/${countrySlug}">${countryName} vize başvurunuzu</a> kolayca yapabilirsiniz.</p>
+
 PEXELS GÖRSEL:
 - İçeriğe uygun görsel arama terimi öner (İngilizce)
 
 ÇIKTI FORMATI (JSON):
 {
-  "content": "# ${topic.title}\\n\\n[Tam içerik markdown formatında]",
+  "content": "<h1>${topic.title}</h1>\\n\\n<p>[Tam içerik HTML formatında - <p>, <h2>, <h3>, <strong>, <em>, <a>, <ul>, <li> tag'leri kullan]</p>",
   "meta_title": "${topic.title} - Kolay Seyahat",
   "meta_description": "...",
   "internal_links": [
@@ -214,7 +247,9 @@ PEXELS GÖRSEL:
         const pexelsResult = await pexelsResponse.json();
 
         if (pexelsResult.photos && pexelsResult.photos.length > 0) {
-          const photo = pexelsResult.photos[0];
+          // Select a random photo from results to avoid duplicates
+          const randomIndex = Math.floor(Math.random() * Math.min(pexelsResult.photos.length, 5));
+          const photo = pexelsResult.photos[randomIndex];
           
           // Download image
           const imageResponse = await fetch(photo.src.large2x);
@@ -254,6 +289,9 @@ PEXELS GÖRSEL:
       : metaTitle;
 
     // Insert content into database
+    // If topic is approved (auto-approve), content should also be approved for auto-scheduling
+    const contentStatus = topic.status === 'approved' ? 'approved' : 'review';
+    
     const { data: content, error: contentError } = await supabase
       .from('ai_blog_content')
       .insert({
@@ -278,7 +316,7 @@ PEXELS GÖRSEL:
         ai_model: 'gpt-4o',
         generation_prompt: prompt,
         generation_tokens: completion.usage?.total_tokens || 0,
-        status: 'review'
+        status: contentStatus
       })
       .select()
       .single();
@@ -291,20 +329,35 @@ PEXELS GÖRSEL:
     // Update topic status
     await supabase
       .from('ai_blog_topics')
-      .update({ status: 'review' })
+      .update({ 
+        content_generated: true,
+        generated_at: new Date().toISOString()
+      })
       .eq('id', topic_id);
+
+    // If content is approved and plan has auto_schedule enabled, trigger scheduling
+    if (contentStatus === 'approved') {
+      // Get plan details to check if auto_schedule is enabled
+      const { data: planData } = await supabase
+        .from('ai_blog_plans')
+        .select('id, auto_schedule, start_publish_date, publish_frequency')
+        .eq('id', topic.plan_id)
+        .single();
+
+      if (planData?.auto_schedule && planData.start_publish_date) {
+        console.log(`Content ${content.id} is approved, will be auto-scheduled`);
+        // Note: Actual scheduling happens via schedule-plan API after all content is generated
+      }
+    }
 
     return NextResponse.json({
       success: true,
       content_id: content.id,
       topic_id: topic.id,
-      message: 'Content generated successfully. Ready for review.',
-      data: {
-        content,
-        has_image: !!coverImageUrl,
-        word_count: aiResponse.word_count,
-        tokens_used: completion.usage?.total_tokens
-      }
+      title: content.title,
+      word_count: content.word_count,
+      has_cover_image: !!coverImageUrl,
+      status: contentStatus
     });
 
   } catch (error: any) {

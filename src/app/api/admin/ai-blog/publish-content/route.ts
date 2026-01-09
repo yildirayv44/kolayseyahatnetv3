@@ -13,10 +13,13 @@ const supabase = createClient(
  */
 export async function POST(request: NextRequest) {
   try {
+    console.log('=== PUBLISH CONTENT START ===');
     const body = await request.json();
     const { content_id } = body;
+    console.log('Content ID:', content_id);
 
     if (!content_id) {
+      console.error('No content_id provided');
       return NextResponse.json(
         { error: 'Content ID is required' },
         { status: 400 }
@@ -24,18 +27,36 @@ export async function POST(request: NextRequest) {
     }
 
     // Get content
+    console.log('Fetching content from database...');
     const { data: content, error: contentError } = await supabase
       .from('ai_blog_content')
       .select('*, ai_blog_topics(*, ai_blog_plans(country_id, country_slug))')
       .eq('id', content_id)
       .single();
 
-    if (contentError || !content) {
+    if (contentError) {
+      console.error('Content fetch error:', contentError);
+      return NextResponse.json(
+        { error: 'Content fetch failed', details: contentError.message },
+        { status: 500 }
+      );
+    }
+
+    if (!content) {
+      console.error('Content not found');
       return NextResponse.json(
         { error: 'Content not found' },
         { status: 404 }
       );
     }
+
+    console.log('Content found:', {
+      id: content.id,
+      title: content.title,
+      status: content.status,
+      blog_id: content.blog_id,
+      has_topic: !!content.ai_blog_topics
+    });
 
     if (content.status !== 'approved') {
       return NextResponse.json(
@@ -52,38 +73,87 @@ export async function POST(request: NextRequest) {
     }
 
     const topic = content.ai_blog_topics;
-    const plan = topic.ai_blog_plans;
+    const plan = topic?.ai_blog_plans;
 
-    // Create blog entry
+    console.log('Topic and Plan:', {
+      has_topic: !!topic,
+      has_plan: !!plan,
+      plan_country_id: plan?.country_id
+    });
+
+    if (!topic) {
+      console.error('Topic not found for this content');
+      return NextResponse.json(
+        { error: 'Topic not found for this content' },
+        { status: 404 }
+      );
+    }
+
+    // Create blog entry (matching BlogCreateForm structure)
+    console.log('Creating blog entry...');
+    const now = new Date().toISOString();
+    const blogData = {
+      title: content.title,
+      slug: content.slug,
+      description: content.description,
+      contents: content.content,
+      image: content.cover_image_url || '',
+      image_url: content.cover_image_url || '',
+      home: 1, // Required field
+      type: 1, // Required field
+      sorted: 0,
+      status: 1,
+      created_at: now,
+      updated_at: now
+    };
+    console.log('Blog data to insert:', {
+      title: blogData.title,
+      has_description: !!blogData.description,
+      content_length: blogData.contents?.length || 0,
+      has_image: !!blogData.image_url,
+      sorted: blogData.sorted,
+      status: blogData.status
+    });
+
     const { data: blog, error: blogError } = await supabase
       .from('blogs')
-      .insert({
-        title: content.title,
-        slug: content.slug,
-        taxonomy_slug: `blog/${content.slug}`,
-        contents: content.content,
-        description: content.description,
-        meta_title: content.meta_title,
-        meta_description: content.meta_description,
-        image_url: content.cover_image_url,
-        category: getCategoryName(topic.category),
-        tags: content.target_keywords,
-        status: 1,
-        views: 0,
-        is_featured: 0,
-        is_manual_content: 0,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      })
+      .insert(blogData)
       .select()
       .single();
 
     if (blogError) {
       console.error('Blog creation error:', blogError);
+      console.error('Full error details:', JSON.stringify(blogError, null, 2));
       return NextResponse.json(
-        { error: 'Failed to create blog entry' },
+        { 
+          error: 'Failed to create blog entry',
+          details: blogError.message,
+          code: blogError.code,
+          hint: blogError.hint
+        },
         { status: 500 }
       );
+    }
+
+    console.log('Blog created successfully:', blog.id);
+
+    // Create taxonomy entry for routing
+    await supabase
+      .from('taxonomies')
+      .insert({
+        model_id: blog.id,
+        type: 'Blog\\BlogController@detail',
+        slug: `blog/${content.slug}`
+      });
+
+    // Create country-blog relation
+    if (plan?.country_id) {
+      await supabase
+        .from('country_to_blogs')
+        .insert({
+          country_id: plan.country_id,
+          blog_id: blog.id
+        });
     }
 
     // Update content with blog_id

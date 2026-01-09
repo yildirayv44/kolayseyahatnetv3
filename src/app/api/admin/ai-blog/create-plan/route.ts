@@ -141,7 +141,7 @@ KONU DAĞILIMI (${topic_count} konu):
       messages: [
         {
           role: 'system',
-          content: 'Sen bir SEO uzmanı ve seyahat içerik stratejistisin. Sadece JSON formatında yanıt veriyorsun.'
+          content: 'You are an expert SEO content strategist. Always respond with valid JSON.'
         },
         {
           role: 'user',
@@ -149,7 +149,7 @@ KONU DAĞILIMI (${topic_count} konu):
         }
       ],
       temperature: 0.8,
-      max_tokens: 4000,
+      max_tokens: 8000,
       response_format: { type: 'json_object' }
     });
 
@@ -158,39 +158,68 @@ KONU DAĞILIMI (${topic_count} konu):
       throw new Error('No response from OpenAI');
     }
 
+    console.log('AI Response length:', responseText.length);
+    console.log('AI Response preview:', responseText.substring(0, 200));
+
     let aiResponse;
     try {
       aiResponse = JSON.parse(responseText);
     } catch (parseError) {
-      console.error('Failed to parse AI response:', responseText);
-      return NextResponse.json(
-        { 
-          error: 'Invalid JSON from AI',
-          details: 'AI response could not be parsed as JSON',
-          response: responseText.substring(0, 500)
-        },
-        { status: 500 }
-      );
+      console.error('JSON Parse Error:', parseError);
+      console.error('Response text (first 1000 chars):', responseText.substring(0, 1000));
+      console.error('Response text (last 500 chars):', responseText.substring(responseText.length - 500));
+      
+      // Try to extract topics array even if JSON is incomplete
+      const topicsMatch = responseText.match(/"topics"\s*:\s*\[([\s\S]*)\]/);
+      if (topicsMatch) {
+        try {
+          const partialJson = `{"topics":[${topicsMatch[1]}]}`;
+          aiResponse = JSON.parse(partialJson);
+          console.log('Recovered partial JSON with', aiResponse.topics?.length, 'topics');
+        } catch (recoveryError) {
+          return NextResponse.json(
+            { 
+              error: 'Invalid JSON from AI',
+              details: 'AI response could not be parsed as JSON',
+              preview: responseText.substring(0, 500)
+            },
+            { status: 500 }
+          );
+        }
+      } else {
+        return NextResponse.json(
+          { 
+            error: 'Invalid JSON from AI',
+            details: 'Could not find topics array in response'
+          },
+          { status: 500 }
+        );
+      }
     }
 
     const topics = aiResponse.topics || [];
 
     if (!Array.isArray(topics) || topics.length === 0) {
-      console.error('Invalid topics format:', aiResponse);
+      console.error('Invalid topics array:', topics);
       return NextResponse.json(
         { 
           error: 'Invalid topics format from AI',
           details: 'Expected topics array but got: ' + typeof topics,
-          aiResponse: JSON.stringify(aiResponse).substring(0, 500)
+          topicsCount: Array.isArray(topics) ? topics.length : 0
         },
         { status: 500 }
       );
     }
 
+    console.log('Successfully parsed', topics.length, 'topics');
+
     // Helper function to safely parse numbers
     const safeNumber = (value: any, defaultValue: number): number => {
-      const parsed = parseInt(value);
-      return isNaN(parsed) ? defaultValue : parsed;
+      if (value === null || value === undefined || value === '') {
+        return defaultValue;
+      }
+      const parsed = typeof value === 'number' ? value : parseInt(String(value), 10);
+      return isNaN(parsed) || !isFinite(parsed) ? defaultValue : parsed;
     };
 
     // Insert topics into database

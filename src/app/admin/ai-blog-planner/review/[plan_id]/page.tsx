@@ -58,6 +58,7 @@ export default function PlanReviewPage() {
   const [editedTopicCount, setEditedTopicCount] = useState<number>(30);
   const [isAddingTopics, setIsAddingTopics] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [hasTriggeredGeneration, setHasTriggeredGeneration] = useState(false);
 
   useEffect(() => {
     loadPlanDetails();
@@ -66,6 +67,45 @@ export default function PlanReviewPage() {
   useEffect(() => {
     filterTopics();
   }, [topics, selectedCategory, selectedStatus]);
+
+  // Auto-trigger content generation for approved topics (runs once on page load)
+  useEffect(() => {
+    console.log('Auto-trigger check:', {
+      hasTriggeredGeneration,
+      hasPlan: !!plan,
+      planStatus: plan?.status,
+      topicsCount: topics.length,
+      approvedCount: topics.filter(t => t.status === 'approved').length
+    });
+
+    if (!hasTriggeredGeneration && plan && topics.length > 0 && plan.status === 'generating') {
+      const approvedTopics = topics.filter(t => t.status === 'approved');
+      
+      if (approvedTopics.length > 0) {
+        console.log(`Auto-generating content for ${approvedTopics.length} approved topics`);
+        setMessage({ 
+          type: 'success', 
+          text: `🔄 ${approvedTopics.length} içerik otomatik olarak üretiliyor... İçerikler sayfasından takip edebilirsiniz.` 
+        });
+        
+        approvedTopics.forEach(topic => {
+          console.log(`Starting content generation for topic ${topic.id}: ${topic.title}`);
+          fetch('/api/admin/ai-blog/generate-content', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ topic_id: topic.id })
+          }).then(res => {
+            console.log(`Content generation started for ${topic.id}:`, res.status);
+          }).catch(err => {
+            console.error(`Failed to generate content for topic ${topic.id}:`, err);
+          });
+        });
+        
+        setHasTriggeredGeneration(true);
+        setTimeout(() => setMessage(null), 5000);
+      }
+    }
+  }, [plan, topics, hasTriggeredGeneration]);
 
   const loadPlanDetails = async () => {
     try {

@@ -43,11 +43,42 @@ export default function ContentEditorPage() {
   const [isRefining, setIsRefining] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [contentViewMode, setContentViewMode] = useState<'edit' | 'html'>('edit');
   const [message, setMessage] = useState<{ type: 'success' | 'error' | 'warning'; text: string } | null>(null);
 
   useEffect(() => {
     loadContent();
   }, [content_id]);
+
+  // Simple markdown to HTML converter
+  const markdownToHtml = (markdown: string): string => {
+    let html = markdown;
+    
+    // Headers
+    html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+    html = html.replace(/^## (.*$)/gim, '<h2>$1</h2>');
+    html = html.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+    
+    // Bold
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    
+    // Italic
+    html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    
+    // Links
+    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+    
+    // Line breaks
+    html = html.replace(/\n\n/g, '</p><p>');
+    html = html.replace(/\n/g, '<br>');
+    
+    // Wrap in paragraphs if not already HTML
+    if (!html.includes('<p>') && !html.includes('<div>')) {
+      html = '<p>' + html + '</p>';
+    }
+    
+    return html;
+  };
 
   const calculateMetrics = (contentText: string, keywords: string[]) => {
     const words = contentText.split(/\s+/).filter(w => w.length > 0);
@@ -412,13 +443,12 @@ export default function ContentEditorPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Meta Title ({editedMetaTitle.length}/60)
+              Meta Title ({editedMetaTitle.length} karakter {editedMetaTitle.length > 60 ? '⚠️ 60+ uzun' : '✓'})
             </label>
             <input
               type="text"
               value={editedMetaTitle}
               onChange={(e) => setEditedMetaTitle(e.target.value)}
-              maxLength={60}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg"
             />
           </div>
@@ -438,26 +468,80 @@ export default function ContentEditorPage() {
         </div>
       </div>
 
-      {/* HTML Editor */}
+      {/* Content Editor with Tabs */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h2 className="text-xl font-semibold mb-4">📄 İçerik (HTML/Markdown)</h2>
-        
-        <textarea
-          value={editedContent}
-          onChange={(e) => setEditedContent(e.target.value)}
-          rows={30}
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg font-mono text-sm focus:ring-2 focus:ring-blue-500"
-          placeholder="HTML veya Markdown formatında içerik..."
-        />
-        
-        <div className="mt-4 text-sm text-gray-600">
-          <p className="mb-2"><strong>Markdown Formatı:</strong></p>
-          <ul className="list-disc list-inside space-y-1">
-            <li># Başlık 1, ## Başlık 2, ### Başlık 3</li>
-            <li>**kalın**, *italik*, [link](url)</li>
-            <li>- Liste öğesi</li>
-          </ul>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold">📄 İçerik</h2>
+          
+          {/* Tab Buttons */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => setContentViewMode('edit')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                contentViewMode === 'edit'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              ✏️ Düzenle
+            </button>
+            <button
+              onClick={() => setContentViewMode('html')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                contentViewMode === 'html'
+                  ? 'bg-purple-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              🌐 HTML Önizleme
+            </button>
+          </div>
         </div>
+
+        {/* Edit Mode */}
+        {contentViewMode === 'edit' && (
+          <>
+            <textarea
+              value={editedContent}
+              onChange={(e) => setEditedContent(e.target.value)}
+              rows={30}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg font-mono text-sm focus:ring-2 focus:ring-blue-500"
+              placeholder="HTML veya Markdown formatında içerik..."
+            />
+            
+            <div className="mt-4 text-sm text-gray-600">
+              <p className="mb-2"><strong>Markdown Formatı:</strong></p>
+              <ul className="list-disc list-inside space-y-1">
+                <li># Başlık 1, ## Başlık 2, ### Başlık 3</li>
+                <li>**kalın**, *italik*, [link](url)</li>
+                <li>- Liste öğesi</li>
+              </ul>
+            </div>
+          </>
+        )}
+
+        {/* HTML Preview Mode */}
+        {contentViewMode === 'html' && (
+          <div className="border border-gray-300 rounded-lg p-6 bg-gray-50">
+            <div className="bg-white rounded-lg p-8 shadow-sm">
+              <div 
+                className="prose prose-lg max-w-none"
+                dangerouslySetInnerHTML={{ 
+                  __html: editedContent.includes('<p>') || editedContent.includes('<div>') 
+                    ? editedContent 
+                    : markdownToHtml(editedContent)
+                }}
+              />
+            </div>
+            
+            <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+              <p className="text-sm text-blue-800">
+                💡 <strong>HTML Önizleme:</strong> İçerik HTML olarak render ediliyor. 
+                Markdown otomatik HTML'e çevriliyor. Düzenlemek için "Düzenle" sekmesine geçin.
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

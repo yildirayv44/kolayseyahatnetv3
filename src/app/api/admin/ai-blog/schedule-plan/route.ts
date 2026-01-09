@@ -60,11 +60,11 @@ export async function POST(request: NextRequest) {
 
     const topicIds = topics.map(t => t.id);
 
-    // Get all approved content for this plan
+    // Get all approved or review content for this plan (review content will be auto-approved)
     const { data: contents, error: contentsError } = await supabase
       .from('ai_blog_content')
-      .select('id, topic_id')
-      .eq('status', 'approved')
+      .select('id, topic_id, status')
+      .in('status', ['approved', 'review'])
       .in('topic_id', topicIds)
       .order('created_at', { ascending: true });
 
@@ -74,10 +74,12 @@ export async function POST(request: NextRequest) {
 
     if (!contents || contents.length === 0) {
       return NextResponse.json(
-        { error: 'No approved content found for this plan' },
+        { error: 'No content found for this plan' },
         { status: 404 }
       );
     }
+
+    console.log(`Found ${contents.length} contents to schedule for plan ${plan_id}`);
 
     // Schedule each content
     const scheduledContents = [];
