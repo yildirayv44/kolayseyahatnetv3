@@ -53,31 +53,51 @@ export async function GET(request: NextRequest) {
         const plan = topic.ai_blog_plans;
 
         // Create blog entry
+        const now = new Date().toISOString();
         const { data: blog, error: blogError } = await supabase
           .from('blogs')
           .insert({
             title: content.title,
             slug: content.slug,
-            taxonomy_slug: `blog/${content.slug}`,
-            contents: content.content,
             description: content.description,
-            meta_title: content.meta_title,
-            meta_description: content.meta_description,
-            image_url: content.cover_image_url,
-            category: getCategoryName(topic.category),
-            tags: content.target_keywords,
+            contents: content.content,
+            image: content.cover_image_url || '',
+            image_url: content.cover_image_url || '',
+            home: 1,
+            type: 1,
+            sorted: 0,
             status: 1,
-            views: 0,
-            is_featured: 0,
-            is_manual_content: 0,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
+            created_at: now,
+            updated_at: now
           })
           .select()
           .single();
 
         if (blogError) {
           throw blogError;
+        }
+
+        // Create taxonomy entry for routing
+        const { error: taxonomyError } = await supabase
+          .from('taxonomies')
+          .insert({
+            model_id: blog.id,
+            type: 'Blog\\BlogController@detail',
+            slug: `blog/${content.slug}`
+          });
+
+        if (taxonomyError) {
+          console.error('Taxonomy creation error for blog', blog.id, ':', taxonomyError);
+        }
+
+        // Create country-blog relation
+        if (plan?.country_id) {
+          await supabase
+            .from('country_to_blogs')
+            .insert({
+              country_id: plan.country_id,
+              blog_id: blog.id
+            });
         }
 
         // Update content with blog_id
