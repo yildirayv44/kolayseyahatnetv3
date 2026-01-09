@@ -40,14 +40,17 @@ export function BlogEditForm({ blog }: { blog: any }) {
     console.log('🖼️ Image URL being saved:', formData.image_url);
 
     try {
-      const { error } = await supabase
-        .from("blogs")
-        .update(formData)
-        .eq("id", blog.id);
+      const response = await fetch('/api/admin/blogs/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: blog.id, ...formData })
+      });
 
-      if (error) {
-        console.error('❌ Supabase error:', error);
-        throw error;
+      const result = await response.json();
+
+      if (!result.success) {
+        console.error('❌ API error:', result.error);
+        throw new Error(result.error);
       }
 
       console.log('✅ Blog saved successfully!');
