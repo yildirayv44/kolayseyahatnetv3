@@ -47,7 +47,8 @@ const menuItems = [
   { href: "/admin/partnerler", label: "Partner Yönetimi", icon: Users },
   { href: "/admin/yorumlar", label: "Yorumlar", icon: MessageSquare },
   { href: "/admin/ayarlar", label: "Ayarlar", icon: Settings },
-  { href: "/admin/fix-taxonomies", label: "🔧 Taxonomy Düzelt", icon: Settings, divider: true },
+  { href: "/admin/system-tools", label: "🔧 Sistem Araçları", icon: Settings, divider: true, highlight: true },
+  { href: "/admin/fix-taxonomies", label: "🔧 Taxonomy Düzelt", icon: Settings },
   { href: "/admin/fix-slug", label: "🔗 Slug Düzelt", icon: Settings },
   { href: "/admin/slug-manager", label: "📊 Slug Yöneticisi", icon: Settings, highlight: true },
 ];
