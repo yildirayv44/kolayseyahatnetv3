@@ -144,13 +144,21 @@ export async function POST(request: NextRequest) {
     console.log('Blog created successfully:', blog.id);
 
     // Create taxonomy entry for routing
-    await supabase
+    const { error: taxonomyError } = await supabase
       .from('taxonomies')
       .insert({
         model_id: blog.id,
         type: 'Blog\\BlogController@detail',
         slug: `blog/${content.slug}`
       });
+
+    if (taxonomyError) {
+      console.error('Taxonomy creation error:', taxonomyError);
+      // Don't fail the whole operation, but log it
+      console.warn('Blog created but taxonomy entry failed - blog may not be accessible via URL');
+    } else {
+      console.log('Taxonomy created successfully for blog:', blog.id);
+    }
 
     // Create country-blog relation
     if (plan?.country_id) {

@@ -124,10 +124,10 @@ export default async function BlogPage({ params }: BlogPageProps) {
   // Calculate reading time
   const readingTime = blog.contents ? getReadingTime(blog.contents, locale as 'tr' | 'en') : { minutes: 5, formatted: '5 dakika okuma' };
 
-  // Get related blogs (same category, exclude current)
+  // Get related blogs (same category, exclude current, only active)
   const relatedBlogsData = await getBlogs({ limit: 6 });
   const relatedBlogs = (relatedBlogsData || [])
-    .filter((b: any) => b.id !== blog.id && b.category === blog.category)
+    .filter((b: any) => b.id !== blog.id && b.category === blog.category && b.status === 1)
     .slice(0, 3)
     .map((b: any) => ({
       id: b.id,
