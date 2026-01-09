@@ -25,6 +25,39 @@ export default function BlogsPage() {
     setLoading(false);
   };
 
+  const deleteBlog = async (blogId: number) => {
+    if (!confirm('Bu blog yazısını silmek istediğinizden emin misiniz?')) return;
+
+    try {
+      // Delete taxonomy entry
+      await supabase
+        .from('taxonomies')
+        .delete()
+        .eq('model_id', blogId)
+        .eq('type', 'Blog\\BlogController@detail');
+
+      // Delete country-blog relation
+      await supabase
+        .from('country_to_blogs')
+        .delete()
+        .eq('blog_id', blogId);
+
+      // Delete blog
+      const { error } = await supabase
+        .from('blogs')
+        .delete()
+        .eq('id', blogId);
+
+      if (error) throw error;
+
+      alert('Blog başarıyla silindi!');
+      loadBlogs();
+    } catch (error: any) {
+      console.error('Delete error:', error);
+      alert('Silme hatası: ' + error.message);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -111,7 +144,10 @@ export default function BlogsPage() {
                 >
                   <Edit className="mx-auto h-4 w-4" />
                 </Link>
-                <button className="flex-1 rounded-lg bg-red-50 px-3 py-2 text-center text-sm font-medium text-red-600 hover:bg-red-100">
+                <button 
+                  onClick={() => deleteBlog(blog.id)}
+                  className="flex-1 rounded-lg bg-red-50 px-3 py-2 text-center text-sm font-medium text-red-600 hover:bg-red-100"
+                >
                   <Trash2 className="mx-auto h-4 w-4" />
                 </button>
               </div>
