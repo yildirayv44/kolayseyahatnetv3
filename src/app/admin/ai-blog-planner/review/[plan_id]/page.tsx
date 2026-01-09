@@ -56,6 +56,7 @@ export default function PlanReviewPage() {
   const [editedMonth, setEditedMonth] = useState<number>(1);
   const [editedYear, setEditedYear] = useState<number>(2026);
   const [editedTopicCount, setEditedTopicCount] = useState<number>(30);
+  const [isAddingTopics, setIsAddingTopics] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
@@ -131,6 +132,42 @@ export default function PlanReviewPage() {
       }
     } catch (error) {
       setMessage({ type: 'error', text: 'Bir hata oluştu' });
+    }
+  };
+
+  const addBulkTopics = async (count: number) => {
+    if (!confirm(`${count} yeni konu oluşturmak istediğinizden emin misiniz?`)) {
+      return;
+    }
+
+    setIsAddingTopics(true);
+    setMessage(null);
+
+    try {
+      const response = await fetch('/api/admin/ai-blog/add-topics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          plan_id,
+          topic_count: count
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setMessage({ 
+          type: 'success', 
+          text: `✅ ${result.topics_added} yeni konu eklendi! Toplam: ${result.total_topics}` 
+        });
+        loadPlanDetails();
+      } else {
+        setMessage({ type: 'error', text: result.error || 'Konu ekleme başarısız' });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Bir hata oluştu' });
+    } finally {
+      setIsAddingTopics(false);
     }
   };
 
@@ -292,6 +329,12 @@ export default function PlanReviewPage() {
 
           <div className="flex gap-2">
             <button
+              onClick={() => router.push(`/admin/ai-blog-planner/content/${plan_id}`)}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700"
+            >
+              📄 İçerikleri Gör
+            </button>
+            <button
               onClick={() => setIsEditingPlan(true)}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700"
             >
@@ -335,6 +378,50 @@ export default function PlanReviewPage() {
           <div className="text-2xl font-bold text-red-600">{topics.filter(t => t.status === 'rejected').length}</div>
           <div className="text-sm text-gray-600">Reddedildi</div>
         </div>
+      </div>
+
+      {/* Bulk Topic Creation */}
+      <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-200 p-6 mb-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">➕ Yeni Konular Ekle</h3>
+            <p className="text-sm text-gray-600">Mevcut plana ek konular oluştur (AI ile otomatik)</p>
+          </div>
+          
+          <div className="flex gap-2">
+            <button
+              onClick={() => addBulkTopics(4)}
+              disabled={isAddingTopics}
+              className="px-4 py-2 bg-white border-2 border-purple-300 text-purple-700 rounded-lg font-medium hover:bg-purple-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {isAddingTopics ? '⏳' : '+'} 4 Konu
+            </button>
+            <button
+              onClick={() => addBulkTopics(10)}
+              disabled={isAddingTopics}
+              className="px-4 py-2 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {isAddingTopics ? '⏳' : '+'} 10 Konu
+            </button>
+            <button
+              onClick={() => addBulkTopics(20)}
+              disabled={isAddingTopics}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {isAddingTopics ? '⏳' : '+'} 20 Konu
+            </button>
+          </div>
+        </div>
+        
+        {isAddingTopics && (
+          <div className="mt-4 flex items-center gap-2 text-sm text-purple-700">
+            <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>Yeni konular AI ile oluşturuluyor...</span>
+          </div>
+        )}
       </div>
 
       {/* Filters */}
