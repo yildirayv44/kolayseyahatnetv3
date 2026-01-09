@@ -86,6 +86,13 @@ YAZI STİLİ:
 ❌ "Araştırmalar göstermektedir ki..."
 ❌ "Sonuç olarak söylemek gerekirse..."
 
+KOLAY SEYAHAT YÖNLENDIRME STRATEJİSİ:
+✅ Vize başvuru süreçlerinde: "Profesyonel destek almak isterseniz, [Kolay Seyahat](https://www.kolayseyahat.net/${countrySlug}) üzerinden başvurunuzu kolayca yapabilirsiniz."
+✅ Randevu/belgeler kısmında: "Tüm bu süreçleri tek başınıza yönetmek yerine, [uzman danışmanlarımızdan](https://www.kolayseyahat.net/${countrySlug}) destek alabilirsiniz."
+✅ Sonuç bölümünde: "Vize başvurunuz için [buradan](https://www.kolayseyahat.net/${countrySlug}) hemen başlayabilirsiniz."
+❌ Direkt satış cümlesi kullanma: "Hemen satın alın", "Şimdi sipariş verin"
+❌ Çok sık link verme (max 3-4 link)
+
 YAPI:
 1. GİRİŞ (150-200 kelime)
    - Hook: Merak uyandırıcı soru/hikaye
@@ -99,16 +106,20 @@ YAPI:
 
 3. SONUÇ (100-150 kelime)
    - Özet: Ana noktalar
-   - CTA: "${countryName} vizesi için başvuru yapın"
-   - Internal link: Ana ülke sayfası
+   - Güçlü CTA: "Vize başvurunuzu profesyonel destekle yapmak isterseniz..."
+   - Kolay Seyahat avantajları: Hızlı, güvenli, uzman desteği
+   - Internal link: Ana ülke sayfası (doğal akışta)
+   - Son cümle: Teşvik edici ve yardımcı ton
 
 İÇERİK TASLAĞ (Kullan):
 ${topic.outline ? topic.outline.map((item: string, i: number) => `${i + 1}. ${item}`).join('\n') : 'Kendi taslağını oluştur'}
 
 INTERNAL LINK STRATEJISI:
-- İlk link: İlk 300 kelimede
-- Doğal akış: "Daha fazla bilgi için ${countryName} vize rehberimize göz atabilirsiniz"
-- Anchor text çeşitliliği: "${countryName} vizesi", "vize başvuru süreci", "vize ücretleri"
+- İlk link: İlk 300 kelimede, doğal akışta
+- Vize süreç anlatımında: "Başvuru sürecini kolaylaştırmak için [${countryName} vize rehberimize](/${countrySlug}) göz atabilirsiniz."
+- Belge/randevu kısmında: "Profesyonel destek almak isterseniz, [uzman ekibimiz](/${countrySlug}) size yardımcı olabilir."
+- Sonuç bölümünde: "Vize başvurunuz için [buradan hemen başlayabilirsiniz](/${countrySlug})."
+- Anchor text çeşitliliği kullan: "${countryName} vizesi", "vize başvuru süreci", "uzman danışmanlarımız", "profesyonel destek"
 
 SEO:
 - Hedef keyword ilk 100 kelimede geçmeli: ${topic.target_keywords?.[0] || topic.title}

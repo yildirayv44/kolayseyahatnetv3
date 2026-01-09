@@ -66,23 +66,27 @@ export default function ContentReviewPage() {
 
   const approveContent = async (contentId: string) => {
     try {
-      const response = await fetch('/api/admin/ai-blog/update-topic', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          topic_id: contents.find(c => c.id === contentId)?.topic_id,
-          status: 'approved'
-        })
-      });
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
 
-      if (response.ok) {
+      const { error } = await supabase
+        .from('ai_blog_content')
+        .update({ status: 'approved' })
+        .eq('id', contentId);
+
+      if (!error) {
         setContents(contents.map(c => 
           c.id === contentId ? { ...c, status: 'approved' } : c
         ));
-        setMessage({ type: 'success', text: 'İçerik onaylandı' });
+        setMessage({ type: 'success', text: 'İçerik onaylandı ve yayına hazır!' });
         setTimeout(() => setMessage(null), 3000);
+      } else {
+        throw error;
       }
     } catch (error) {
+      console.error('Approval error:', error);
       setMessage({ type: 'error', text: 'Onaylama başarısız' });
     }
   };
