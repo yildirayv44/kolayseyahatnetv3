@@ -49,6 +49,29 @@ export default function ContentEditorPage() {
     loadContent();
   }, [content_id]);
 
+  const calculateMetrics = (contentText: string, keywords: string[]) => {
+    const words = contentText.split(/\s+/).filter(w => w.length > 0);
+    const totalWords = words.length;
+    
+    // Calculate keyword density
+    let keywordCount = 0;
+    keywords.forEach(keyword => {
+      const regex = new RegExp(keyword, 'gi');
+      const matches = contentText.match(regex);
+      keywordCount += matches ? matches.length : 0;
+    });
+    const density = totalWords > 0 ? (keywordCount / totalWords) * 100 : 0;
+    
+    // Count main page links
+    const mainPageLinks = (contentText.match(/kolayseyahat\.net/g) || []).length;
+    
+    return {
+      word_count: totalWords,
+      keyword_density: parseFloat(density.toFixed(2)),
+      main_page_links_count: mainPageLinks
+    };
+  };
+
   const loadContent = async () => {
     const { data, error } = await supabase
       .from('ai_blog_content')
@@ -57,6 +80,25 @@ export default function ContentEditorPage() {
       .single();
 
     if (data) {
+      // Calculate metrics if not already set
+      const metrics = calculateMetrics(data.content, data.target_keywords || []);
+      
+      // Update content with calculated metrics if they're missing
+      if (!data.keyword_density || !data.main_page_links_count) {
+        await supabase
+          .from('ai_blog_content')
+          .update({
+            keyword_density: metrics.keyword_density,
+            main_page_links_count: metrics.main_page_links_count,
+            word_count: metrics.word_count
+          })
+          .eq('id', content_id);
+        
+        data.keyword_density = metrics.keyword_density;
+        data.main_page_links_count = metrics.main_page_links_count;
+        data.word_count = metrics.word_count;
+      }
+      
       setContent(data);
       setEditedContent(data.content);
       setEditedTitle(data.title);
@@ -148,9 +190,8 @@ export default function ContentEditorPage() {
     setMessage(null);
 
     try {
-      // Calculate metrics
-      const wordCount = editedContent.split(/\s+/).length;
-      const mainPageLinks = (editedContent.match(/kolayseyahat\.net/g) || []).length;
+      // Calculate all metrics
+      const metrics = calculateMetrics(editedContent, content?.target_keywords || []);
 
       const { error } = await supabase
         .from('ai_blog_content')
@@ -159,8 +200,9 @@ export default function ContentEditorPage() {
           content: editedContent,
           meta_title: editedMetaTitle,
           meta_description: editedMetaDescription,
-          word_count: wordCount,
-          main_page_links_count: mainPageLinks,
+          word_count: metrics.word_count,
+          keyword_density: metrics.keyword_density,
+          main_page_links_count: metrics.main_page_links_count,
           updated_at: new Date().toISOString()
         })
         .eq('id', content_id);
