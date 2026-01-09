@@ -67,7 +67,7 @@ KONU: ${topic.title}
 HEDEF KELİME: ${topic.target_word_count}
 ANA SAYFA: https://www.kolayseyahat.net/${countrySlug}
 
-İÇERİK KURALLARI:
+İÇERİK KURALLARI (MUTLAKA UYULMALI):
 1. 🎯 Samimi, dostça ton (AI gibi değil, insan gibi yaz)
 2. 📝 Kişisel deneyim/hikaye ekle (engaging olsun)
 3. 💡 Pratik, actionable bilgi ver
@@ -76,6 +76,26 @@ ANA SAYFA: https://www.kolayseyahat.net/${countrySlug}
 6. ✨ Emoji minimal kullan (sadece başlıklarda)
 7. 🚫 "Yapay zeka", "AI", "otomatik" gibi kelimeler kullanma
 8. 🚫 Çok resmi veya akademik dil kullanma
+
+🚨 KRİTİK: KEYWORD STUFFING YASAK 🚨
+- Anahtar kelimeleri DOĞAL kullan
+- Keyword yoğunluğu MAX %2.5 olmalı
+- Aynı kelimeyi art arda tekrar etme
+- Zorla anahtar kelime sıkıştırma
+- Her cümlede anahtar kelime kullanma
+
+KÖTÜ ÖRNEK (Keyword Stuffing):
+"${countryName} vizesi için ${countryName} vize başvurusu yapmalısınız. ${countryName} vizesi almak için ${countryName} vize ücretlerini öğrenin. ${countryName} vize süreci..."
+
+İYİ ÖRNEK (Doğal):
+"Vize başvurusu yapmadan önce, gerekli belgeleri hazırlamanızı öneririm. Süreç genellikle 2-3 hafta sürer. Başvuru ücretleri ve detaylı bilgi için rehberimize göz atabilirsiniz."
+
+🎯 ANA SAYFA DEĞERİNİ ARTIR:
+- Ana ülke sayfası = Otorite kaynak
+- Blog = Ana sayfaya değer katan destek içerik
+- Internal linkler = Ana sayfanın değerini artırmalı
+- Blog, ana sayfanın rakibi DEĞİL, destekçisi olmalı
+- Ana sayfaya kaliteli, ilgili trafik gönder
 
 YAZI STİLİ:
 ✅ "Geçen yaz ${countryName}'a gittiğimde..."

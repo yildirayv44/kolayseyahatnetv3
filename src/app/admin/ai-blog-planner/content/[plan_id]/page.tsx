@@ -196,6 +196,74 @@ export default function ContentReviewPage() {
         </div>
       </div>
 
+      {/* Bulk Scheduling */}
+      {contents.filter(c => c.status === 'approved' && !c.blog_id).length > 0 && (
+        <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border border-green-200 p-6 mb-6">
+          <h2 className="text-xl font-semibold mb-4">📅 Toplu Yayın Planlama</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Başlangıç Tarihi</label>
+              <input
+                type="date"
+                id="schedule-start-date"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                min={new Date().toISOString().split('T')[0]}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Yayın Sıklığı</label>
+              <select
+                id="schedule-frequency"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+              >
+                <option value="daily">Günlük (Her gün 1 içerik)</option>
+                <option value="weekly">Haftalık (Haftada 1 içerik)</option>
+              </select>
+            </div>
+            <div className="flex items-end">
+              <button
+                onClick={async () => {
+                  const startDate = (document.getElementById('schedule-start-date') as HTMLInputElement).value;
+                  const frequency = (document.getElementById('schedule-frequency') as HTMLSelectElement).value;
+                  
+                  if (!startDate) {
+                    alert('Lütfen başlangıç tarihi seçin');
+                    return;
+                  }
+
+                  try {
+                    const response = await fetch('/api/admin/ai-blog/schedule-plan', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ plan_id, start_date: startDate, frequency })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                      alert(`✅ ${result.scheduled_count} içerik planlandı!\n${startDate} - ${result.end_date}`);
+                      loadContents();
+                    } else {
+                      alert('❌ ' + result.error);
+                    }
+                  } catch (error) {
+                    alert('❌ Planlama başarısız');
+                  }
+                }}
+                className="w-full px-6 py-2 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-lg font-medium hover:from-green-700 hover:to-blue-700"
+              >
+                🚀 Tümünü Planla
+              </button>
+            </div>
+          </div>
+
+          <p className="text-sm text-gray-600">
+            💡 <strong>Otomatik Yayınlama:</strong> Planlanan içerikler her gün saat 00:00'da otomatik olarak yayınlanır.
+          </p>
+        </div>
+      )}
+
       {/* Contents List */}
       <div className="space-y-4">
         {contents.map((content, index) => (
@@ -266,6 +334,13 @@ export default function ContentReviewPage() {
 
                 {/* Actions */}
                 <div className="flex gap-2">
+                  <button
+                    onClick={() => window.location.href = `/admin/ai-blog-planner/edit/${content.id}`}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700"
+                  >
+                    ✏️ Düzenle
+                  </button>
+
                   <button
                     onClick={() => setSelectedContent(content)}
                     className="px-4 py-2 bg-blue-50 text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-100"
