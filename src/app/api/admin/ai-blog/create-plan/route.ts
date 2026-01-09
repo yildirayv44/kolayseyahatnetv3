@@ -187,31 +187,37 @@ KONU DAĞILIMI (${topic_count} konu):
       );
     }
 
+    // Helper function to safely parse numbers
+    const safeNumber = (value: any, defaultValue: number): number => {
+      const parsed = parseInt(value);
+      return isNaN(parsed) ? defaultValue : parsed;
+    };
+
     // Insert topics into database
     const topicsToInsert = topics.map((topic: any) => ({
       plan_id: plan.id,
       country_id: country.id,
-      title: topic.title,
-      title_en: topic.title_en,
-      slug: topic.slug,
-      description: topic.description,
-      category: topic.category,
-      search_intent: topic.search_intent,
-      target_keywords: topic.target_keywords,
-      estimated_search_volume: topic.estimated_search_volume || 0,
-      keyword_difficulty: topic.keyword_difficulty || 0,
-      content_angle: topic.content_angle,
-      target_word_count: topic.target_word_count || 1500,
-      outline: topic.outline || [],
-      internal_link_opportunities: topic.internal_link_opportunities || [],
-      priority: topic.priority || 5,
+      title: topic.title || 'Untitled',
+      title_en: topic.title_en || '',
+      slug: topic.slug || '',
+      description: topic.description || '',
+      category: topic.category || 'travel_planning',
+      search_intent: topic.search_intent || 'informational',
+      target_keywords: Array.isArray(topic.target_keywords) ? topic.target_keywords : [],
+      estimated_search_volume: safeNumber(topic.estimated_search_volume, 0),
+      keyword_difficulty: safeNumber(topic.keyword_difficulty, 0),
+      content_angle: topic.content_angle || '',
+      target_word_count: safeNumber(topic.target_word_count, 1500),
+      outline: Array.isArray(topic.outline) ? topic.outline : [],
+      internal_link_opportunities: Array.isArray(topic.internal_link_opportunities) ? topic.internal_link_opportunities : [],
+      priority: safeNumber(topic.priority, 5),
       status: 'pending',
       data_source: topic.data_source || 'ai_generated',
       search_metrics: {
-        estimated_search_volume: topic.estimated_search_volume,
-        keyword_difficulty: topic.keyword_difficulty
+        estimated_search_volume: safeNumber(topic.estimated_search_volume, 0),
+        keyword_difficulty: safeNumber(topic.keyword_difficulty, 0)
       },
-      reasoning: topic.reasoning
+      reasoning: topic.reasoning || ''
     }));
 
     const { data: insertedTopics, error: topicsError } = await supabase
