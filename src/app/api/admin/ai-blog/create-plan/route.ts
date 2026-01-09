@@ -158,11 +158,33 @@ KONU DAĞILIMI (${topic_count} konu):
       throw new Error('No response from OpenAI');
     }
 
-    const aiResponse = JSON.parse(responseText);
+    let aiResponse;
+    try {
+      aiResponse = JSON.parse(responseText);
+    } catch (parseError) {
+      console.error('Failed to parse AI response:', responseText);
+      return NextResponse.json(
+        { 
+          error: 'Invalid JSON from AI',
+          details: 'AI response could not be parsed as JSON',
+          response: responseText.substring(0, 500)
+        },
+        { status: 500 }
+      );
+    }
+
     const topics = aiResponse.topics || [];
 
     if (!Array.isArray(topics) || topics.length === 0) {
-      throw new Error('Invalid topics format from AI');
+      console.error('Invalid topics format:', aiResponse);
+      return NextResponse.json(
+        { 
+          error: 'Invalid topics format from AI',
+          details: 'Expected topics array but got: ' + typeof topics,
+          aiResponse: JSON.stringify(aiResponse).substring(0, 500)
+        },
+        { status: 500 }
+      );
     }
 
     // Insert topics into database
@@ -199,7 +221,16 @@ KONU DAĞILIMI (${topic_count} konu):
 
     if (topicsError) {
       console.error('Topics insertion error:', topicsError);
-      throw new Error('Failed to insert topics');
+      console.error('Topics to insert:', JSON.stringify(topicsToInsert, null, 2));
+      return NextResponse.json(
+        { 
+          error: 'Failed to insert topics',
+          details: topicsError.message,
+          hint: topicsError.hint,
+          code: topicsError.code
+        },
+        { status: 500 }
+      );
     }
 
     // Update plan status
