@@ -172,6 +172,32 @@ export default function ContentReviewPage() {
     }
   };
 
+  const unpublishContent = async (contentId: string, blogId: number) => {
+    if (!confirm('Bu içeriği yayından kaldırmak istediğinizden emin misiniz? Blog yazısı silinecek.')) return;
+
+    try {
+      const response = await fetch('/api/admin/ai-blog/unpublish-content', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content_id: contentId, blog_id: blogId })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setMessage({ 
+          type: 'success', 
+          text: 'İçerik yayından kaldırıldı' 
+        });
+        loadContents();
+      } else {
+        setMessage({ type: 'error', text: result.error || 'Silme başarısız' });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Silme başarısız' });
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     const badges: { [key: string]: { bg: string; text: string; label: string } } = {
       draft: { bg: 'bg-gray-100', text: 'text-gray-800', label: 'Taslak' },
@@ -546,14 +572,22 @@ export default function ContentReviewPage() {
                   )}
 
                   {content.blog_id && (
-                    <a
-                      href={`/blog/${content.slug}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200"
-                    >
-                      🔗 Görüntüle
-                    </a>
+                    <>
+                      <a
+                        href={`/blog/${content.slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200"
+                      >
+                        🔗 Görüntüle
+                      </a>
+                      <button
+                        onClick={() => unpublishContent(content.id, content.blog_id!)}
+                        className="px-4 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-medium hover:bg-red-100"
+                      >
+                        🗑️ Sil
+                      </button>
+                    </>
                   )}
                 </div>
               </div>
