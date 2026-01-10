@@ -72,6 +72,30 @@ export default function AIBlogPlannerPage() {
     if (data) setPlans(data);
   };
 
+  const deletePlan = async (planId: string, countryName: string) => {
+    if (!confirm(`"${countryName}" planını silmek istediğinizden emin misiniz?\n\nTüm konular ve içerikler silinecek!`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/ai-blog/update-plan?plan_id=${planId}`, {
+        method: 'DELETE'
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setMessage({ type: 'success', text: 'Plan silindi!' });
+        loadPlans();
+        setTimeout(() => setMessage(null), 3000);
+      } else {
+        setMessage({ type: 'error', text: result.error || 'Silme başarısız' });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Bir hata oluştu' });
+    }
+  };
+
   const toggleCountrySelection = (countryId: number) => {
     setSelectedCountries(prev => 
       prev.includes(countryId) 
@@ -550,6 +574,12 @@ export default function AIBlogPlannerPage() {
                     >
                       İncele
                     </a>
+                    <button
+                      onClick={() => deletePlan(plan.id, plan.country_name)}
+                      className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors"
+                    >
+                      🗑️ Sil
+                    </button>
                   </div>
                 </div>
               </div>

@@ -39,10 +39,6 @@ export async function getCountries() {
     console.error("getCountries products error", productsError);
   }
 
-  console.log("🔍 Products fetched:", products?.length || 0);
-  if (products && products.length > 0) {
-    console.log("📦 Sample product:", products[0]);
-  }
 
   // Ülke kodlarını topla
   const countryCodes = countries
@@ -375,7 +371,6 @@ export async function getCountryMenuBySlug(slug: string) {
     return null;
   }
 
-  console.log("✅ getCountryMenuBySlug - Menu found:", menu?.name);
   return menu;
 }
 
@@ -539,14 +534,10 @@ export async function getBlogs(options?: { home?: number; limit?: number }) {
 }
 
 export async function getBlogBySlug(slug: string) {
-  console.log("📝 getBlogBySlug - Original slug:", slug);
-  
   // Try with blog/ prefix first, then without
   const slugsToTry = slug.startsWith('blog/') 
     ? [slug, slug.replace('blog/', '')] 
     : [slug, `blog/${slug}`];
-
-  console.log("📝 getBlogBySlug - Trying slugs:", slugsToTry);
 
   let taxonomy = null;
   
@@ -557,8 +548,6 @@ export async function getBlogBySlug(slug: string) {
       .eq("slug", trySlug)
       .or("type.eq.Blog\\BlogController@detail,type.eq.Country\\CountryController@blogDetail")
       .maybeSingle();
-    
-    console.log(`📝 getBlogBySlug - Tried "${trySlug}":`, data ? "Found" : "Not found");
     
     if (!error && data) {
       taxonomy = data;
@@ -875,7 +864,6 @@ export async function submitApplication(formData: any) {
         referral_source: "link",
         notes: `Otomatik kayıt - Form başvurusu`
       });
-      console.log("✅ Partner referral tracked:", formData.partner_id);
     } catch (refError) {
       console.error("Referral tracking error:", refError);
       // Hata olsa bile başvuru kaydedildi, devam et

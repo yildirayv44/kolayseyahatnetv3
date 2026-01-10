@@ -36,9 +36,6 @@ export function BlogEditForm({ blog }: { blog: any }) {
     e.preventDefault();
     setLoading(true);
 
-    console.log('💾 Saving blog with formData:', formData);
-    console.log('🖼️ Image URL being saved:', formData.image_url);
-
     try {
       const response = await fetch('/api/admin/blogs/update', {
         method: 'POST',
@@ -53,7 +50,6 @@ export function BlogEditForm({ blog }: { blog: any }) {
         throw new Error(result.error);
       }
 
-      console.log('✅ Blog saved successfully!');
       alert("Blog başarıyla güncellendi!");
       router.push("/admin/bloglar");
       router.refresh();
@@ -489,9 +485,7 @@ export function BlogEditForm({ blog }: { blog: any }) {
           <ImageUpload
             currentImageUrl={formData.image_url}
             onImageChange={(url) => {
-              console.log('📸 Blog image changed to:', url);
               setFormData({ ...formData, image_url: url });
-              console.log('📝 FormData updated, new image_url:', url);
             }}
             bucket="blog-images"
             label="Blog Kapak Fotoğrafı"
