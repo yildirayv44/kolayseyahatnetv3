@@ -233,8 +233,13 @@ PEXELS GÖRSEL:
     let coverImageUrl = null;
     let pexelsData: { id: string; photographer: string; photographer_url: string } | null = null;
 
+    console.log('🖼️ Starting Pexels image search...');
+    console.log('Search query:', aiResponse.pexels_search_query);
+    console.log('Has Pexels API key:', !!process.env.PEXELS_API_KEY);
+
     if (aiResponse.pexels_search_query && process.env.PEXELS_API_KEY) {
       try {
+        console.log('Fetching from Pexels API...');
         const pexelsResponse = await fetch(
           `https://api.pexels.com/v1/search?query=${encodeURIComponent(aiResponse.pexels_search_query)}&per_page=5&orientation=landscape`,
           {
@@ -244,7 +249,9 @@ PEXELS GÖRSEL:
           }
         );
 
+        console.log('Pexels response status:', pexelsResponse.status);
         const pexelsResult = await pexelsResponse.json();
+        console.log('Pexels photos found:', pexelsResult.photos?.length || 0);
 
         if (pexelsResult.photos && pexelsResult.photos.length > 0) {
           // Select a random photo from results to avoid duplicates
@@ -252,11 +259,14 @@ PEXELS GÖRSEL:
           const photo = pexelsResult.photos[randomIndex];
           
           // Download image
+          console.log('Downloading image from:', photo.src.large2x);
           const imageResponse = await fetch(photo.src.large2x);
           const imageBuffer = await imageResponse.arrayBuffer();
+          console.log('Image downloaded, size:', imageBuffer.byteLength, 'bytes');
 
           // Upload to Supabase storage
           const fileName = `blog-covers/${topic.slug}-${Date.now()}.jpg`;
+          console.log('Uploading to Supabase storage:', fileName);
           const { data: uploadData, error: uploadError } = await supabase.storage
             .from('blog-images')
             .upload(fileName, imageBuffer, {
@@ -264,22 +274,31 @@ PEXELS GÖRSEL:
               cacheControl: '31536000'
             });
 
+          if (uploadError) {
+            console.error('❌ Upload error:', uploadError);
+          }
+
           if (!uploadError && uploadData) {
             const { data: urlData } = supabase.storage
               .from('blog-images')
               .getPublicUrl(fileName);
 
             coverImageUrl = urlData.publicUrl;
+            console.log('✅ Image uploaded successfully:', coverImageUrl);
             pexelsData = {
               id: photo.id,
               photographer: photo.photographer,
               photographer_url: photo.photographer_url
             };
           }
+        } else {
+          console.log('⚠️ No photos found in Pexels results');
         }
       } catch (error) {
-        console.error('Pexels image error:', error);
+        console.error('❌ Pexels image error:', error);
       }
+    } else {
+      console.log('⚠️ Skipping image search - missing query or API key');
     }
 
     // Generate meta title with proper format
