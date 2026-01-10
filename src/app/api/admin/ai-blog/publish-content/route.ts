@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
       contents: content.content,
       image: content.cover_image_url || '',
       image_url: content.cover_image_url || '',
-      category: getCategoryName(topic.category),
+      category: topic?.category ? getCategoryName(topic.category) : 'Genel',
       home: 1, // Required field
       type: 1, // Required field
       sorted: 0,

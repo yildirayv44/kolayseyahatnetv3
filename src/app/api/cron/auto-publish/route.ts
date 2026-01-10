@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
             contents: content.content,
             image: content.cover_image_url || '',
             image_url: content.cover_image_url || '',
-            category: getCategoryName(topic.category),
+            category: topic?.category ? getCategoryName(topic.category) : 'Genel',
             home: 1,
             type: 1,
             sorted: 0,
