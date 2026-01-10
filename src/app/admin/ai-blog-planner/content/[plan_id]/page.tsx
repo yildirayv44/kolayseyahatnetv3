@@ -428,6 +428,15 @@ export default function ContentReviewPage() {
                   }
 
                   try {
+                    // First update plan's start_publish_date to prevent auto-schedule override
+                    await supabase
+                      .from('ai_blog_plans')
+                      .update({ 
+                        start_publish_date: startDate,
+                        publish_frequency: frequency 
+                      })
+                      .eq('id', plan_id);
+
                     const response = await fetch('/api/admin/ai-blog/schedule-plan', {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
