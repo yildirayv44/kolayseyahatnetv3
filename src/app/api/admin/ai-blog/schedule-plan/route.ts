@@ -104,19 +104,34 @@ export async function POST(request: NextRequest) {
       
       console.log(`Scheduling content ${i + 1}/${contents.length}: ${contents[i].id} -> ${formattedDate} (offset: ${i} ${frequency === 'daily' ? 'days' : 'weeks'})`);
 
-      const { data: updateData, error: updateError } = await supabase
+      // First update: Set date, order, and status WITHOUT auto_publish
+      const { error: dateError } = await supabase
         .from('ai_blog_content')
         .update({
           scheduled_publish_date: formattedDate,
-          auto_publish: true,
           publish_order: i + 1,
-          status: 'approved' // Auto-approve review content
+          status: 'approved',
+          auto_publish: false // Explicitly set to false
+        })
+        .eq('id', contents[i].id);
+
+      if (dateError) {
+        console.error(`❌ Failed to set date for ${contents[i].id}:`, dateError);
+        continue;
+      }
+
+      // Second update: Enable auto_publish AND re-set the date to override trigger
+      const { data: updateData, error: updateError } = await supabase
+        .from('ai_blog_content')
+        .update({
+          auto_publish: true,
+          scheduled_publish_date: formattedDate // Re-set date to override trigger
         })
         .eq('id', contents[i].id)
         .select('id, scheduled_publish_date');
 
       if (updateError) {
-        console.error(`❌ Failed to schedule content ${contents[i].id}:`, updateError);
+        console.error(`❌ Failed to enable auto_publish for ${contents[i].id}:`, updateError);
       } else {
         console.log(`✅ Saved to DB: ${contents[i].id} -> ${updateData?.[0]?.scheduled_publish_date}`);
         scheduledContents.push({
