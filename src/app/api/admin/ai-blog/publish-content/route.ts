@@ -105,7 +105,6 @@ export async function POST(request: NextRequest) {
       contents: content.content,
       image: content.cover_image_url || '',
       image_url: content.cover_image_url || '',
-      category: topic?.category ? getCategoryName(topic.category) : 'Genel',
       home: 1, // Required field
       type: 1, // Required field
       sorted: 0,
@@ -119,7 +118,6 @@ export async function POST(request: NextRequest) {
       has_description: !!blogData.description,
       content_length: blogData.contents?.length || 0,
       has_image: !!blogData.image_url,
-      category: blogData.category,
       sorted: blogData.sorted,
       status: blogData.status,
       home: blogData.home,
