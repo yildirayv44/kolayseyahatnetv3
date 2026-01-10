@@ -115,13 +115,18 @@ export async function POST(request: NextRequest) {
     };
     console.log('Blog data to insert:', {
       title: blogData.title,
+      slug: blogData.slug,
       has_description: !!blogData.description,
       content_length: blogData.contents?.length || 0,
       has_image: !!blogData.image_url,
+      category: blogData.category,
       sorted: blogData.sorted,
-      status: blogData.status
+      status: blogData.status,
+      home: blogData.home,
+      type: blogData.type
     });
 
+    console.log('Attempting blog insert...');
     const { data: blog, error: blogError } = await supabase
       .from('blogs')
       .insert(blogData)
@@ -129,18 +134,25 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (blogError) {
-      console.error('Blog creation error:', blogError);
-      console.error('Full error details:', JSON.stringify(blogError, null, 2));
+      console.error('❌ Blog creation error:', blogError);
+      console.error('Error code:', blogError.code);
+      console.error('Error message:', blogError.message);
+      console.error('Error details:', blogError.details);
+      console.error('Error hint:', blogError.hint);
+      console.error('Full blogData:', JSON.stringify(blogData, null, 2));
       return NextResponse.json(
         { 
           error: 'Failed to create blog entry',
           details: blogError.message,
           code: blogError.code,
-          hint: blogError.hint
+          hint: blogError.hint,
+          full_error: blogError
         },
         { status: 500 }
       );
     }
+
+    console.log('✅ Blog created successfully:', blog.id);
 
     console.log('Blog created successfully:', blog.id);
 
