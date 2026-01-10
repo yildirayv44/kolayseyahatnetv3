@@ -110,7 +110,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
               <div className="space-y-3 p-4">
                 <div className="space-y-2">
                   <p className="text-[11px] font-semibold uppercase tracking-wide text-primary">
-                    {blog.type || "Genel"}
+                    {blog.category || "Genel"}
                   </p>
                   <h2 className="text-base font-semibold text-slate-900 line-clamp-2 group-hover:text-primary">
                     {blog.title}

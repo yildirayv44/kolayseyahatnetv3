@@ -92,19 +92,26 @@ export async function POST(request: NextRequest) {
         publishDate.setDate(publishDate.getDate() + (i * 7));
       }
 
+      const formattedDate = publishDate.toISOString().split('T')[0];
+      
+      console.log(`Scheduling content ${i + 1}/${contents.length}: ${contents[i].id} -> ${formattedDate}`);
+
       const { error: updateError } = await supabase
         .from('ai_blog_content')
         .update({
-          scheduled_publish_date: publishDate.toISOString().split('T')[0],
+          scheduled_publish_date: formattedDate,
           auto_publish: true,
-          publish_order: i + 1
+          publish_order: i + 1,
+          status: 'approved' // Auto-approve review content
         })
         .eq('id', contents[i].id);
 
-      if (!updateError) {
+      if (updateError) {
+        console.error(`Failed to schedule content ${contents[i].id}:`, updateError);
+      } else {
         scheduledContents.push({
           content_id: contents[i].id,
-          publish_date: publishDate.toISOString().split('T')[0],
+          publish_date: formattedDate,
           order: i + 1
         });
       }
