@@ -80,6 +80,7 @@ export async function POST(request: NextRequest) {
     }
 
     console.log(`Found ${contents.length} contents to schedule for plan ${plan_id}`);
+    console.log(`Start date: ${start_date}, Frequency: ${frequency}`);
 
     // Schedule each content
     const scheduledContents = [];
@@ -87,6 +88,7 @@ export async function POST(request: NextRequest) {
     // Parse start date once
     const [year, month, day] = start_date.split('-').map(Number);
     const baseDate = new Date(Date.UTC(year, month - 1, day));
+    console.log(`Base date parsed: ${baseDate.toISOString().split('T')[0]}`);
     
     for (let i = 0; i < contents.length; i++) {
       // Create new date for each content based on base date
@@ -102,7 +104,7 @@ export async function POST(request: NextRequest) {
       
       console.log(`Scheduling content ${i + 1}/${contents.length}: ${contents[i].id} -> ${formattedDate} (offset: ${i} ${frequency === 'daily' ? 'days' : 'weeks'})`);
 
-      const { error: updateError } = await supabase
+      const { data: updateData, error: updateError } = await supabase
         .from('ai_blog_content')
         .update({
           scheduled_publish_date: formattedDate,
@@ -110,11 +112,13 @@ export async function POST(request: NextRequest) {
           publish_order: i + 1,
           status: 'approved' // Auto-approve review content
         })
-        .eq('id', contents[i].id);
+        .eq('id', contents[i].id)
+        .select('id, scheduled_publish_date');
 
       if (updateError) {
-        console.error(`Failed to schedule content ${contents[i].id}:`, updateError);
+        console.error(`❌ Failed to schedule content ${contents[i].id}:`, updateError);
       } else {
+        console.log(`✅ Saved to DB: ${contents[i].id} -> ${updateData?.[0]?.scheduled_publish_date}`);
         scheduledContents.push({
           content_id: contents[i].id,
           publish_date: formattedDate,
