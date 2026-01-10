@@ -83,20 +83,24 @@ export async function POST(request: NextRequest) {
 
     // Schedule each content
     const scheduledContents = [];
+    
+    // Parse start date once
+    const [year, month, day] = start_date.split('-').map(Number);
+    const baseDate = new Date(Date.UTC(year, month - 1, day));
+    
     for (let i = 0; i < contents.length; i++) {
-      // Use UTC to avoid timezone issues
-      const [year, month, day] = start_date.split('-').map(Number);
-      const publishDate = new Date(Date.UTC(year, month - 1, day));
+      // Create new date for each content based on base date
+      const publishDate = new Date(baseDate);
       
       if (frequency === 'daily') {
-        publishDate.setUTCDate(publishDate.getUTCDate() + i);
+        publishDate.setUTCDate(baseDate.getUTCDate() + i);
       } else if (frequency === 'weekly') {
-        publishDate.setUTCDate(publishDate.getUTCDate() + (i * 7));
+        publishDate.setUTCDate(baseDate.getUTCDate() + (i * 7));
       }
 
       const formattedDate = publishDate.toISOString().split('T')[0];
       
-      console.log(`Scheduling content ${i + 1}/${contents.length}: ${contents[i].id} -> ${formattedDate} (offset: ${i} days)`);
+      console.log(`Scheduling content ${i + 1}/${contents.length}: ${contents[i].id} -> ${formattedDate} (offset: ${i} ${frequency === 'daily' ? 'days' : 'weeks'})`);
 
       const { error: updateError } = await supabase
         .from('ai_blog_content')
