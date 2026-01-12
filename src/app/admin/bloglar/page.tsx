@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Plus, Edit, Trash2, Eye, Sparkles, Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { ContentOptimizerModal } from "@/components/admin/ContentOptimizerModal";
+import { getBlogSlug } from "@/lib/helpers";
 
 export default function BlogsPage() {
   const [blogs, setBlogs] = useState<any[]>([]);
@@ -21,7 +22,25 @@ export default function BlogsPage() {
       .from("blogs")
       .select("*")
       .order("created_at", { ascending: false });
-    setBlogs(data || []);
+    
+    // Fetch taxonomy slugs for all blogs
+    if (data) {
+      const blogIds = data.map(b => b.id);
+      const { data: taxonomies } = await supabase
+        .from("taxonomies")
+        .select("model_id, slug")
+        .in("model_id", blogIds)
+        .eq("type", "Blog\\BlogController@detail");
+      
+      const taxonomyMap = new Map(taxonomies?.map(t => [t.model_id, t.slug]) || []);
+      const blogsWithSlugs = data.map(blog => ({
+        ...blog,
+        taxonomy_slug: taxonomyMap.get(blog.id) || null,
+      }));
+      setBlogs(blogsWithSlugs);
+    } else {
+      setBlogs([]);
+    }
     setLoading(false);
   };
 
@@ -122,7 +141,7 @@ export default function BlogsPage() {
 
               <div className="flex items-center gap-2 pt-2">
                 <Link
-                  href={`/blog/blog/${blog.id}`}
+                  href={getBlogSlug(blog, 'tr')}
                   target="_blank"
                   className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-center text-sm font-medium text-slate-700 hover:bg-slate-50"
                 >

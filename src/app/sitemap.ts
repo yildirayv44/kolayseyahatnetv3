@@ -125,17 +125,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })
     .flatMap((blog: any) => {
       const lastModified = getValidDate(blog.updated_at || blog.created_at);
+      // Strip 'blog/' prefix if present to avoid /blog/blog/ duplication
+      const cleanSlug = blog.taxonomy_slug.replace(/^blog\//, '');
       return [
         // Turkish version
         {
-          url: `${baseUrl}/blog/${blog.taxonomy_slug}`,
+          url: `${baseUrl}/blog/${cleanSlug}`,
           lastModified,
           changeFrequency: "monthly" as const,
           priority: 0.6,
         },
         // English version
         {
-          url: `${baseUrl}/en/blog/${blog.taxonomy_slug}`,
+          url: `${baseUrl}/en/blog/${cleanSlug}`,
           lastModified,
           changeFrequency: "monthly" as const,
           priority: 0.6,

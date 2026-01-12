@@ -71,7 +71,9 @@ export function getBlogSlug(blog: any, locale: 'tr' | 'en' = 'tr'): string {
   
   // Blog'un taxonomy slug'ı varsa kullan
   if (blog.taxonomy_slug) {
-    return `${prefix}/${blog.taxonomy_slug}`;
+    // Strip 'blog/' prefix if present to avoid /blog/blog/ duplication
+    const cleanSlug = blog.taxonomy_slug.replace(/^blog\//, '');
+    return `${prefix}/${cleanSlug}`;
   }
   
   // Fallback: blog.slug veya blog.url

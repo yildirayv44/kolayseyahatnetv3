@@ -59,8 +59,10 @@ export async function GET() {
           }
           
           if (imageUrl) {
+            // Strip 'blog/' prefix if present to avoid /blog/blog/ duplication
+            const cleanSlug = blog.taxonomy_slug.replace(/^blog\//, '');
             images.push({
-              loc: `${baseUrl}/blog/${blog.taxonomy_slug}`,
+              loc: `${baseUrl}/blog/${cleanSlug}`,
               images: [{
                 url: escapeXml(imageUrl),
                 title: escapeXml(blog.title || 'Blog'),
