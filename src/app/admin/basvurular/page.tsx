@@ -1,7 +1,7 @@
 "use client";
 
 import { supabase } from "@/lib/supabase";
-import { Eye, Download, Filter, CheckCircle, Clock, XCircle, TrendingUp, X, FileText, CreditCard, Building2 } from "lucide-react";
+import { Eye, Download, Filter, CheckCircle, Clock, XCircle, TrendingUp, X, FileText, CreditCard, Building2, Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
 
 // Note: Metadata cannot be exported from client components
@@ -26,6 +26,25 @@ export default function ApplicationsPage() {
       console.error("Error fetching applications:", error);
     } else {
       setApplications(data || []);
+    }
+  };
+
+  const handleDelete = async (id: number, fullName: string) => {
+    if (!confirm(`"${fullName}" adlı başvuruyu silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.`)) {
+      return;
+    }
+
+    const { error } = await supabase
+      .from("applications")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      console.error("Error deleting application:", error);
+      alert("Başvuru silinirken bir hata oluştu.");
+    } else {
+      alert("Başvuru başarıyla silindi.");
+      fetchApplications();
     }
   };
 
@@ -167,6 +186,13 @@ export default function ApplicationsPage() {
                             title="Detayları Gör"
                           >
                             <Eye className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(app.id, app.full_name)}
+                            className="rounded-lg p-2 text-red-600 hover:bg-red-50"
+                            title="Sil"
+                          >
+                            <Trash2 className="h-4 w-4" />
                           </button>
                         </div>
                       </td>
