@@ -34,17 +34,23 @@ export default function ApplicationsPage() {
       return;
     }
 
-    const { error } = await supabase
-      .from("applications")
-      .delete()
-      .eq("id", id);
+    try {
+      const response = await fetch(`/api/admin/applications/delete?id=${id}`, {
+        method: 'DELETE',
+      });
 
-    if (error) {
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        console.error("Error deleting application:", data.error);
+        alert("Başvuru silinirken bir hata oluştu.");
+      } else {
+        alert("Başvuru başarıyla silindi.");
+        fetchApplications();
+      }
+    } catch (error) {
       console.error("Error deleting application:", error);
       alert("Başvuru silinirken bir hata oluştu.");
-    } else {
-      alert("Başvuru başarıyla silindi.");
-      fetchApplications();
     }
   };
 
