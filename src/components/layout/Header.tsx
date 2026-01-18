@@ -16,6 +16,7 @@ import { t } from "@/i18n/translations";
 
 const getMenuItems = (locale: 'tr' | 'en') => [
   { path: "ulkeler", label: locale === 'en' ? "Countries" : "Ülkeler" },
+  { path: "davetiye-olustur", label: locale === 'en' ? "Invitation Letter" : "Davetiye Oluştur", highlight: true },
   { path: "kurumsal-vize-danismanligi", label: locale === 'en' ? "Corporate Visa Consultancy" : "Kurumsal Vize Danışmanlığı" },
   { path: "blog", label: "Blog" },
   { path: "danismanlar", label: locale === 'en' ? "Consultants" : "Danışmanlar" },
@@ -362,9 +363,13 @@ export function Header() {
                     key={item.path}
                     href={getLocalizedUrl(item.path, locale)}
                     onClick={() => setMenuOpen(false)}
-                    className="block border-b border-slate-100 px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 last:border-0"
+                    className={`block border-b border-slate-100 px-4 py-3 text-sm last:border-0 ${
+                      item.highlight 
+                        ? "bg-gradient-to-r from-primary/5 to-blue-50 font-semibold text-primary hover:from-primary/10 hover:to-blue-100" 
+                        : "text-slate-700 hover:bg-slate-50"
+                    }`}
                   >
-                    {item.label}
+                    {item.highlight && "✨ "}{item.label}
                   </Link>
                 ))}
               </div>
@@ -413,9 +418,13 @@ export function Header() {
                 key={item.path}
                 href={getLocalizedUrl(item.path, locale)}
                 onClick={() => setMenuOpen(false)}
-                className="border-b border-slate-100 py-3 text-sm text-slate-700 hover:text-primary last:border-0"
+                className={`border-b border-slate-100 py-3 text-sm last:border-0 ${
+                  item.highlight 
+                    ? "font-semibold text-primary" 
+                    : "text-slate-700 hover:text-primary"
+                }`}
               >
-                {item.label}
+                {item.highlight && "✨ "}{item.label}
               </Link>
             ))}
             
