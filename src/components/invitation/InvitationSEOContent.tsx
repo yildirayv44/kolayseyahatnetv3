@@ -12,12 +12,12 @@ export function InvitationSEOContent({ locale }: Props) {
       <div className="mx-auto max-w-6xl px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-slate-900 md:text-4xl">
-            {locale === "en" ? "About Visa Invitation Letters" : "Vize Davetiye Mektupları Hakkında"}
+            {locale === "en" ? "About Visa Invitation Letters" : "Vize Davet Mektupları Hakkında"}
           </h2>
           <p className="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">
             {locale === "en" 
               ? "Everything you need to know about invitation letters for visa applications"
-              : "Vize başvuruları için davetiye mektupları hakkında bilmeniz gereken her şey"}
+              : "Vize başvuruları için davet mektupları hakkında bilmeniz gereken her şey"}
           </p>
         </div>
 
@@ -163,9 +163,9 @@ export function InvitationSEOContent({ locale }: Props) {
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
                 <FileText className="h-6 w-6 text-blue-600" />
               </div>
-              <h3 className="text-lg font-bold text-slate-900">Davetiye Mektubu Nedir?</h3>
+              <h3 className="text-lg font-bold text-slate-900">Davet Mektubu Nedir?</h3>
               <p className="mt-2 text-sm text-slate-600">
-                Vize davetiye mektubu, vize başvurunuzu destekleyen ve gideceğiniz ülkede konaklama ve/veya 
+                Vize davet mektubu, vize başvurunuzu destekleyen ve gideceğiniz ülkede konaklama ve/veya 
                 mali destek sağlandığını doğrulayan resmi bir belgedir. Seyahat amacınızı ve yerel bağlantılarınızı kanıtlar.
               </p>
             </div>
@@ -234,7 +234,7 @@ export function InvitationSEOContent({ locale }: Props) {
               <h3 className="text-lg font-bold text-slate-900">Hangi Ülkeler İster?</h3>
               <p className="mt-2 text-sm text-slate-600">
                 Schengen ülkeleri, İngiltere, ABD, Kanada, Avustralya ve daha birçok ülke vize başvurularında 
-                davetiye mektubu talep eder. Gereksinimler ülkeye ve vize türüne göre değişir.
+                davet mektubu talep eder. Gereksinimler ülkeye ve vize türüne göre değişir.
               </p>
             </div>
 
@@ -332,9 +332,9 @@ export function InvitationSEOContent({ locale }: Props) {
             ) : (
               <>
                 <div className="rounded-lg border border-slate-200 bg-white p-5">
-                  <h4 className="font-semibold text-slate-900">Davetiye mektubu yasal olarak bağlayıcı mı?</h4>
+                  <h4 className="font-semibold text-slate-900">Davet mektubu yasal olarak bağlayıcı mı?</h4>
                   <p className="mt-2 text-sm text-slate-600">
-                    Yasal bir sözleşme olmasa da, davetiye mektubu ziyaretçiyi ağırlama taahhüdünüzü temsil eden resmi bir belgedir. 
+                    Yasal bir sözleşme olmasa da, davet mektubu ziyaretçiyi ağırlama taahhüdünüzü temsil eden resmi bir belgedir. 
                     Yanlış bilgi vermek yasal sonuçlar doğurabilir.
                   </p>
                 </div>

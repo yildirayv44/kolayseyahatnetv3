@@ -6,24 +6,24 @@ import { FileText, Shield, Clock, CheckCircle } from "lucide-react";
 
 export const metadata: Metadata = {
   ...generateSEOMetadata({
-    title: "Vize Davetiye Mektubu Oluşturucu | Ücretsiz Online Araç",
-    description: "Vize başvuruları için profesyonel davetiye mektubu oluşturun. AI destekli, ülkeye özel, anında indirilebilir davetiye mektubu oluşturma aracı.",
+    title: "Vize Davet Mektubu Oluşturucu | Ücretsiz Online Araç",
+    description: "Vize başvuruları için profesyonel davet mektubu oluşturun. AI destekli, ülkeye özel, anında indirilebilir davet mektubu oluşturma aracı.",
     keywords: [
-      "davetiye mektubu",
-      "vize davetiye",
-      "invitation letter",
-      "vize başvurusu davetiye",
-      "konaklama davetiyesi",
-      "sponsor letter",
+      "davet mektubu",
       "vize davet mektubu",
+      "invitation letter",
+      "vize başvurusu davet",
+      "konaklama daveti",
+      "sponsor letter",
+      "vize davet mektubu oluştur",
     ],
-    url: "/davetiye-olustur",
+    url: "/vize-davet-mektubu-olustur",
   }),
   alternates: {
-    canonical: "https://www.kolayseyahat.net/davetiye-olustur",
+    canonical: "https://www.kolayseyahat.net/vize-davet-mektubu-olustur",
     languages: {
-      "tr": "https://www.kolayseyahat.net/davetiye-olustur",
-      "en": "https://www.kolayseyahat.net/en/davetiye-olustur",
+      "tr": "https://www.kolayseyahat.net/vize-davet-mektubu-olustur",
+      "en": "https://www.kolayseyahat.net/en/vize-davet-mektubu-olustur",
     },
   },
 };
@@ -37,9 +37,9 @@ export default async function InvitationLetterPage({
   
   const content = {
     tr: {
-      title: "Vize Davetiye Mektubu Oluşturucu",
-      subtitle: "Vize başvurunuz için profesyonel davetiye mektubu oluşturun",
-      description: "AI destekli aracımız ile seçtiğiniz ülkeye özel, resmi formatta davetiye mektubu oluşturabilirsiniz.",
+      title: "Vize Davet Mektubu Oluşturucu",
+      subtitle: "Vize başvurunuz için profesyonel davet mektubu oluşturun",
+      description: "AI destekli aracımız ile seçtiğiniz ülkeye özel, resmi formatta davet mektubu oluşturabilirsiniz.",
       features: [
         { icon: FileText, title: "Profesyonel Format", desc: "Resmi vize başvurularına uygun format" },
         { icon: Shield, title: "Ülkeye Özel", desc: "Her ülkenin gereksinimlerine göre özelleştirilmiş" },
@@ -114,11 +114,11 @@ export default async function InvitationLetterPage({
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "WebApplication",
-            "name": locale === "en" ? "Visa Invitation Letter Generator" : "Vize Davetiye Mektubu Oluşturucu",
+            "name": locale === "en" ? "Visa Invitation Letter Generator" : "Vize Davet Mektubu Oluşturucu",
             "description": locale === "en" 
               ? "Create professional invitation letters for visa applications"
               : "Vize başvuruları için profesyonel davetiye mektubu oluşturun",
-            "url": "https://www.kolayseyahat.net/davetiye-olustur",
+            "url": "https://www.kolayseyahat.net/vize-davet-mektubu-olustur",
             "applicationCategory": "UtilityApplication",
             "operatingSystem": "Web",
             "offers": {
