@@ -17,6 +17,7 @@ import { t } from "@/i18n/translations";
 const getMenuItems = (locale: 'tr' | 'en') => [
   { path: "ulkeler", label: locale === 'en' ? "Countries" : "Ülkeler" },
   { path: "vize-davet-mektubu-olustur", label: locale === 'en' ? "Invitation Letter" : "Davet Mektubu", highlight: true },
+  { path: "vize-dilekcesi-olustur", label: locale === 'en' ? "Cover Letter" : "Vize Dilekçesi", highlight: true },
   { path: "kurumsal-vize-danismanligi", label: locale === 'en' ? "Corporate Visa Consultancy" : "Kurumsal Vize Danışmanlığı" },
   { path: "blog", label: "Blog" },
   { path: "danismanlar", label: locale === 'en' ? "Consultants" : "Danışmanlar" },
