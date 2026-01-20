@@ -6,55 +6,56 @@ import { createClient } from "@supabase/supabase-js";
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
-  // Handle admin routes BEFORE skipping
-  if (pathname.startsWith("/admin") && pathname !== "/admin/login") {
-    const authToken = request.cookies.get("sb-auth-token");
-    
-    if (!authToken) {
-      return NextResponse.redirect(new URL("/admin/login", request.url));
-    }
-
-    // Verify admin role from users table
-    try {
-      const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        {
-          auth: {
-            persistSession: false,
-          },
-        }
-      );
-
-      const { data: { user }, error } = await supabase.auth.getUser(authToken.value);
-
-      if (error || !user) {
-        return NextResponse.redirect(new URL("/admin/login", request.url));
-      }
-
-      // Check is_admin from users table
-      const { data: userData } = await supabase
-        .from("users")
-        .select("is_admin")
-        .eq("id", user.id)
-        .single();
-      
-      if (!userData || userData.is_admin !== 1) {
-        console.warn("Unauthorized admin access attempt:", user.email);
-        return NextResponse.redirect(new URL("/", request.url));
-      }
-    } catch (error) {
-      console.error("Middleware auth error:", error);
-      return NextResponse.redirect(new URL("/admin/login", request.url));
-    }
-  }
-
-  // Skip middleware for API routes, static files, and special Next.js routes
+  // Skip middleware for API routes, static files, admin routes, and special Next.js routes
   if (
     pathname.startsWith("/api") ||
     pathname.startsWith("/_next") ||
-    pathname.includes(".")
+    pathname.includes(".") ||
+    pathname.startsWith("/admin")
   ) {
+    // Handle admin authentication for protected routes
+    if (pathname.startsWith("/admin") && pathname !== "/admin/login") {
+      const authToken = request.cookies.get("sb-auth-token");
+      
+      if (!authToken) {
+        return NextResponse.redirect(new URL("/admin/login", request.url));
+      }
+
+      // Verify admin role from users table
+      try {
+        const supabase = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          {
+            auth: {
+              persistSession: false,
+            },
+          }
+        );
+
+        const { data: { user }, error } = await supabase.auth.getUser(authToken.value);
+
+        if (error || !user) {
+          return NextResponse.redirect(new URL("/admin/login", request.url));
+        }
+
+        // Check is_admin from users table
+        const { data: userData } = await supabase
+          .from("users")
+          .select("is_admin")
+          .eq("id", user.id)
+          .single();
+        
+        if (!userData || userData.is_admin !== 1) {
+          console.warn("Unauthorized admin access attempt:", user.email);
+          return NextResponse.redirect(new URL("/", request.url));
+        }
+      } catch (error) {
+        console.error("Middleware auth error:", error);
+        return NextResponse.redirect(new URL("/admin/login", request.url));
+      }
+    }
+    
     return NextResponse.next();
   }
 
