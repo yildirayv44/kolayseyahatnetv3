@@ -12,10 +12,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     console.log("📝 Question request body:", body);
     
-    const { country_id, name, email, phone, question } = body;
+    const { country_id, question, user_id } = body;
 
-    if (!country_id || !name || !email || !question) {
-      console.error("❌ Missing required fields:", { country_id, name, email, question });
+    if (!country_id || !question) {
+      console.error("❌ Missing required fields:", { country_id, question });
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -29,7 +29,8 @@ export async function POST(request: NextRequest) {
       .from("questions")
       .insert({
         title: question.substring(0, 200), // First 200 chars as title
-        contents: `${question}\n\nİletişim: ${name} (${email}${phone ? `, ${phone}` : ""})`,
+        contents: question,
+        user_id: user_id || null,
         parent_id: 0,
         status: 0, // Pending approval
         created_at: new Date().toISOString(),

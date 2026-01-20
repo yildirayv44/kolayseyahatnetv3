@@ -6,12 +6,13 @@ import { createClient } from "@supabase/supabase-js";
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
-  // Skip middleware for API routes, static files, admin routes, and special Next.js routes
+  // Skip middleware for API routes, static files, admin routes, hesabim, and special Next.js routes
   if (
     pathname.startsWith("/api") ||
     pathname.startsWith("/_next") ||
     pathname.includes(".") ||
-    pathname.startsWith("/admin")
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/hesabim")
   ) {
     // Handle admin authentication for protected routes
     if (pathname.startsWith("/admin") && pathname !== "/admin/login") {

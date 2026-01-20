@@ -147,6 +147,7 @@ export function InvitationLetterForm({ locale }: Props) {
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [countries, setCountries] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [generating, setGenerating] = useState(false);
   const [generatedLetter, setGeneratedLetter] = useState<string>("");
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string>("");

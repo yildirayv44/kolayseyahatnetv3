@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Send, CheckCircle2 } from "lucide-react";
 import { t } from "@/i18n/translations";
 import type { Locale } from "@/i18n/translations";
+import { getCurrentUser } from "@/lib/auth";
 
 interface AskQuestionFormProps {
   countryId: number;
@@ -12,7 +13,7 @@ interface AskQuestionFormProps {
 }
 
 export function AskQuestionForm({ countryId, countryName, locale = "tr" }: AskQuestionFormProps) {
-
+  const [userId, setUserId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -21,6 +22,21 @@ export function AskQuestionForm({ countryId, countryName, locale = "tr" }: AskQu
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+
+  // Auto-fill user data if logged in
+  useEffect(() => {
+    getCurrentUser().then(user => {
+      if (user) {
+        setUserId(user.id);
+        setFormData(prev => ({
+          ...prev,
+          name: user.name || "",
+          email: user.email || "",
+          phone: user.phone || "",
+        }));
+      }
+    });
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,10 +48,8 @@ export function AskQuestionForm({ countryId, countryName, locale = "tr" }: AskQu
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           country_id: countryId,
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone,
           question: formData.question,
+          user_id: userId,
         }),
       });
 
@@ -101,7 +115,8 @@ export function AskQuestionForm({ countryId, countryName, locale = "tr" }: AskQu
               onChange={(e) =>
                 setFormData({ ...formData, name: e.target.value })
               }
-              className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              disabled={!!userId}
+              className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:bg-slate-50 disabled:text-slate-600"
               placeholder={t(locale, "namePlaceholder")}
             />
           </div>
@@ -115,12 +130,13 @@ export function AskQuestionForm({ countryId, countryName, locale = "tr" }: AskQu
             <input
               type="tel"
               id="phone"
-              required
+              required={!userId}
               value={formData.phone}
               onChange={(e) =>
                 setFormData({ ...formData, phone: e.target.value })
               }
-              className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              disabled={!!userId}
+              className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:bg-slate-50 disabled:text-slate-600"
               placeholder={t(locale, "phonePlaceholder")}
             />
           </div>
@@ -141,7 +157,8 @@ export function AskQuestionForm({ countryId, countryName, locale = "tr" }: AskQu
             onChange={(e) =>
               setFormData({ ...formData, email: e.target.value })
             }
-            className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            disabled={!!userId}
+            className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:bg-slate-50 disabled:text-slate-600"
             placeholder={t(locale, "emailPlaceholder")}
           />
         </div>

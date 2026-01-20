@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Star } from "lucide-react";
+import { getCurrentUser } from "@/lib/auth";
 
 interface CommentFormProps {
   consultantId: number;
@@ -9,10 +10,24 @@ interface CommentFormProps {
 }
 
 export function CommentForm({ consultantId, consultantName }: CommentFormProps) {
+  const [userId, setUserId] = useState<string | null>(null);
+  const [userName, setUserName] = useState("");
+  const [userEmail, setUserEmail] = useState("");
   const [rating, setRating] = useState(5);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle");
+
+  // Auto-fill user data if logged in
+  useEffect(() => {
+    getCurrentUser().then(user => {
+      if (user) {
+        setUserId(user.id);
+        setUserName(user.name || "");
+        setUserEmail(user.email || "");
+      }
+    });
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -22,8 +37,7 @@ export function CommentForm({ consultantId, consultantName }: CommentFormProps) 
     const formData = new FormData(e.currentTarget);
     const data = {
       user_id: consultantId,
-      name: formData.get("name") as string,
-      email: formData.get("email") as string,
+      comment_user_id: userId,
       comment: formData.get("comment") as string,
       rating: rating,
     };
@@ -94,7 +108,10 @@ export function CommentForm({ consultantId, consultantName }: CommentFormProps) 
             id="name"
             name="name"
             required
-            className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            value={userName}
+            onChange={(e) => setUserName(e.target.value)}
+            disabled={!!userId}
+            className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:bg-slate-50 disabled:text-slate-600"
             placeholder="Adınız Soyadınız"
           />
         </div>
@@ -109,7 +126,10 @@ export function CommentForm({ consultantId, consultantName }: CommentFormProps) 
             id="email"
             name="email"
             required
-            className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            value={userEmail}
+            onChange={(e) => setUserEmail(e.target.value)}
+            disabled={!!userId}
+            className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:bg-slate-50 disabled:text-slate-600"
             placeholder="ornek@email.com"
           />
         </div>

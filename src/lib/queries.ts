@@ -782,15 +782,17 @@ export async function getCountryComments(countryId: number) {
 
 export async function submitConsultantComment(commentData: {
   user_id: number;
-  name: string;
-  email: string;
+  comment_user_id: string | null;
   comment: string;
   rating: number;
 }) {
   const { data, error } = await supabase
     .from("user_comments")
     .insert({
-      ...commentData,
+      user_id: commentData.user_id,
+      comment_user_id: commentData.comment_user_id,
+      contents: commentData.comment,
+      star: commentData.rating,
       status: 0, // Pending approval
       created_at: new Date().toISOString(),
     })
