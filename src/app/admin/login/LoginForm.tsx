@@ -27,10 +27,14 @@ export default function LoginForm() {
       if (error) throw error;
 
       if (data.user) {
-        // Verify user has admin role
-        const userRole = data.user.user_metadata?.role;
+        // Verify user has admin role from users table
+        const { data: userData } = await supabase
+          .from("users")
+          .select("is_admin")
+          .eq("id", data.user.id)
+          .single();
         
-        if (userRole !== "admin") {
+        if (!userData || userData.is_admin !== 1) {
           await supabase.auth.signOut();
           setError("Bu hesap admin paneline erişim yetkisine sahip değil.");
           return;

@@ -14,7 +14,7 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL("/admin/login", request.url));
     }
 
-    // Verify admin role
+    // Verify admin role from users table
     try {
       const supabase = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -32,9 +32,14 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL("/admin/login", request.url));
       }
 
-      const userRole = user.user_metadata?.role;
+      // Check is_admin from users table
+      const { data: userData } = await supabase
+        .from("users")
+        .select("is_admin")
+        .eq("id", user.id)
+        .single();
       
-      if (userRole !== "admin") {
+      if (!userData || userData.is_admin !== 1) {
         console.warn("Unauthorized admin access attempt:", user.email);
         return NextResponse.redirect(new URL("/", request.url));
       }

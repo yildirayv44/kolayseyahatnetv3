@@ -24,15 +24,21 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(new URL("/giris?error=auth_failed", request.url));
     }
 
-    // Check user role and redirect accordingly
-    const userRole = data?.user?.user_metadata?.role;
-    
-    if (userRole === "admin") {
-      return NextResponse.redirect(new URL("/admin", request.url));
-    } else {
-      // Regular users go to home page
-      return NextResponse.redirect(new URL("/", request.url));
+    // Check if user is admin from users table
+    if (data?.user) {
+      const { data: userData } = await supabase
+        .from("users")
+        .select("is_admin")
+        .eq("id", data.user.id)
+        .single();
+
+      if (userData?.is_admin === 1) {
+        return NextResponse.redirect(new URL("/admin", request.url));
+      }
     }
+
+    // Regular users go to home page
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
   // No code provided, redirect to home

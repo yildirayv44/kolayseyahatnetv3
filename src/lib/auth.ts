@@ -62,10 +62,37 @@ export async function getCurrentUser(): Promise<User | null> {
   };
 }
 
-// Check if user is admin
+// Check if user is admin (from users table)
 export async function isAdmin(): Promise<boolean> {
-  const user = await getCurrentUser();
-  return user?.role === "admin";
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return false;
+
+  // Check is_admin from users table
+  const { data: userData, error } = await supabase
+    .from("users")
+    .select("is_admin")
+    .eq("id", user.id)
+    .single();
+
+  if (error || !userData) return false;
+
+  return userData.is_admin === 1;
+}
+
+// Check if user is admin by user ID
+export async function checkUserIsAdmin(userId: string): Promise<boolean> {
+  const { data: userData, error } = await supabase
+    .from("users")
+    .select("is_admin")
+    .eq("id", userId)
+    .single();
+
+  if (error || !userData) return false;
+
+  return userData.is_admin === 1;
 }
 
 // Get session

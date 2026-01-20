@@ -46,10 +46,14 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // Check if user has admin role
-      const userRole = session.user?.user_metadata?.role;
+      // Check if user has admin role from users table
+      const { data: userData } = await supabase
+        .from("users")
+        .select("is_admin")
+        .eq("id", session.user.id)
+        .single();
       
-      if (userRole !== "admin") {
+      if (!userData || userData.is_admin !== 1) {
         console.warn("Unauthorized access attempt to admin panel");
         router.push("/");
         return;
