@@ -22,6 +22,7 @@ export function AskQuestionForm({ countryId, countryName, locale = "tr" }: AskQu
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [showAccountPrompt, setShowAccountPrompt] = useState(false);
 
   // Auto-fill user data if logged in
   useEffect(() => {
@@ -55,13 +56,22 @@ export function AskQuestionForm({ countryId, countryName, locale = "tr" }: AskQu
 
       if (response.ok) {
         setIsSuccess(true);
-        // Reset form after 3 seconds
+        
+        // If user is not logged in, show account creation prompt
+        if (!userId) {
+          setShowAccountPrompt(true);
+        }
+        
+        // Reset form after 5 seconds
         setTimeout(() => {
           setIsSuccess(false);
+          setShowAccountPrompt(false);
           setFormData({ name: "", email: "", phone: "", question: "" });
-        }, 3000);
+        }, 5000);
       } else {
-        alert(locale === 'en' ? 'An error occurred while sending your question. Please try again.' : 'Soru gönderilirken bir hata oluştu. Lütfen tekrar deneyin.');
+        const errorData = await response.json();
+        console.error('Question submission error:', errorData);
+        alert(`Hata: ${errorData.error || 'Soru gönderilirken bir hata oluştu.'}`);
       }
     } catch (error) {
       console.error("Question submit error:", error);
@@ -73,16 +83,66 @@ export function AskQuestionForm({ countryId, countryName, locale = "tr" }: AskQu
 
   if (isSuccess) {
     return (
-      <div className="rounded-2xl border-2 border-emerald-200 bg-emerald-50 p-8 text-center">
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100">
-          <CheckCircle2 className="h-8 w-8 text-emerald-600" />
+      <div className="space-y-4">
+        <div className="rounded-2xl border-2 border-emerald-200 bg-emerald-50 p-8 text-center">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100">
+            <CheckCircle2 className="h-8 w-8 text-emerald-600" />
+          </div>
+          <h3 className="mb-2 text-xl font-bold text-slate-900">
+            {t(locale, "successTitle")}
+          </h3>
+          <p className="text-sm text-slate-600">
+            {t(locale, "successMessage")}
+          </p>
         </div>
-        <h3 className="mb-2 text-xl font-bold text-slate-900">
-          {t(locale, "successTitle")}
-        </h3>
-        <p className="text-sm text-slate-600">
-          {t(locale, "successMessage")}
-        </p>
+
+        {/* Account Creation Prompt for Non-Logged Users */}
+        {showAccountPrompt && (
+          <div className="rounded-2xl border-2 border-blue-200 bg-blue-50 p-6">
+            <h4 className="mb-3 text-lg font-bold text-slate-900">
+              {locale === 'en' ? 'Create Your Account' : 'Hesap Oluşturun'}
+            </h4>
+            <p className="mb-4 text-sm text-slate-700">
+              {locale === 'en' 
+                ? 'Create an account to track your questions and receive personalized visa consultancy services.'
+                : 'Sorularınızı takip etmek ve kişiselleştirilmiş vize danışmanlık hizmeti almak için hesap oluşturun.'}
+            </p>
+            <a
+              href="/kayit"
+              className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-blue-700"
+            >
+              {locale === 'en' ? 'Create Free Account' : 'Ücretsiz Hesap Oluştur'}
+              <Send className="h-4 w-4" />
+            </a>
+          </div>
+        )}
+
+        {/* Consultancy Service Promotion */}
+        <div className="rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-blue-50 p-6">
+          <h4 className="mb-3 text-lg font-bold text-slate-900">
+            {locale === 'en' ? 'Professional Visa Consultancy' : 'Profesyonel Vize Danışmanlığı'}
+          </h4>
+          <p className="mb-4 text-sm text-slate-700">
+            {locale === 'en'
+              ? 'Get expert guidance throughout your visa application process. Our consultants have helped thousands of successful applications with a 98% approval rate.'
+              : 'Vize başvuru sürecinizde uzman rehberliği alın. Danışmanlarımız %98 onay oranı ile binlerce başarılı başvuruya yardımcı oldu.'}
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <a
+              href="/vize-basvuru-formu"
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 font-semibold text-white transition-colors hover:bg-primary/90"
+            >
+              {locale === 'en' ? 'Start Application' : 'Başvuru Yap'}
+              <Send className="h-4 w-4" />
+            </a>
+            <a
+              href="/danismanlar"
+              className="inline-flex items-center gap-2 rounded-lg border-2 border-primary bg-white px-6 py-3 font-semibold text-primary transition-colors hover:bg-primary/5"
+            >
+              {locale === 'en' ? 'Meet Our Consultants' : 'Danışmanlarımız'}
+            </a>
+          </div>
+        </div>
       </div>
     );
   }

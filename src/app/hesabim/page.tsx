@@ -15,7 +15,15 @@ import {
   FileSignature,
   Send,
   Eye,
-  Loader2
+  Loader2,
+  MessageCircle,
+  Heart,
+  Copy,
+  Download,
+  Trash2,
+  AlertTriangle,
+  Building2,
+  CreditCard
 } from "lucide-react";
 
 interface Application {
@@ -30,6 +38,32 @@ interface Application {
   notes?: string;
 }
 
+interface Question {
+  id: number;
+  title: string;
+  contents: string;
+  status: number;
+  created_at: string;
+  replies?: any[];
+}
+
+interface Comment {
+  id: number;
+  contents: string;
+  star: number;
+  status: number;
+  created_at: string;
+  user_id: number;
+}
+
+interface Favorite {
+  id: number;
+  country_id: number;
+  country_name: string;
+  country_slug: string;
+  created_at: string;
+}
+
 const statusConfig = {
   new: { label: "Yeni", color: "bg-blue-100 text-blue-700", icon: Clock },
   processing: { label: "İşleniyor", color: "bg-yellow-100 text-yellow-700", icon: Clock },
@@ -41,8 +75,14 @@ export default function HesabimPage() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [applications, setApplications] = useState<Application[]>([]);
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [favorites, setFavorites] = useState<Favorite[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedApp, setSelectedApp] = useState<Application | null>(null);
+  const [activeTab, setActiveTab] = useState<'applications' | 'questions' | 'comments' | 'favorites' | 'settings'>('applications');
+  const [copied, setCopied] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -56,6 +96,9 @@ export default function HesabimPage() {
     }
     setUser(userData);
     fetchApplications(userData.email);
+    fetchQuestions(userData.id);
+    fetchComments(userData.id);
+    fetchFavorites(userData.id);
   };
 
   const fetchApplications = async (email: string) => {
@@ -72,6 +115,108 @@ export default function HesabimPage() {
       console.error("Error fetching applications:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchQuestions = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("questions")
+        .select("*")
+        .eq("user_id", parseInt(userId))
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setQuestions(data || []);
+    } catch (error) {
+      console.error("Error fetching questions:", error);
+    }
+  };
+
+  const fetchComments = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("user_comments")
+        .select("*")
+        .eq("comment_user_id", parseInt(userId))
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setComments(data || []);
+    } catch (error) {
+      console.error("Error fetching comments:", error);
+    }
+  };
+
+  const fetchFavorites = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("favorites")
+        .select(`
+          id,
+          country_id,
+          created_at,
+          countries (name, slug)
+        `)
+        .eq("user_id", parseInt(userId))
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      
+      const formattedFavorites = (data || []).map((fav: any) => ({
+        id: fav.id,
+        country_id: fav.country_id,
+        country_name: fav.countries?.name || '',
+        country_slug: fav.countries?.slug || '',
+        created_at: fav.created_at,
+      }));
+      
+      setFavorites(formattedFavorites);
+    } catch (error) {
+      console.error("Error fetching favorites:", error);
+    }
+  };
+
+  const copyIBAN = () => {
+    navigator.clipboard.writeText('TR71 0004 6001 1888 8000 1215 84');
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const downloadData = async () => {
+    const userData = {
+      profile: user,
+      applications,
+      questions,
+      comments,
+      favorites,
+    };
+    
+    const blob = new Blob([JSON.stringify(userData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `hesabim-verileri-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const deleteAccount = async () => {
+    if (!user) return;
+    
+    try {
+      // Delete user data
+      await supabase.from('favorites').delete().eq('user_id', user.id);
+      await supabase.from('user_comments').delete().eq('comment_user_id', user.id);
+      await supabase.from('questions').delete().eq('user_id', user.id);
+      
+      // Sign out
+      await supabase.auth.signOut();
+      
+      router.push('/');
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      alert('Hesap silinirken bir hata oluştu.');
     }
   };
 
@@ -93,7 +238,7 @@ export default function HesabimPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 py-8">
-      <div className="mx-auto max-w-6xl px-4">
+      <div className="container mx-auto max-w-6xl px-4">
         {/* Header */}
         <div className="mb-8 rounded-2xl bg-white p-6 shadow-lg">
           <div className="flex items-center gap-4">
@@ -104,6 +249,57 @@ export default function HesabimPage() {
               <h1 className="text-2xl font-bold text-slate-900">Hesabım</h1>
               <p className="text-slate-600">{user?.name || user?.email}</p>
             </div>
+          </div>
+        </div>
+
+        {/* Tab Navigation */}
+        <div className="mb-6 rounded-2xl bg-white p-2 shadow-lg">
+          <div className="flex gap-2 overflow-x-auto">
+            <button
+              onClick={() => setActiveTab('applications')}
+              className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-all ${
+                activeTab === 'applications' ? 'bg-primary text-white' : 'text-slate-600 hover:bg-slate-100'
+              }`}
+            >
+              <FileText className="h-4 w-4" />
+              Başvurularım ({applications.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('questions')}
+              className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-all ${
+                activeTab === 'questions' ? 'bg-primary text-white' : 'text-slate-600 hover:bg-slate-100'
+              }`}
+            >
+              <MessageCircle className="h-4 w-4" />
+              Sorularım ({questions.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('comments')}
+              className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-all ${
+                activeTab === 'comments' ? 'bg-primary text-white' : 'text-slate-600 hover:bg-slate-100'
+              }`}
+            >
+              <MessageCircle className="h-4 w-4" />
+              Yorumlarım ({comments.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('favorites')}
+              className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-all ${
+                activeTab === 'favorites' ? 'bg-primary text-white' : 'text-slate-600 hover:bg-slate-100'
+              }`}
+            >
+              <Heart className="h-4 w-4" />
+              Favorilerim ({favorites.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('settings')}
+              className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-all ${
+                activeTab === 'settings' ? 'bg-primary text-white' : 'text-slate-600 hover:bg-slate-100'
+              }`}
+            >
+              <User className="h-4 w-4" />
+              Ayarlar
+            </button>
           </div>
         </div>
 
@@ -170,17 +366,44 @@ export default function HesabimPage() {
             </div>
           </div>
 
-          {/* Applications List */}
+          {/* Content Area */}
           <div className="lg:col-span-2">
-            <div className="rounded-2xl bg-white p-6 shadow-lg">
-              <div className="mb-6 flex items-center justify-between">
-                <h2 className="text-lg font-bold text-slate-900">Başvurularım</h2>
-                <span className="rounded-full bg-primary/10 px-3 py-1 text-sm font-semibold text-primary">
-                  {applications.length} Başvuru
-                </span>
+            {/* Bank Info - Always visible */}
+            <div className="mb-6 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-700 p-6 text-white shadow-lg">
+              <div className="mb-4 flex items-center gap-3">
+                <Building2 className="h-6 w-6" />
+                <div>
+                  <h3 className="font-bold">Kolay Seyahat Teknoloji Ltd. Şti.</h3>
+                  <p className="text-sm text-blue-100">Akbank TL Hesabı</p>
+                </div>
               </div>
+              <div className="flex items-center justify-between rounded-lg bg-white/10 p-4 backdrop-blur-sm">
+                <div>
+                  <p className="text-xs text-blue-100">IBAN</p>
+                  <p className="font-mono text-lg font-semibold">TR71 0004 6001 1888 8000 1215 84</p>
+                </div>
+                <button
+                  onClick={copyIBAN}
+                  className="flex items-center gap-2 rounded-lg bg-white/20 px-4 py-2 text-sm font-semibold transition-all hover:bg-white/30"
+                >
+                  {copied ? <CheckCircle className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                  {copied ? 'Kopyalandı!' : 'Kopyala'}
+                </button>
+              </div>
+            </div>
 
-              {applications.length === 0 ? (
+            {/* Tab Content */}
+            <div className="rounded-2xl bg-white p-6 shadow-lg">
+              {activeTab === 'applications' && (
+                <>
+                  <div className="mb-6 flex items-center justify-between">
+                    <h2 className="text-lg font-bold text-slate-900">Başvurularım</h2>
+                    <span className="rounded-full bg-primary/10 px-3 py-1 text-sm font-semibold text-primary">
+                      {applications.length} Başvuru
+                    </span>
+                  </div>
+
+                  {applications.length === 0 ? (
                 <div className="py-12 text-center">
                   <FileText className="mx-auto mb-4 h-16 w-16 text-slate-300" />
                   <p className="mb-2 text-lg font-semibold text-slate-900">Henüz başvurunuz yok</p>
@@ -239,6 +462,163 @@ export default function HesabimPage() {
                     );
                   })}
                 </div>
+              )}
+                </>
+              )}
+
+              {/* Questions Tab */}
+              {activeTab === 'questions' && (
+                <>
+                  <h2 className="mb-6 text-lg font-bold text-slate-900">Sorularım</h2>
+                  {questions.length === 0 ? (
+                    <div className="py-12 text-center">
+                      <MessageCircle className="mx-auto mb-4 h-16 w-16 text-slate-300" />
+                      <p className="text-lg font-semibold text-slate-900">Henüz soru sormadınız</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {questions.map((q) => (
+                        <div key={q.id} className="rounded-lg border border-slate-200 p-4">
+                          <div className="mb-2 flex items-center justify-between">
+                            <h3 className="font-semibold text-slate-900">{q.title}</h3>
+                            <span className={`rounded-full px-2 py-1 text-xs font-semibold ${
+                              q.status === 1 ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                            }`}>
+                              {q.status === 1 ? 'Cevaplandı' : 'Beklemede'}
+                            </span>
+                          </div>
+                          <p className="text-sm text-slate-600">{q.contents}</p>
+                          <p className="mt-2 text-xs text-slate-400">{formatDate(q.created_at)}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* Comments Tab */}
+              {activeTab === 'comments' && (
+                <>
+                  <h2 className="mb-6 text-lg font-bold text-slate-900">Yorumlarım</h2>
+                  {comments.length === 0 ? (
+                    <div className="py-12 text-center">
+                      <MessageCircle className="mx-auto mb-4 h-16 w-16 text-slate-300" />
+                      <p className="text-lg font-semibold text-slate-900">Henüz yorum yapmadınız</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {comments.map((c) => (
+                        <div key={c.id} className="rounded-lg border border-slate-200 p-4">
+                          <div className="mb-2 flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              {[...Array(5)].map((_, i) => (
+                                <span key={i} className={i < c.star ? 'text-yellow-400' : 'text-slate-300'}>★</span>
+                              ))}
+                            </div>
+                            <span className={`rounded-full px-2 py-1 text-xs font-semibold ${
+                              c.status === 1 ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                            }`}>
+                              {c.status === 1 ? 'Onaylandı' : 'Beklemede'}
+                            </span>
+                          </div>
+                          <p className="text-sm text-slate-600">{c.contents}</p>
+                          <p className="mt-2 text-xs text-slate-400">{formatDate(c.created_at)}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* Favorites Tab */}
+              {activeTab === 'favorites' && (
+                <>
+                  <h2 className="mb-6 text-lg font-bold text-slate-900">Favorilerim</h2>
+                  {favorites.length === 0 ? (
+                    <div className="py-12 text-center">
+                      <Heart className="mx-auto mb-4 h-16 w-16 text-slate-300" />
+                      <p className="text-lg font-semibold text-slate-900">Henüz favori eklemediniz</p>
+                    </div>
+                  ) : (
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      {favorites.map((fav) => (
+                        <a
+                          key={fav.id}
+                          href={`/${fav.country_slug}`}
+                          className="flex items-center gap-3 rounded-lg border border-slate-200 p-4 transition-all hover:border-primary hover:shadow-md"
+                        >
+                          <Heart className="h-5 w-5 text-red-500" />
+                          <div>
+                            <h3 className="font-semibold text-slate-900">{fav.country_name}</h3>
+                            <p className="text-xs text-slate-500">{formatDate(fav.created_at)}</p>
+                          </div>
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* Settings Tab */}
+              {activeTab === 'settings' && (
+                <>
+                  <h2 className="mb-6 text-lg font-bold text-slate-900">Hesap Ayarları</h2>
+                  <div className="space-y-6">
+                    {/* GDPR Data Download */}
+                    <div className="rounded-lg border border-slate-200 p-4">
+                      <div className="mb-3 flex items-center gap-3">
+                        <Download className="h-5 w-5 text-blue-600" />
+                        <h3 className="font-semibold text-slate-900">Verilerimi İndir</h3>
+                      </div>
+                      <p className="mb-4 text-sm text-slate-600">
+                        KVKK ve GDPR kapsamında tüm verilerinizi JSON formatında indirebilirsiniz.
+                      </p>
+                      <button
+                        onClick={downloadData}
+                        className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-700"
+                      >
+                        Verileri İndir
+                      </button>
+                    </div>
+
+                    {/* Account Deletion */}
+                    <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+                      <div className="mb-3 flex items-center gap-3">
+                        <AlertTriangle className="h-5 w-5 text-red-600" />
+                        <h3 className="font-semibold text-red-900">Hesabı Sil</h3>
+                      </div>
+                      <p className="mb-4 text-sm text-red-700">
+                        Hesabınızı ve tüm verilerinizi kalıcı olarak silebilirsiniz. Bu işlem geri alınamaz.
+                      </p>
+                      {!showDeleteConfirm ? (
+                        <button
+                          onClick={() => setShowDeleteConfirm(true)}
+                          className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700"
+                        >
+                          Hesabı Sil
+                        </button>
+                      ) : (
+                        <div className="space-y-3">
+                          <p className="text-sm font-semibold text-red-900">Emin misiniz? Bu işlem geri alınamaz!</p>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={deleteAccount}
+                              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700"
+                            >
+                              Evet, Hesabı Sil
+                            </button>
+                            <button
+                              onClick={() => setShowDeleteConfirm(false)}
+                              className="rounded-lg bg-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-300"
+                            >
+                              İptal
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </>
               )}
             </div>
           </div>

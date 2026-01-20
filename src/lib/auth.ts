@@ -55,15 +55,15 @@ export async function getCurrentUser(): Promise<User | null> {
 
   if (!user) return null;
 
-  // Try to get phone from users table
+  // Fetch phone and integer ID from users table
   const { data: userData } = await supabase
     .from("users")
-    .select("phone")
-    .eq("id", user.id)
+    .select("id, phone")
+    .eq("email", user.email)
     .single();
 
   return {
-    id: user.id,
+    id: userData?.id?.toString() || user.id, // Use users table ID if available
     email: user.email!,
     name: user.user_metadata?.name,
     role: user.user_metadata?.role || "user",
@@ -71,7 +71,7 @@ export async function getCurrentUser(): Promise<User | null> {
   };
 }
 
-// Check if user is admin (from users table)
+// Check if user is admin (from users table, match by email)
 export async function isAdmin(): Promise<boolean> {
   const {
     data: { user },
@@ -79,11 +79,11 @@ export async function isAdmin(): Promise<boolean> {
 
   if (!user) return false;
 
-  // Check is_admin from users table
+  // Check is_admin from users table (match by email)
   const { data: userData, error } = await supabase
     .from("users")
     .select("is_admin")
-    .eq("id", user.id)
+    .eq("email", user.email)
     .single();
 
   if (error || !userData) return false;

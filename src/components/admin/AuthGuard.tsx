@@ -46,11 +46,11 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // Check if user has admin role from users table
+      // Check if user has admin role from users table (match by email)
       const { data: userData } = await supabase
         .from("users")
         .select("is_admin")
-        .eq("id", session.user.id)
+        .eq("email", session.user.email)
         .single();
       
       if (!userData || userData.is_admin !== 1) {

@@ -26,12 +26,12 @@ export default function LoginForm() {
 
       if (error) throw error;
 
-      if (data.user) {
-        // Verify user has admin role from users table
+      if (data.user && data.session) {
+        // Verify user has admin role from users table (match by email)
         const { data: userData } = await supabase
           .from("users")
           .select("is_admin")
-          .eq("id", data.user.id)
+          .eq("email", data.user.email)
           .single();
         
         if (!userData || userData.is_admin !== 1) {
@@ -40,6 +40,12 @@ export default function LoginForm() {
           return;
         }
 
+        // Set cookie for middleware
+        document.cookie = `sb-auth-token=${data.session.access_token}; path=/; max-age=604800; SameSite=Lax`;
+        
+        // Small delay to ensure cookie is set
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
         router.push("/admin");
         router.refresh();
       }

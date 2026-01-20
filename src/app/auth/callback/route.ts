@@ -24,12 +24,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(new URL("/giris?error=auth_failed", request.url));
     }
 
-    // Check if user is admin from users table
+    // Check if user is admin from users table (match by email)
     if (data?.user) {
       const { data: userData } = await supabase
         .from("users")
         .select("is_admin")
-        .eq("id", data.user.id)
+        .eq("email", data.user.email)
         .single();
 
       if (userData?.is_admin === 1) {

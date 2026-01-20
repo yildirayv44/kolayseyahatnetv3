@@ -40,11 +40,11 @@ export async function middleware(request: NextRequest) {
           return NextResponse.redirect(new URL("/admin/login", request.url));
         }
 
-        // Check is_admin from users table
+        // Check is_admin from users table (match by email)
         const { data: userData } = await supabase
           .from("users")
           .select("is_admin")
-          .eq("id", user.id)
+          .eq("email", user.email)
           .single();
         
         if (!userData || userData.is_admin !== 1) {

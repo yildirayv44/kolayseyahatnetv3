@@ -12,7 +12,12 @@ interface Question {
   parent_id: number;
   status: number;
   created_at: string;
+  user_id?: number;
   country_count?: number;
+  user?: {
+    name: string;
+    email: string;
+  };
 }
 
 export default function SorularPage() {
@@ -38,16 +43,29 @@ export default function SorularPage() {
 
       if (error) throw error;
 
-      // Fetch country counts for each question
+      // Fetch country counts and user info for each question
       const questionsWithCounts = await Promise.all(
-        (questionsData || []).map(async (q) => {
+        (questionsData || []).map(async (q: any) => {
+          // Get country count
           const { count } = await supabase
             .from("question_to_countries")
             .select("*", { count: "exact", head: true })
             .eq("question_id", q.id);
 
+          // Get user info if user_id exists
+          let userData = null;
+          if (q.user_id) {
+            const { data: user } = await supabase
+              .from("users")
+              .select("name, email")
+              .eq("id", q.user_id)
+              .single();
+            userData = user;
+          }
+
           return {
             ...q,
+            user: userData,
             country_count: count || 0,
           };
         })
@@ -201,6 +219,9 @@ export default function SorularPage() {
                   <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600">
                     SORU
                   </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600">
+                    KULLANICI
+                  </th>
                   <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600">
                     ÜLKE SAYISI
                   </th>
@@ -221,6 +242,16 @@ export default function SorularPage() {
                     <td className="px-4 py-4">
                       <div className="font-medium text-slate-900">{question.title}</div>
                       <div className="mt-1 text-xs text-slate-500">ID: {question.id}</div>
+                    </td>
+                    <td className="px-4 py-4">
+                      {question.user ? (
+                        <div>
+                          <div className="text-sm font-medium text-slate-900">{question.user.name}</div>
+                          <div className="text-xs text-slate-500">{question.user.email}</div>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-slate-400">Anonim</span>
+                      )}
                     </td>
                     <td className="px-4 py-4 text-center">
                       <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700">
