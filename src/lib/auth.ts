@@ -5,6 +5,7 @@ export interface User {
   email: string;
   name?: string;
   role?: string;
+  phone?: string;
 }
 
 // Sign up with email and password
@@ -46,7 +47,7 @@ export async function signOut() {
   }
 }
 
-// Get current user
+// Get current user with phone from users table
 export async function getCurrentUser(): Promise<User | null> {
   const {
     data: { user },
@@ -54,11 +55,19 @@ export async function getCurrentUser(): Promise<User | null> {
 
   if (!user) return null;
 
+  // Try to get phone from users table
+  const { data: userData } = await supabase
+    .from("users")
+    .select("phone")
+    .eq("id", user.id)
+    .single();
+
   return {
     id: user.id,
     email: user.email!,
     name: user.user_metadata?.name,
     role: user.user_metadata?.role || "user",
+    phone: userData?.phone || undefined,
   };
 }
 

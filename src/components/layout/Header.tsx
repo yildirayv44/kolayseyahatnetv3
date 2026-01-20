@@ -202,6 +202,12 @@ export function Header() {
           <div className="flex items-center gap-3">
             {user ? (
               <>
+                {!isUserAdmin && (
+                  <a href="/hesabim" className="flex items-center gap-1 text-slate-700 hover:text-primary">
+                    <User className="h-3 w-3" />
+                    Hesabım
+                  </a>
+                )}
                 {isUserAdmin && (
                   <a href="/admin" className="flex items-center gap-1 text-slate-700 hover:text-primary">
                     <User className="h-3 w-3" />

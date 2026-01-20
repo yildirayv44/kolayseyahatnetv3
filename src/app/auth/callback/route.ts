@@ -37,8 +37,8 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Regular users go to home page
-    return NextResponse.redirect(new URL("/", request.url));
+    // Regular users go to account page
+    return NextResponse.redirect(new URL("/hesabim", request.url));
   }
 
   // No code provided, redirect to home
