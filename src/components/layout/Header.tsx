@@ -7,7 +7,7 @@ import { PhoneCall, Mail, LogIn, UserPlus, Search, ChevronDown, Globe2, User, He
 import { useState, useEffect } from "react";
 import { getCountries } from "@/lib/queries";
 import { getCountrySlug } from "@/lib/helpers";
-import { getCurrentUser, signOut } from "@/lib/auth";
+import { getCurrentUser, signOut, isAdmin } from "@/lib/auth";
 import { useFavorites } from "@/hooks/useFavorites";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 import { getLocalizedUrl, getLocaleFromPathname } from "@/lib/locale-link";
@@ -36,6 +36,7 @@ export function Header() {
   const [countries, setCountries] = useState<any[]>([]);
   const [filteredCountries, setFilteredCountries] = useState<any[]>([]);
   const [user, setUser] = useState<any>(null);
+  const [isUserAdmin, setIsUserAdmin] = useState(false);
   const { count: favoritesCount } = useFavorites();
   
   // Typewriter effect states
@@ -59,7 +60,13 @@ export function Header() {
   }, []);
 
   useEffect(() => {
-    getCurrentUser().then(setUser);
+    getCurrentUser().then(async (userData) => {
+      setUser(userData);
+      if (userData) {
+        const adminStatus = await isAdmin();
+        setIsUserAdmin(adminStatus);
+      }
+    });
   }, []);
 
   useEffect(() => {
@@ -195,14 +202,17 @@ export function Header() {
           <div className="flex items-center gap-3">
             {user ? (
               <>
-                <Link href="/admin" className="flex items-center gap-1 text-slate-700 hover:text-primary">
-                  <User className="h-3 w-3" />
-                  {t(locale as Locale, "adminPanel")}
-                </Link>
+                {isUserAdmin && (
+                  <a href="/admin" className="flex items-center gap-1 text-slate-700 hover:text-primary">
+                    <User className="h-3 w-3" />
+                    {t(locale as Locale, "adminPanel")}
+                  </a>
+                )}
                 <button
                   onClick={async () => {
                     await signOut();
                     setUser(null);
+                    setIsUserAdmin(false);
                     router.push("/");
                     router.refresh();
                   }}
