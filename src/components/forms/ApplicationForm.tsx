@@ -93,6 +93,7 @@ export function ApplicationForm({ locale = "tr" }: ApplicationFormProps) {
           ...prev,
           full_name: user.name || user.email.split('@')[0] || "",
           email: user.email,
+          phone: user.phone || "",
         }));
       }
     });

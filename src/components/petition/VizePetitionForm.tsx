@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { getCurrentUser } from "@/lib/auth";
 import { 
   ChevronRight, 
   ChevronLeft, 
@@ -127,6 +128,20 @@ export function VizePetitionForm({ locale }: Props) {
   const [countrySearch, setCountrySearch] = useState("");
   const [countryDropdownOpen, setCountryDropdownOpen] = useState(false);
   const countryDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Auto-fill user data
+  useEffect(() => {
+    getCurrentUser().then(user => {
+      if (user) {
+        setFormData(prev => ({
+          ...prev,
+          fullName: user.name || "",
+          email: user.email || "",
+          phone: user.phone || "",
+        }));
+      }
+    });
+  }, []);
 
   const t = locale === "tr" ? {
     step1: "Kişisel Bilgiler", step2: "Çalışma Durumu", step3: "Seyahat Bilgileri", step4: "Konaklama & Finans", step5: "Dilekçe",

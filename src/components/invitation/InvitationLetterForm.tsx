@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { getCountries } from "@/lib/queries";
+import { getCurrentUser } from "@/lib/auth";
 
 interface Guest {
   id: string;
@@ -146,7 +147,6 @@ export function InvitationLetterForm({ locale }: Props) {
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [countries, setCountries] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [generating, setGenerating] = useState(false);
   const [generatedLetter, setGeneratedLetter] = useState<string>("");
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string>("");
@@ -156,6 +156,20 @@ export function InvitationLetterForm({ locale }: Props) {
   const [hostCountryDropdownOpen, setHostCountryDropdownOpen] = useState(false);
   const [destCountrySearch, setDestCountrySearch] = useState("");
   const [destCountryDropdownOpen, setDestCountryDropdownOpen] = useState(false);
+
+  // Auto-fill user data
+  useEffect(() => {
+    getCurrentUser().then(user => {
+      if (user) {
+        setFormData(prev => ({
+          ...prev,
+          hostName: user.name || "",
+          hostEmail: user.email || "",
+          hostPhone: user.phone || "",
+        }));
+      }
+    });
+  }, []);
 
   const t = {
     tr: {
