@@ -43,9 +43,19 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       
       if (!session) {
         router.push("/admin/login");
-      } else {
-        setAuthenticated(true);
+        return;
       }
+
+      // Check if user has admin role
+      const userRole = session.user?.user_metadata?.role;
+      
+      if (userRole !== "admin") {
+        console.warn("Unauthorized access attempt to admin panel");
+        router.push("/");
+        return;
+      }
+
+      setAuthenticated(true);
     } catch (error) {
       console.error("Auth check error:", error);
       router.push("/admin/login");

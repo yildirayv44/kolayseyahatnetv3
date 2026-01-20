@@ -1,16 +1,54 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { locales, defaultLocale } from "./i18n/config";
+import { createClient } from "@supabase/supabase-js";
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
-  // Skip middleware for API routes, static files, admin, and special Next.js routes
+  // Handle admin routes BEFORE skipping
+  if (pathname.startsWith("/admin") && pathname !== "/admin/login") {
+    const authToken = request.cookies.get("sb-auth-token");
+    
+    if (!authToken) {
+      return NextResponse.redirect(new URL("/admin/login", request.url));
+    }
+
+    // Verify admin role
+    try {
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+          auth: {
+            persistSession: false,
+          },
+        }
+      );
+
+      const { data: { user }, error } = await supabase.auth.getUser(authToken.value);
+
+      if (error || !user) {
+        return NextResponse.redirect(new URL("/admin/login", request.url));
+      }
+
+      const userRole = user.user_metadata?.role;
+      
+      if (userRole !== "admin") {
+        console.warn("Unauthorized admin access attempt:", user.email);
+        return NextResponse.redirect(new URL("/", request.url));
+      }
+    } catch (error) {
+      console.error("Middleware auth error:", error);
+      return NextResponse.redirect(new URL("/admin/login", request.url));
+    }
+  }
+
+  // Skip middleware for API routes, static files, and special Next.js routes
   if (
     pathname.startsWith("/api") ||
     pathname.startsWith("/_next") ||
-    pathname.includes(".") ||
-    pathname.startsWith("/admin")
+    pathname.includes(".")
   ) {
     return NextResponse.next();
   }
@@ -102,18 +140,6 @@ export async function middleware(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = `/tr${pathname}`;
     return NextResponse.rewrite(url);
-  }
-
-  // Check if accessing admin routes
-  if (pathname.startsWith("/admin")) {
-    const cookies = request.cookies;
-    const authToken = cookies.get("sb-auth-token");
-    
-    if (!authToken) {
-      const redirectUrl = new URL("/giris", request.url);
-      redirectUrl.searchParams.set("redirect", pathname);
-      return NextResponse.redirect(redirectUrl);
-    }
   }
 
   return NextResponse.next();
