@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, Globe2, ShieldCheck, Users, Clock4, PhoneCall } from "lucide-react";
+import { ArrowRight, Globe2, ShieldCheck, Users, Clock, PhoneCall, Award, FileCheck } from "lucide-react";
 import { getCountries, getBlogs, getConsultants } from "@/lib/queries";
 import { getCountrySlug, getBlogSlug } from "@/lib/helpers";
 import { getLocalizedUrl } from "@/lib/locale-link";
@@ -93,11 +93,26 @@ export default async function Home({ params }: HomePageProps) {
 
   const t = locale === "en" ? {
     hero: {
-      title: "Visa Application in",
-      highlight: "15 Minutes",
-      subtitle: "Professional visa consultancy with 98% approval rate. We have successfully processed 10,000+ visa applications.",
+      title: "Complete Your Visa Application",
+      highlight: "With Professionals",
+      subtitle: "15 years of experience, 10,000+ successful applications. Access visa information for 194 countries through our platform.",
       cta: "Apply Now",
+      ctaFree: "Free Pre-Assessment",
       call: "Call Now",
+      process: {
+        step1: "Pre-Assessment",
+        step1Time: "5 min",
+        step2: "Document Check",
+        step2Time: "Quick",
+        step3: "Application Tracking",
+        step3Time: "Ongoing",
+      },
+      trust: {
+        ssl: "256-bit SSL Security",
+        member: "TÜRSAB Member",
+        support: "24/7 Consultant Support",
+        satisfaction: "High Customer Satisfaction",
+      },
     },
     popular: {
       title: "Popular Visa Services",
@@ -114,11 +129,26 @@ export default async function Home({ params }: HomePageProps) {
     },
   } : {
     hero: {
-      title: "Vize Başvurunuz",
-      highlight: "15 Dakikada",
-      subtitle: "%98 onay oranı ile profesyonel vize danışmanlığı. 10,000+ başarılı vize başvurusu.",
+      title: "Vize Başvurunuzu",
+      highlight: "Profesyonellerle Tamamlayın",
+      subtitle: "15 yıllık deneyim, 10.000+ başarılı başvuru. 194 ülkenin vize bilgilerine sitemiz üzerinden erişilebilir.",
       cta: "Hemen Başvur",
+      ctaFree: "Ücretsiz Ön Değerlendirme",
       call: "Hemen Ara",
+      process: {
+        step1: "Ön Değerlendirme",
+        step1Time: "5 dakika",
+        step2: "Evrak Kontrolü",
+        step2Time: "Hızlı",
+        step3: "Başvuru Takibi",
+        step3Time: "Sürekli",
+      },
+      trust: {
+        ssl: "256-bit SSL Güvenlik",
+        member: "TÜRSAB Üyesi",
+        support: "7/24 Danışman Desteği",
+        satisfaction: "Yüksek Müşteri Memnuniyeti",
+      },
     },
     popular: {
       title: "Popüler Vize İşlemleri",
@@ -144,32 +174,118 @@ export default async function Home({ params }: HomePageProps) {
       <SearchTooltip />
 
       {/* HERO SECTION */}
-      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/5 via-blue-50 to-white p-8 md:p-12">
+      <section className="relative overflow-hidden rounded-xl bg-gradient-to-br from-slate-50 to-blue-50 p-12 md:p-16">
+        {/* Subtle pattern overlay */}
+        <div 
+          className="absolute inset-0 opacity-[0.03]" 
+          style={{
+            backgroundImage: 'radial-gradient(circle at 1px 1px, rgb(30 58 138) 1px, transparent 0)',
+            backgroundSize: '24px 24px'
+          }} 
+        />
+        
         <div className="relative z-10 mx-auto max-w-4xl text-center">
-          <h1 className="mb-6 text-4xl font-bold leading-tight text-slate-900 md:text-5xl lg:text-6xl">
-            {t.hero.title}{" "}
-            <span className="bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+          <h1 className="mb-4 text-5xl font-bold leading-tight text-slate-900 tracking-tight md:text-6xl">
+            {t.hero.title}
+            <br />
+            <span className="text-[#1E3A8A]">
               {t.hero.highlight}
             </span>
           </h1>
-          <p className="mb-8 text-lg text-slate-600 md:text-xl">
+          
+          <p className="mb-8 text-lg text-slate-600 leading-relaxed max-w-2xl mx-auto">
             {t.hero.subtitle}
           </p>
-          <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
+          
+          {/* 15 Dakika Süreç Bileşeni */}
+          <div className="mx-auto max-w-2xl mb-8">
+            <div className="grid grid-cols-3 gap-3 rounded-lg bg-white border border-slate-200 p-4 shadow-md">
+              {/* Adım 1 */}
+              <div className="text-center">
+                <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-blue-50 text-[#1E3A8A] font-semibold text-sm">
+                  1
+                </div>
+                <div className="text-xs font-semibold text-slate-900 mb-1">
+                  {t.hero.process.step1}
+                </div>
+                <div className="text-[10px] text-slate-500">
+                  {t.hero.process.step1Time}
+                </div>
+              </div>
+              
+              {/* Adım 2 */}
+              <div className="text-center">
+                <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-blue-50 text-[#1E3A8A] font-semibold text-sm">
+                  2
+                </div>
+                <div className="text-xs font-semibold text-slate-900 mb-1">
+                  {t.hero.process.step2}
+                </div>
+                <div className="text-[10px] text-slate-500">
+                  {t.hero.process.step2Time}
+                </div>
+              </div>
+              
+              {/* Adım 3 */}
+              <div className="text-center">
+                <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 font-semibold text-sm">
+                  ✓
+                </div>
+                <div className="text-xs font-semibold text-slate-900 mb-1">
+                  {t.hero.process.step3}
+                </div>
+                <div className="text-[10px] text-slate-500">
+                  {t.hero.process.step3Time}
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* CTA Buttons */}
+          <div className="flex flex-col gap-3 sm:flex-row sm:justify-center mb-8">
             <Link
-              href={getLocalizedUrl("basvuru", locale)}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-8 py-4 font-semibold text-white shadow-xl transition-all hover:bg-primary/90 hover:shadow-2xl"
+              href={getLocalizedUrl("vize-basvuru-formu", locale)}
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#1E3A8A] px-8 py-4 font-semibold text-white shadow-md transition-all hover:bg-[#1E40AF] hover:shadow-lg hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[#1E3A8A] focus:ring-offset-2"
             >
               {t.hero.cta}
               <ArrowRight className="h-5 w-5" />
             </Link>
             <a
+              href="https://www.kolayseyahat.tr/vize-degerlendirme.html"
+              target="_blank"
+              rel="nofollow noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 rounded-lg border-2 border-[#1E3A8A] bg-white px-8 py-4 font-semibold text-[#1E3A8A] transition-all hover:bg-blue-50 hover:border-[#1E40AF] hover:text-[#1E40AF] focus:outline-none focus:ring-2 focus:ring-[#1E3A8A] focus:ring-offset-2"
+            >
+              <FileCheck className="h-5 w-5" />
+              {t.hero.ctaFree}
+            </a>
+            <a
               href="tel:+902129099971"
-              className="inline-flex items-center justify-center gap-2 rounded-xl border-2 border-primary bg-white px-8 py-4 font-semibold text-primary transition-all hover:bg-primary hover:text-white"
+              className="inline-flex items-center justify-center gap-2 rounded-lg border-2 border-slate-300 bg-white px-6 py-4 font-semibold text-slate-700 transition-all hover:border-slate-400 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
             >
               <PhoneCall className="h-5 w-5" />
               {t.hero.call}
             </a>
+          </div>
+          
+          {/* Trust Band */}
+          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-slate-600">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4 text-emerald-600" strokeWidth={2} />
+              <span className="font-medium">{t.hero.trust.ssl}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Award className="h-4 w-4 text-[#1E3A8A]" strokeWidth={2} />
+              <span className="font-medium">{t.hero.trust.member}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-[#1E3A8A]" strokeWidth={2} />
+              <span className="font-medium">{t.hero.trust.support}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Users className="h-4 w-4 text-emerald-600" strokeWidth={2} />
+              <span className="font-medium">{t.hero.trust.satisfaction}</span>
+            </div>
           </div>
         </div>
       </section>
@@ -197,7 +313,7 @@ export default async function Home({ params }: HomePageProps) {
               <div className="space-y-2">
                 <div className="flex items-center gap-2 pr-10">
                   <div className="inline-flex items-center gap-1 rounded-full bg-slate-50 px-2 py-1 text-[11px] font-medium text-slate-600">
-                    <Globe2 className="h-3 w-3 text-primary" />
+                    <Globe2 className="h-3 w-3 text-[#1E3A8A]" />
                     <span>{country.name}</span>
                   </div>
                 </div>
@@ -238,7 +354,7 @@ export default async function Home({ params }: HomePageProps) {
                     </div>
                     <Link
                       href={getLocalizedUrl(country.slug || "", locale)}
-                      className="rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-primary-dark"
+                      className="rounded-lg bg-[#1E3A8A] px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#1E40AF]"
                     >
                       Başvur
                     </Link>
@@ -255,7 +371,7 @@ export default async function Home({ params }: HomePageProps) {
                   </span>
                   <Link
                     href={getLocalizedUrl(country.slug || "", locale)}
-                    className="inline-flex items-center text-xs font-semibold text-primary hover:text-primary-dark"
+                    className="inline-flex items-center text-xs font-semibold text-[#1E3A8A] hover:text-[#1E40AF]"
                   >
                     {t.popular.details}
                     <ArrowRight className="ml-1 h-3 w-3" />
@@ -288,17 +404,29 @@ export default async function Home({ params }: HomePageProps) {
               <Link
                 key={blog.id}
                 href={`/${locale}${getBlogSlug(blog)}`}
-                className="card group hover:border-primary hover:shadow-lg"
+                className="card group hover:border-blue-300 hover:shadow-lg overflow-hidden p-0"
               >
-                <h3 className="font-semibold text-slate-900 group-hover:text-primary">
-                  {blog.title}
-                </h3>
-                <p className="mt-2 line-clamp-2 text-sm text-slate-600">
-                  {blog.description}
-                </p>
-                <div className="mt-4 flex items-center gap-2 text-sm font-medium text-primary">
-                  {t.blogs.readMore}
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                {blog.image_url && (
+                  <div className="relative w-full aspect-[16/9] overflow-hidden bg-slate-100">
+                    <img
+                      src={blog.image_url}
+                      alt={blog.title}
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      loading="lazy"
+                    />
+                  </div>
+                )}
+                <div className="p-6">
+                  <h3 className="font-semibold text-slate-900 group-hover:text-[#1E3A8A]">
+                    {blog.title}
+                  </h3>
+                  <p className="mt-2 line-clamp-2 text-sm text-slate-600">
+                    {blog.description}
+                  </p>
+                  <div className="mt-4 flex items-center gap-2 text-sm font-medium text-[#1E3A8A]">
+                    {t.blogs.readMore}
+                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  </div>
                 </div>
               </Link>
             ))}

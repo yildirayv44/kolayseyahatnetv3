@@ -13,7 +13,7 @@ export function ComparisonTable({ locale = 'tr' }: ComparisonTableProps) {
     { feature: "Application Process", self: "Complex and long", us: "Complete in 15 minutes" },
     { feature: "Document Preparation", self: "Research yourself", us: "Professional support" },
     { feature: "Error Risk", self: "High risk", us: "Near zero" },
-    { feature: "Approval Rate", self: "Uncertain", us: "98% success" },
+    { feature: "Approval Rate", self: "Uncertain", us: "High success rate" },
     { feature: "Time", self: "Days/weeks", us: "15 minutes" },
     { feature: "If Rejected", self: "Loss", us: "Money back guarantee" },
     { feature: "Support", self: "None", us: "24/7 consultant" },
@@ -22,7 +22,7 @@ export function ComparisonTable({ locale = 'tr' }: ComparisonTableProps) {
     { feature: "Başvuru Süreci", self: "Karmaşık ve uzun", us: "15 dakikada tamamla" },
     { feature: "Evrak Hazırlığı", self: "Kendiniz araştırın", us: "Profesyonel destek" },
     { feature: "Hata Riski", self: "Yüksek risk", us: "Sıfıra yakın" },
-    { feature: "Onay Oranı", self: "Belirsiz", us: "%98 başarı" },
+    { feature: "Onay Oranı", self: "Belirsiz", us: "Yüksek başarı oranı" },
     { feature: "Zaman", self: "Günler/haftalar", us: "15 dakika" },
     { feature: "Red Durumunda", self: "Kayıp", us: "Para iade garantisi" },
     { feature: "Destek", self: "Yok", us: "7/24 danışman" },
@@ -56,7 +56,7 @@ export function ComparisonTable({ locale = 'tr' }: ComparisonTableProps) {
               </span>
             </div>
           </div>
-          <div className="relative border-b border-l border-slate-200 bg-gradient-to-br from-primary/10 to-blue-50 p-4">
+          <div className="relative border-b border-l border-slate-200 bg-blue-50 p-4">
             <div className="absolute right-2 top-2">
               <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500 px-2 py-0.5 text-xs font-bold text-white">
                 <Sparkles className="h-3 w-3" />
@@ -90,7 +90,7 @@ export function ComparisonTable({ locale = 'tr' }: ComparisonTableProps) {
               </div>
 
               {/* Us Column */}
-              <div className="border-b border-l border-slate-200 bg-gradient-to-br from-primary/5 to-blue-50/50 p-4">
+              <div className="border-b border-l border-slate-200 bg-blue-50/50 p-4">
                 <div className="flex items-start gap-2">
                   <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-600" />
                   <span className="text-sm font-semibold text-slate-900">
@@ -103,14 +103,14 @@ export function ComparisonTable({ locale = 'tr' }: ComparisonTableProps) {
         </div>
 
         {/* CTA Footer */}
-        <div className="border-t border-slate-200 bg-gradient-to-br from-primary to-blue-600 p-6 text-center">
+        <div className="border-t border-slate-200 bg-[#1E3A8A] p-6 text-center">
           <p className="mb-4 text-lg font-semibold text-white">
-            {isEn ? '98% approval rate with professional support!' : 'Profesyonel destek ile %98 onay oranı!'}
+            {isEn ? 'High success rate with professional support!' : 'Profesyonel destek ile yüksek başarı oranı!'}
           </p>
           <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
             <a
               href="/vize-basvuru-formu"
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-6 py-3 font-semibold text-primary transition-all hover:bg-slate-50 hover:shadow-lg"
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-6 py-3 font-semibold text-[#1E3A8A] transition-all hover:bg-slate-50 hover:shadow-lg"
             >
               {isEn ? 'Apply Now' : 'Hemen Başvur'}
               <Check className="h-5 w-5" />
@@ -128,15 +128,15 @@ export function ComparisonTable({ locale = 'tr' }: ComparisonTableProps) {
       {/* Trust Badges */}
       <div className="grid grid-cols-3 gap-4 text-center">
         <div className="rounded-lg bg-slate-50 p-4">
-          <div className="text-2xl font-bold text-primary">%98</div>
-          <div className="text-xs text-slate-600">{isEn ? 'Approval Rate' : 'Onay Oranı'}</div>
+          <div className="text-2xl font-bold text-[#1E3A8A]">15 Yıl</div>
+          <div className="text-xs text-slate-600">{isEn ? 'Experience' : 'Deneyim'}</div>
         </div>
         <div className="rounded-lg bg-slate-50 p-4">
-          <div className="text-2xl font-bold text-primary">15,247</div>
+          <div className="text-2xl font-bold text-[#1E3A8A]">10.000+</div>
           <div className="text-xs text-slate-600">{isEn ? 'Happy Customers' : 'Mutlu Müşteri'}</div>
         </div>
         <div className="rounded-lg bg-slate-50 p-4">
-          <div className="text-2xl font-bold text-primary">{isEn ? '15 min' : '15 dk'}</div>
+          <div className="text-2xl font-bold text-[#1E3A8A]">{isEn ? '15 min' : '15 dk'}</div>
           <div className="text-xs text-slate-600">{isEn ? 'Application Time' : 'Başvuru Süresi'}</div>
         </div>
       </div>
