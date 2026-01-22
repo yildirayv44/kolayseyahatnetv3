@@ -185,9 +185,9 @@ export default async function Home({ params }: HomePageProps) {
         />
         
         <div className="relative z-10 mx-auto max-w-4xl text-center">
-          <h1 className="mb-4 text-5xl font-bold leading-tight text-slate-900 tracking-tight md:text-6xl">
+          <h1 className="mb-4 text-3xl font-bold leading-tight text-slate-900 tracking-tight sm:text-4xl md:text-6xl">
             {t.hero.title}{" "}
-            <span className="text-[#1E3A8A] whitespace-nowrap">
+            <span className="text-[#1E3A8A]">
               {t.hero.highlight}
             </span>
           </h1>
