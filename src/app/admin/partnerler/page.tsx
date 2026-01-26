@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { Users, Search, Edit, Trash2, TrendingUp, DollarSign, Eye } from "lucide-react";
+import { Users, Search, Edit, Trash2, TrendingUp, DollarSign, Eye, BarChart3 } from "lucide-react";
 
 interface Partner {
   id: number;
@@ -29,6 +30,7 @@ interface Referral {
 }
 
 export default function PartnersPage() {
+  const router = useRouter();
   const [partners, setPartners] = useState<Partner[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -288,9 +290,16 @@ export default function PartnersPage() {
                     <td className="px-4 py-4">
                       <div className="flex items-center justify-end gap-2">
                         <button
+                          onClick={() => router.push(`/admin/partnerler/${partner.partner_id}`)}
+                          className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 hover:text-purple-600"
+                          title="Detaylı Analitik"
+                        >
+                          <BarChart3 className="h-4 w-4" />
+                        </button>
+                        <button
                           onClick={() => viewPartnerDetails(partner)}
                           className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 hover:text-primary"
-                          title="Detayları Görüntüle"
+                          title="Referansları Görüntüle"
                         >
                           <Eye className="h-4 w-4" />
                         </button>

@@ -10,6 +10,7 @@ import type { Locale } from "@/i18n/translations";
 import { CreditCardForm } from "@/components/payment/CreditCardForm";
 import { PaymentSummary } from "@/components/payment/PaymentSummary";
 import { getReferralPartnerId } from "@/lib/referralTracking";
+import { trackFormStart, trackFormSubmit } from "@/lib/partnerActivityTracking";
 
 interface ApplicationFormProps {
   locale?: Locale;
@@ -37,6 +38,7 @@ export function ApplicationForm({ locale = "tr" }: ApplicationFormProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [skipPackageSelection, setSkipPackageSelection] = useState(false);
   const [personCount, setPersonCount] = useState(1);
+  const [formStartTracked, setFormStartTracked] = useState(false);
 
   const [formData, setFormData] = useState({
     full_name: "",
@@ -155,7 +157,24 @@ export function ApplicationForm({ locale = "tr" }: ApplicationFormProps) {
     }
   }, [formData.package_id]);
 
+  // Track form start on first interaction
+  const trackFormStartOnce = () => {
+    if (!formStartTracked) {
+      const partnerId = getReferralPartnerId();
+      if (partnerId) {
+        trackFormStart(partnerId, {
+          countryId: formData.country_id ? parseInt(formData.country_id, 10) : undefined,
+          countryName: formData.country_name || undefined,
+          packageId: formData.package_id ? parseInt(formData.package_id, 10) : undefined,
+          packageName: formData.package_name || undefined,
+        });
+      }
+      setFormStartTracked(true);
+    }
+  };
+
   const handleCountrySelect = (country: any) => {
+    trackFormStartOnce();
     setFormData({
       ...formData,
       country_id: country.id.toString(),
@@ -168,6 +187,7 @@ export function ApplicationForm({ locale = "tr" }: ApplicationFormProps) {
   };
 
   const handlePackageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    trackFormStartOnce();
     const selectedId = e.target.value;
     const selectedProduct = products.find((p) => p.id === parseInt(selectedId, 10));
     setFormData({
@@ -207,6 +227,17 @@ export function ApplicationForm({ locale = "tr" }: ApplicationFormProps) {
     setLoading(false);
 
     if (result) {
+      // Track form submission for partner analytics
+      if (partnerId) {
+        trackFormSubmit(partnerId, {
+          countryId: parseInt(formData.country_id, 10) || undefined,
+          countryName: formData.country_name,
+          packageId: parseInt(formData.package_id, 10) || undefined,
+          packageName: formData.package_name,
+          customerName: formData.full_name,
+          customerEmail: formData.email,
+        });
+      }
       // Store submitted data for success message
       setSubmittedData({
         full_name: formData.full_name,
