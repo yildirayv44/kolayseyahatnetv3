@@ -24,6 +24,17 @@ export async function generateMetadata({ params }: BlogPageProps): Promise<Metad
   return {
     title,
     description,
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
+    },
     openGraph: {
       title,
       description,
@@ -38,6 +49,8 @@ export async function generateMetadata({ params }: BlogPageProps): Promise<Metad
       title,
       description,
       images: ['https://www.kolayseyahat.net/opengraph-image.png'],
+      creator: '@kolayseyahat',
+      site: '@kolayseyahat',
     },
     alternates: {
       canonical: url,

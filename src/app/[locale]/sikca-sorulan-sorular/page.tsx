@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import { HelpCircle, ChevronDown, Phone, Mail } from "lucide-react";
+import { generateFAQSchema } from "@/components/shared/SEOHead";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -15,6 +16,17 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return {
     title,
     description,
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
+    },
     alternates: {
       canonical: url,
       languages: {
@@ -30,11 +42,15 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
       siteName: 'Kolay Seyahat',
       locale: isEnglish ? 'en_US' : 'tr_TR',
       type: 'website',
+      images: [{ url: 'https://www.kolayseyahat.net/opengraph-image.png', width: 1200, height: 630, alt: title }],
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
+      images: ['https://www.kolayseyahat.net/opengraph-image.png'],
+      creator: '@kolayseyahat',
+      site: '@kolayseyahat',
     },
   };
 }
@@ -163,8 +179,22 @@ export default async function SSSPage({ params }: { params: Promise<{ locale: st
     }
   ];
 
+  // Generate FAQ Schema for all questions
+  const allFaqs = faqCategories.flatMap(cat => 
+    cat.questions.map(q => ({ question: q.q, answer: q.a }))
+  );
+  const faqSchema = generateFAQSchema(allFaqs);
+
   return (
     <div className="space-y-8 pb-12">
+      {/* FAQ Schema for SEO */}
+      {faqSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        />
+      )}
+
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-primary to-blue-600 py-12 text-white">
         <div className="container mx-auto px-4">

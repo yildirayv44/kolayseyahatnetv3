@@ -10,7 +10,7 @@ import { parseH2Headings } from "@/lib/helpers";
 import { GenericCommentSection } from "@/components/comments/GenericCommentSection";
 import { getLocalizedFields } from "@/lib/locale-content";
 import { getCleanImageUrl, getBlogCategoryImage } from "@/lib/image-helpers";
-import { generateArticleSchema } from "@/components/shared/SEOHead";
+import { generateArticleSchema, generateBreadcrumbSchema } from "@/components/shared/SEOHead";
 import { ReadingProgressBar } from "@/components/shared/ReadingProgressBar";
 import { ScrollTriggeredCTA } from "@/components/shared/ScrollTriggeredCTA";
 import { RelatedContentCarousel } from "@/components/shared/RelatedContentCarousel";
@@ -68,6 +68,17 @@ export async function generateMetadata({ params }: BlogPageProps): Promise<Metad
   return {
     title: `${title} - Kolay Seyahat`,
     description: description,
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
+    },
     openGraph: {
       title: `${title} - Kolay Seyahat`,
       description: description,
@@ -89,6 +100,8 @@ export async function generateMetadata({ params }: BlogPageProps): Promise<Metad
       title: `${title} - Kolay Seyahat`,
       description: description,
       images: [ogImage],
+      creator: '@kolayseyahat',
+      site: '@kolayseyahat',
     },
     alternates: {
       canonical: blogUrl,
@@ -151,6 +164,14 @@ export default async function BlogPage({ params }: BlogPageProps) {
     modifiedTime: blog.updated_at,
   });
 
+  // Generate Breadcrumb Schema for SEO
+  const isEnglish = locale === 'en';
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: isEnglish ? "Home" : "Ana Sayfa", url: isEnglish ? "/en" : "/" },
+    { name: "Blog", url: isEnglish ? "/en/blog" : "/blog" },
+    { name: blog.title, url: isEnglish ? `/en/blog/${slug.join("/")}` : `/blog/${slug.join("/")}` },
+  ]);
+
   return (
     <>
       {/* Reading Progress Bar */}
@@ -177,6 +198,11 @@ export default async function BlogPage({ params }: BlogPageProps) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+      />
+      {/* Breadcrumb Schema */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
       {/* BREADCRUMB */}
       <Breadcrumb

@@ -10,13 +10,53 @@ export async function generateMetadata({ params }: CorporatePageProps): Promise<
   const { locale } = await params;
   const isEnglish = locale === 'en';
   
+  const title = isEnglish 
+    ? "Corporate Visa Consultancy | Kolay Seyahat"
+    : "Kurumsal Vize Danışmanlığı | Kolay Seyahat";
+  const description = isEnglish
+    ? "Bulk visa applications, corporate agreements and special services for your company's employees. Corporate visa solutions with Kolay Seyahat."
+    : "Şirketinizin çalışanları için toplu vize başvuruları, kurumsal anlaşmalar ve özel hizmetler. Kolay Seyahat ile kurumsal vize çözümleri.";
+  const url = `https://www.kolayseyahat.net${isEnglish ? '/en' : ''}/kurumsal-vize-danismanligi`;
+
   return {
-    title: isEnglish 
-      ? "Corporate Visa Consultancy | Kolay Seyahat"
-      : "Kurumsal Vize Danışmanlığı | Kolay Seyahat",
-    description: isEnglish
-      ? "Bulk visa applications, corporate agreements and special services for your company's employees. Corporate visa solutions with Kolay Seyahat."
-      : "Şirketinizin çalışanları için toplu vize başvuruları, kurumsal anlaşmalar ve özel hizmetler. Kolay Seyahat ile kurumsal vize çözümleri.",
+    title,
+    description,
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
+    },
+    openGraph: {
+      title,
+      description,
+      type: 'website',
+      url,
+      siteName: 'Kolay Seyahat',
+      locale: isEnglish ? 'en_US' : 'tr_TR',
+      images: [{ url: 'https://www.kolayseyahat.net/opengraph-image.png', width: 1200, height: 630, alt: title }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: ['https://www.kolayseyahat.net/opengraph-image.png'],
+      creator: '@kolayseyahat',
+      site: '@kolayseyahat',
+    },
+    alternates: {
+      canonical: url,
+      languages: {
+        'tr': 'https://www.kolayseyahat.net/kurumsal-vize-danismanligi',
+        'en': 'https://www.kolayseyahat.net/en/kurumsal-vize-danismanligi',
+        'x-default': 'https://www.kolayseyahat.net/kurumsal-vize-danismanligi',
+      },
+    },
   };
 }
 

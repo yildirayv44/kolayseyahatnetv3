@@ -10,11 +10,51 @@ export async function generateMetadata({ params }: AboutPageProps): Promise<Meta
   const { locale } = await params;
   const isEnglish = locale === 'en';
   
+  const title = isEnglish ? "About Us | Kolay Seyahat" : "Hakkımızda | Kolay Seyahat";
+  const description = isEnglish
+    ? "As Kolay Seyahat, we provide professional visa consultancy services for 20+ countries. We are with you with years of experience and 98% success rate."
+    : "Kolay Seyahat olarak 20+ ülke için profesyonel vize danışmanlığı hizmeti sunuyoruz. Yılların tecrübesi ve %98 başarı oranıyla yanınızdayız.";
+  const url = `https://www.kolayseyahat.net${isEnglish ? '/en' : ''}/hakkimizda`;
+
   return {
-    title: isEnglish ? "About Us | Kolay Seyahat" : "Hakkımızda | Kolay Seyahat",
-    description: isEnglish
-      ? "As Kolay Seyahat, we provide professional visa consultancy services for 20+ countries. We are with you with years of experience and 98% success rate."
-      : "Kolay Seyahat olarak 20+ ülke için profesyonel vize danışmanlığı hizmeti sunuyoruz. Yılların tecrübesi ve %98 başarı oranıyla yanınızdayız.",
+    title,
+    description,
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
+    },
+    openGraph: {
+      title,
+      description,
+      type: 'website',
+      url,
+      siteName: 'Kolay Seyahat',
+      locale: isEnglish ? 'en_US' : 'tr_TR',
+      images: [{ url: 'https://www.kolayseyahat.net/opengraph-image.png', width: 1200, height: 630, alt: title }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: ['https://www.kolayseyahat.net/opengraph-image.png'],
+      creator: '@kolayseyahat',
+      site: '@kolayseyahat',
+    },
+    alternates: {
+      canonical: url,
+      languages: {
+        'tr': 'https://www.kolayseyahat.net/hakkimizda',
+        'en': 'https://www.kolayseyahat.net/en/hakkimizda',
+        'x-default': 'https://www.kolayseyahat.net/hakkimizda',
+      },
+    },
   };
 }
 

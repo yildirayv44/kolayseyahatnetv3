@@ -1,33 +1,68 @@
 import { Metadata } from "next";
 import { VizePetitionForm } from "@/components/petition/VizePetitionForm";
 import { VizePetitionSEOContent } from "@/components/petition/VizePetitionSEOContent";
-import { generateSEOMetadata } from "@/components/shared/SEOHead";
 import { FileText, Shield, Clock, CheckCircle } from "lucide-react";
 
-export const metadata: Metadata = {
-  ...generateSEOMetadata({
-    title: "Vize Dilekçesi Oluşturucu | Ücretsiz Online Araç",
-    description: "Vize başvuruları için profesyonel dilekçe oluşturun. AI destekli, ülkeye özel, anında indirilebilir vize dilekçesi oluşturma aracı.",
-    keywords: [
-      "vize dilekçesi",
-      "vize başvuru dilekçesi",
-      "schengen dilekçe",
-      "vize niyet mektubu",
-      "cover letter visa",
-      "vize dilekçesi örneği",
-      "vize dilekçesi nasıl yazılır",
-      "konsolosluk dilekçe",
-    ],
-    url: "/vize-dilekcesi-olustur",
-  }),
-  alternates: {
-    canonical: "https://www.kolayseyahat.net/vize-dilekcesi-olustur",
-    languages: {
-      "tr": "https://www.kolayseyahat.net/vize-dilekcesi-olustur",
-      "en": "https://www.kolayseyahat.net/en/vize-dilekcesi-olustur",
+interface PageProps {
+  params: Promise<{ locale: string }>;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params;
+  const isEnglish = locale === 'en';
+  
+  const title = isEnglish 
+    ? "Visa Cover Letter Generator | Free Online Tool"
+    : "Vize Dilekçesi Oluşturucu | Ücretsiz Online Araç";
+  const description = isEnglish
+    ? "Create professional cover letters for visa applications. AI-powered, country-specific, instantly downloadable visa petition generator."
+    : "Vize başvuruları için profesyonel dilekçe oluşturun. AI destekli, ülkeye özel, anında indirilebilir vize dilekçesi oluşturma aracı.";
+  const url = `https://www.kolayseyahat.net${isEnglish ? '/en' : ''}/vize-dilekcesi-olustur`;
+
+  return {
+    title,
+    description,
+    keywords: isEnglish 
+      ? "visa cover letter, visa petition, schengen cover letter, visa intent letter, cover letter visa, visa application letter"
+      : "vize dilekçesi, vize başvuru dilekçesi, schengen dilekçe, vize niyet mektubu, cover letter visa, vize dilekçesi örneği",
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
     },
-  },
-};
+    openGraph: {
+      title,
+      description,
+      type: 'website',
+      url,
+      siteName: 'Kolay Seyahat',
+      locale: isEnglish ? 'en_US' : 'tr_TR',
+      images: [{ url: 'https://www.kolayseyahat.net/opengraph-image.png', width: 1200, height: 630, alt: title }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: ['https://www.kolayseyahat.net/opengraph-image.png'],
+      creator: '@kolayseyahat',
+      site: '@kolayseyahat',
+    },
+    alternates: {
+      canonical: url,
+      languages: {
+        'tr': 'https://www.kolayseyahat.net/vize-dilekcesi-olustur',
+        'en': 'https://www.kolayseyahat.net/en/vize-dilekcesi-olustur',
+        'x-default': 'https://www.kolayseyahat.net/vize-dilekcesi-olustur',
+      },
+    },
+  };
+}
 
 export default async function VizePetitionPage({
   params,

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Mail, Phone, User, Star, MessageSquare, FileText, HelpCircle } from "lucide-react";
@@ -6,9 +7,77 @@ import { Breadcrumb } from "@/components/shared/Breadcrumb";
 import { GenericCommentSection } from "@/components/comments/GenericCommentSection";
 import { getLocalizedFields } from "@/lib/locale-content";
 import { getLocalizedUrl } from "@/lib/locale-link";
+import { generateBreadcrumbSchema } from "@/components/shared/SEOHead";
 
 interface ConsultantPageProps {
   params: Promise<{ slug: string[]; locale: string }>;
+}
+
+export async function generateMetadata({ params }: ConsultantPageProps): Promise<Metadata> {
+  const { slug, locale } = await params;
+  const isEnglish = locale === 'en';
+  const baseSlug = slug[0];
+  const consultantSlug = `danisman/${baseSlug}`;
+  
+  const consultant = await getConsultantBySlug(consultantSlug);
+  
+  if (!consultant) {
+    return {
+      title: isEnglish ? "Consultant Not Found | Kolay Seyahat" : "Danışman Bulunamadı | Kolay Seyahat",
+      robots: { index: false, follow: false },
+    };
+  }
+
+  const title = isEnglish 
+    ? `${consultant.name} - Visa Consultant | Kolay Seyahat`
+    : `${consultant.name} - Vize Danışmanı | Kolay Seyahat`;
+  const description = consultant.description 
+    ? (consultant.description.length > 155 ? consultant.description.substring(0, 152) + '...' : consultant.description)
+    : (isEnglish 
+        ? `Get professional visa consultancy from ${consultant.name}. Expert support for your visa applications.`
+        : `${consultant.name} ile profesyonel vize danışmanlığı alın. Vize başvurularınız için uzman desteği.`);
+  const url = `https://www.kolayseyahat.net${isEnglish ? '/en' : ''}/danismanlar/${baseSlug}`;
+
+  return {
+    title,
+    description,
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
+    },
+    openGraph: {
+      title,
+      description,
+      type: 'profile',
+      url,
+      siteName: 'Kolay Seyahat',
+      locale: isEnglish ? 'en_US' : 'tr_TR',
+      images: [{ url: 'https://www.kolayseyahat.net/opengraph-image.png', width: 1200, height: 630, alt: title }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: ['https://www.kolayseyahat.net/opengraph-image.png'],
+      creator: '@kolayseyahat',
+      site: '@kolayseyahat',
+    },
+    alternates: {
+      canonical: url,
+      languages: {
+        'tr': `https://www.kolayseyahat.net/danismanlar/${baseSlug}`,
+        'en': `https://www.kolayseyahat.net/en/danismanlar/${baseSlug}`,
+        'x-default': `https://www.kolayseyahat.net/danismanlar/${baseSlug}`,
+      },
+    },
+  };
 }
 
 export default async function ConsultantPage({ params }: ConsultantPageProps) {

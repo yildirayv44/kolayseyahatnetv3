@@ -1,32 +1,68 @@
 import { Metadata } from "next";
 import { InvitationLetterForm } from "@/components/invitation/InvitationLetterForm";
 import { InvitationSEOContent } from "@/components/invitation/InvitationSEOContent";
-import { generateSEOMetadata } from "@/components/shared/SEOHead";
 import { FileText, Shield, Clock, CheckCircle } from "lucide-react";
 
-export const metadata: Metadata = {
-  ...generateSEOMetadata({
-    title: "Vize Davet Mektubu Oluşturucu | Ücretsiz Online Araç",
-    description: "Vize başvuruları için profesyonel davet mektubu oluşturun. AI destekli, ülkeye özel, anında indirilebilir davet mektubu oluşturma aracı.",
-    keywords: [
-      "davet mektubu",
-      "vize davet mektubu",
-      "invitation letter",
-      "vize başvurusu davet",
-      "konaklama daveti",
-      "sponsor letter",
-      "vize davet mektubu oluştur",
-    ],
-    url: "/vize-davet-mektubu-olustur",
-  }),
-  alternates: {
-    canonical: "https://www.kolayseyahat.net/vize-davet-mektubu-olustur",
-    languages: {
-      "tr": "https://www.kolayseyahat.net/vize-davet-mektubu-olustur",
-      "en": "https://www.kolayseyahat.net/en/vize-davet-mektubu-olustur",
+interface PageProps {
+  params: Promise<{ locale: string }>;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params;
+  const isEnglish = locale === 'en';
+  
+  const title = isEnglish 
+    ? "Visa Invitation Letter Generator | Free Online Tool"
+    : "Vize Davet Mektubu Oluşturucu | Ücretsiz Online Araç";
+  const description = isEnglish
+    ? "Create professional invitation letters for visa applications. AI-powered, country-specific, instantly downloadable invitation letter generator."
+    : "Vize başvuruları için profesyonel davet mektubu oluşturun. AI destekli, ülkeye özel, anında indirilebilir davet mektubu oluşturma aracı.";
+  const url = `https://www.kolayseyahat.net${isEnglish ? '/en' : ''}/vize-davet-mektubu-olustur`;
+
+  return {
+    title,
+    description,
+    keywords: isEnglish 
+      ? "invitation letter, visa invitation letter, sponsor letter, accommodation invitation, visa application invitation"
+      : "davet mektubu, vize davet mektubu, invitation letter, vize başvurusu davet, konaklama daveti, sponsor letter",
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
     },
-  },
-};
+    openGraph: {
+      title,
+      description,
+      type: 'website',
+      url,
+      siteName: 'Kolay Seyahat',
+      locale: isEnglish ? 'en_US' : 'tr_TR',
+      images: [{ url: 'https://www.kolayseyahat.net/opengraph-image.png', width: 1200, height: 630, alt: title }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: ['https://www.kolayseyahat.net/opengraph-image.png'],
+      creator: '@kolayseyahat',
+      site: '@kolayseyahat',
+    },
+    alternates: {
+      canonical: url,
+      languages: {
+        'tr': 'https://www.kolayseyahat.net/vize-davet-mektubu-olustur',
+        'en': 'https://www.kolayseyahat.net/en/vize-davet-mektubu-olustur',
+        'x-default': 'https://www.kolayseyahat.net/vize-davet-mektubu-olustur',
+      },
+    },
+  };
+}
 
 export default async function InvitationLetterPage({
   params,
