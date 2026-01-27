@@ -3,6 +3,9 @@ import { Plus } from "lucide-react";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { ProductsTable } from "@/components/admin/ProductsTable";
 
+// Admin panelde cache olmamalı - her zaman güncel veri göster
+export const dynamic = 'force-dynamic';
+
 export default async function ProductsPage() {
   // Fetch products, countries, and users separately using admin client
   const [

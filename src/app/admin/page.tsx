@@ -16,6 +16,9 @@ import {
 import { supabase } from "@/lib/supabase";
 import { getCountries, getBlogs, getConsultants } from "@/lib/queries";
 
+// Admin panelde cache olmamalı - her zaman güncel veri göster
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: "Dashboard | Admin Panel | Kolay Seyahat",
   description: "Kolay Seyahat yönetim paneli ana sayfa",

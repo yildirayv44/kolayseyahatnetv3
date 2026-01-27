@@ -2,6 +2,9 @@ import Link from "next/link";
 import { getConsultants } from "@/lib/queries";
 import { Plus, Edit, Trash2, Eye, Mail, Phone } from "lucide-react";
 
+// Admin panelde cache olmamalı - her zaman güncel veri göster
+export const dynamic = 'force-dynamic';
+
 export default async function ConsultantsPage() {
   const consultants = await getConsultants();
 

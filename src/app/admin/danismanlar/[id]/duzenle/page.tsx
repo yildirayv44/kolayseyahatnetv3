@@ -2,6 +2,9 @@ import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { ConsultantEditForm } from "@/components/admin/ConsultantEditForm";
 
+// Admin panelde cache olmamalı - her zaman güncel veri göster
+export const dynamic = 'force-dynamic';
+
 export default async function EditConsultantPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 

@@ -1,6 +1,9 @@
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { ProductCreateForm } from "@/components/admin/ProductCreateForm";
 
+// Admin panelde cache olmamalı - her zaman güncel veri göster
+export const dynamic = 'force-dynamic';
+
 export default async function NewProductPage() {
   // Fetch countries for dropdown using admin client
   const { data: countries } = await supabaseAdmin
