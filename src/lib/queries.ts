@@ -842,9 +842,16 @@ export async function getConsultants() {
 }
 
 export async function submitApplication(formData: any) {
+  // Convert empty payment_method to null to satisfy DB constraint
+  const cleanedData = {
+    ...formData,
+    status: "new",
+    payment_method: formData.payment_method || null,
+  };
+
   const { error } = await supabase
     .from("applications")
-    .insert({ ...formData, status: "new" });
+    .insert(cleanedData);
 
   if (error) {
     console.error("submitApplication error", error);
