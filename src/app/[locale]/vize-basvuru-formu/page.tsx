@@ -4,24 +4,52 @@ import { Suspense } from "react";
 import { t } from "@/i18n/translations";
 import type { Locale } from "@/i18n/translations";
 
-export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+interface PageProps {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<{ country_name?: string; country_id?: string }>;
+}
+
+export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
   const { locale } = await params;
+  const { country_name } = await searchParams;
   const isEnglish = locale === 'en';
   
-  const title = isEnglish ? "Visa Application | Kolay Seyahat" : "Vize Başvurusu | Kolay Seyahat";
-  const description = isEnglish
-    ? "Complete your application quickly and securely with our online visa application form. Our expert consultants will contact you shortly."
-    : "Online vize başvuru formu ile hızlı ve güvenli şekilde başvurunuzu tamamlayın. Uzman danışmanlarımız en kısa sürede sizinle iletişime geçecek.";
-  const url = `https://www.kolayseyahat.net${isEnglish ? '/en' : ''}/vize-basvuru-formu`;
+  // Dynamic title based on country
+  const countryText = country_name ? decodeURIComponent(country_name) : null;
+  const title = countryText
+    ? (isEnglish ? `${countryText} Visa Application | Kolay Seyahat` : `${countryText} Vize Başvurusu | Kolay Seyahat`)
+    : (isEnglish ? "Online Visa Application | Kolay Seyahat" : "Online Vize Başvuru Formu | Kolay Seyahat");
+  
+  const description = countryText
+    ? (isEnglish 
+        ? `Apply for ${countryText} visa online. Complete your application quickly and securely. Our expert consultants will contact you shortly.`
+        : `${countryText} vizesi için online başvuru yapın. Hızlı ve güvenli şekilde başvurunuzu tamamlayın. Uzman danışmanlarımız en kısa sürede sizinle iletişime geçecek.`)
+    : (isEnglish
+        ? "Complete your application quickly and securely with our online visa application form. Our expert consultants will contact you shortly."
+        : "Online vize başvuru formu ile hızlı ve güvenli şekilde başvurunuzu tamamlayın. Uzman danışmanlarımız en kısa sürede sizinle iletişime geçecek.");
+  
+  // Canonical always points to base URL (without query params) to avoid duplicate content
+  const canonicalUrl = `https://www.kolayseyahat.net${isEnglish ? '/en' : ''}/vize-basvuru-formu`;
   
   return {
     title,
     description,
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
+    },
     openGraph: {
       title,
       description,
       type: 'website',
-      url,
+      url: canonicalUrl,
       siteName: 'Kolay Seyahat',
       locale: isEnglish ? 'en_US' : 'tr_TR',
       images: [{ url: 'https://www.kolayseyahat.net/opengraph-image.png', width: 1200, height: 630, alt: title }],
@@ -33,7 +61,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
       images: ['https://www.kolayseyahat.net/opengraph-image.png'],
     },
     alternates: {
-      canonical: url,
+      canonical: canonicalUrl,
       languages: {
         'tr': 'https://www.kolayseyahat.net/vize-basvuru-formu',
         'en': 'https://www.kolayseyahat.net/en/vize-basvuru-formu',

@@ -1,6 +1,19 @@
 import { ForgotPasswordForm } from "@/components/auth/ForgotPasswordForm";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Şifremi Unuttum | Kolay Seyahat",
+  description: "Kolay Seyahat hesabınızın şifresini sıfırlayın.",
+  robots: {
+    index: false,
+    follow: false,
+  },
+  alternates: {
+    canonical: 'https://www.kolayseyahat.net/sifremi-unuttum',
+  },
+};
 
 export default function ForgotPasswordPage() {
   return (

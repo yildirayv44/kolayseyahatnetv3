@@ -52,21 +52,59 @@ async function getAnnouncement(slug: string) {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params;
+  const { slug, locale } = await params;
   const announcement = await getAnnouncement(slug);
+  const isEnglish = locale === 'en';
   
   if (!announcement) {
     return {
-      title: "Duyuru Bulunamadı | Kolay Seyahat"
+      title: "Duyuru Bulunamadı | Kolay Seyahat",
+      robots: { index: false, follow: false },
     };
   }
 
   // HTML'den text çıkar
   const description = announcement.contents.replace(/<[^>]*>/g, "").substring(0, 160);
+  const title = `${announcement.title} | Kolay Seyahat`;
+  const url = `https://www.kolayseyahat.net${isEnglish ? '/en' : ''}/duyuru/${slug}`;
 
   return {
-    title: `${announcement.title} | Kolay Seyahat`,
+    title,
     description,
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
+    },
+    openGraph: {
+      title,
+      description,
+      type: 'article',
+      url,
+      siteName: 'Kolay Seyahat',
+      locale: isEnglish ? 'en_US' : 'tr_TR',
+      images: [{ url: 'https://www.kolayseyahat.net/opengraph-image.png', width: 1200, height: 630, alt: announcement.title }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: ['https://www.kolayseyahat.net/opengraph-image.png'],
+    },
+    alternates: {
+      canonical: url,
+      languages: {
+        'tr': `https://www.kolayseyahat.net/duyuru/${slug}`,
+        'en': `https://www.kolayseyahat.net/en/duyuru/${slug}`,
+        'x-default': `https://www.kolayseyahat.net/duyuru/${slug}`,
+      },
+    },
   };
 }
 

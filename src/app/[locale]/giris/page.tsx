@@ -1,6 +1,19 @@
 import { LoginForm } from "@/components/auth/LoginForm";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Giriş Yap | Kolay Seyahat",
+  description: "Kolay Seyahat hesabınıza giriş yapın ve başvurularınızı takip edin.",
+  robots: {
+    index: false,
+    follow: false,
+  },
+  alternates: {
+    canonical: 'https://www.kolayseyahat.net/giris',
+  },
+};
 
 export default function LoginPage() {
   return (

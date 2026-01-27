@@ -12,9 +12,14 @@ export function ContentWithIds({ html }: ContentWithIdsProps) {
   const contentRef = useRef<HTMLDivElement>(null);
   
   // Optimize and compress HTML content before rendering
+  // Also convert H1 tags to H2 to avoid multiple H1s on page (SEO best practice)
   const optimizedHtml = useMemo(() => {
     const compressed = compressHtml(html);
-    return optimizeHtmlContent(compressed);
+    const optimized = optimizeHtmlContent(compressed);
+    // Convert all H1 tags to H2 to maintain single H1 per page
+    return optimized
+      .replace(/<h1(\s|>)/gi, '<h2$1')
+      .replace(/<\/h1>/gi, '</h2>');
   }, [html]);
 
   useEffect(() => {
