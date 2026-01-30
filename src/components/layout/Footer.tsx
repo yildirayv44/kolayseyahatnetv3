@@ -170,6 +170,17 @@ export function Footer({ locale = "tr" }: FooterProps) {
             </div>
           </div>
 
+          {/* Legal Disclaimer */}
+          <div className="mb-6 border-t border-slate-200 pt-4">
+            <p className="text-center text-xs text-slate-400 leading-relaxed max-w-4xl mx-auto">
+              <strong>{locale === 'en' ? 'Legal Disclaimer:' : 'Yasal Uyarı:'}</strong>{' '}
+              {locale === 'en' 
+                ? 'Kolay Seyahat is not an official institution affiliated with any government or embassy. It is a private consultancy firm. The services offered here include form filling, appointment tracking and consultancy support. Visa applications can also be made personally through official channels.'
+                : 'Kolay Seyahat, herhangi bir hükümet veya büyükelçilik ile bağlantılı resmi bir kurum değildir. Özel bir danışmanlık firmasıdır. Burada sunulan hizmetler; form doldurma, randevu takibi ve danışmanlık desteğini kapsar. Vize başvuruları kişisel olarak resmi kanallardan da yapılabilir.'
+              }
+            </p>
+          </div>
+
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs text-slate-500 mb-3">
             <Link href={getLocalizedUrl("kvkk", locale)} className="hover:text-primary">
               KVKK

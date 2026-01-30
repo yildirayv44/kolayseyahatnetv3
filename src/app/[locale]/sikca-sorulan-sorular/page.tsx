@@ -72,7 +72,7 @@ export default async function SSSPage({ params }: { params: Promise<{ locale: st
         },
         {
           q: "Vize başarı oranınız nedir?",
-          a: "Profesyonel danışmanlık hizmetimiz sayesinde %98 vize onay oranına ulaşıyoruz. Ancak, vize kararları tamamen konsolosluk tarafından verilir ve garanti veremeyiz."
+          a: "Profesyonel danışmanlık hizmetimiz sayesinde %98 müşteri memnuniyeti oranına ulaşıyoruz. Vize kararları tamamen konsolosluk tarafından verilir; tecrübemizle başvurunuzun en iyi şekilde hazırlanmasını sağlıyoruz."
         }
       ]
     },

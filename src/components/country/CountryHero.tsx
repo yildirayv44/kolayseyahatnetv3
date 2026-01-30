@@ -204,7 +204,7 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
         description: isEn
           ? 'You can get your visa at the airport. However, we recommend getting professional support for proper documents and preparation. Eliminate rejection risk!'
           : 'Vizenizi havaalanında alabilirsiniz. Ancak doğru evraklar ve ön hazırlık için profesyonel destek almanızı öneririz. Reddedilme riskini sıfırlayın!',
-        cta: isEn ? 'Get consultation for guaranteed entry' : 'Garantili geçiş için danışmanlık alın',
+        cta: isEn ? 'Get consultation for smooth entry' : 'Sorunsuz geçiş için danışmanlık alın',
         allowedStay: visaReq?.allowed_stay || null
       },
       'eta': { 
@@ -224,9 +224,9 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
         bgColor: 'bg-orange-50 border-orange-200', 
         icon: '🏛️',
         description: isEn
-          ? 'Visa application is complex and time-consuming. Missing documents or errors cause rejection. Guarantee your visa with our 98% success rate!'
-          : 'Vize başvurusu karmaşık ve zaman alıcıdır. Evrak eksikliği veya hata reddedilme sebebidir. %98 başarı oranımızla vizenizi garantiye alın!',
-        cta: isEn ? 'Start now for guaranteed visa' : 'Garantili vize için hemen başlayın',
+          ? 'Visa application is complex and time-consuming. Missing documents or errors cause rejection. Maximize your visa approval chances with our experience!'
+          : 'Vize başvurusu karmaşık ve zaman alıcıdır. Evrak eksikliği veya hata reddedilme sebebidir. Tecrübemizle vize alma şansınızı en üst seviyeye taşıyın!',
+        cta: isEn ? 'Start your application now' : 'Hemen başvurunuza başlayın',
         allowedStay: null
       },
     };
@@ -306,7 +306,7 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
               </div>
               <div>
                 <div className="text-sm font-bold text-slate-900">%98</div>
-                <div className="text-xs text-slate-600">{t(locale, "successRate")}</div>
+                <div className="text-xs text-slate-600">{locale === 'en' ? 'Customer Satisfaction' : 'Müşteri Memnuniyeti'}</div>
               </div>
             </div>
 

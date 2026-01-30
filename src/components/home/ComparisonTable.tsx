@@ -15,7 +15,7 @@ export function ComparisonTable({ locale = 'tr' }: ComparisonTableProps) {
     { feature: "Error Risk", self: "High risk", us: "Near zero" },
     { feature: "Approval Rate", self: "Uncertain", us: "High success rate" },
     { feature: "Time", self: "Days/weeks", us: "15 minutes" },
-    { feature: "If Rejected", self: "Loss", us: "Money back guarantee" },
+    { feature: "If Rejected", self: "Loss", us: "Refund policy available" },
     { feature: "Support", self: "None", us: "24/7 consultant" },
     { feature: "Tracking", self: "Manual", us: "Automatic notification" },
   ] : [
@@ -24,7 +24,7 @@ export function ComparisonTable({ locale = 'tr' }: ComparisonTableProps) {
     { feature: "Hata Riski", self: "Yüksek risk", us: "Sıfıra yakın" },
     { feature: "Onay Oranı", self: "Belirsiz", us: "Yüksek başarı oranı" },
     { feature: "Zaman", self: "Günler/haftalar", us: "15 dakika" },
-    { feature: "Red Durumunda", self: "Kayıp", us: "Para iade garantisi" },
+    { feature: "Red Durumunda", self: "Kayıp", us: "İade politikası mevcut" },
     { feature: "Destek", self: "Yok", us: "7/24 danışman" },
     { feature: "Takip", self: "Manuel", us: "Otomatik bildirim" },
   ];

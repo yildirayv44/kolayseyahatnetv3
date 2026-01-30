@@ -89,7 +89,7 @@ export const translations = {
     secureTransaction: "Güvenli İşlem",
     whyChooseUs: "Neden Bizi Tercih Etmelisiniz?",
     expertContactWithin24: "24 saat içinde uzman danışmanımız sizinle iletişime geçer",
-    successRate98: "%98 başarı oranı ile binlerce mutlu müşteri",
+    successRate98: "%98 müşteri memnuniyeti ile binlerce mutlu müşteri",
     sslSecure: "SSL güvenli veri aktarımı ve gizlilik garantisi",
     professionalConsulting: "Profesyonel vize danışmanlığı hizmeti",
     fullName: "Ad Soyad",
