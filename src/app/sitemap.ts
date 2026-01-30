@@ -48,6 +48,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { slug: "duyurular", changeFrequency: "daily" as const, priority: 0.8 },
     { slug: "sikayet-ve-oneri", changeFrequency: "monthly" as const, priority: 0.5 },
     { slug: "affiliate", changeFrequency: "monthly" as const, priority: 0.6 },
+    { slug: "vize-dilekcesi-olustur", changeFrequency: "monthly" as const, priority: 0.7 },
+    { slug: "vize-davet-mektubu-olustur", changeFrequency: "monthly" as const, priority: 0.7 },
   ];
 
   const staticPages = staticPageSlugs.flatMap((page) => [

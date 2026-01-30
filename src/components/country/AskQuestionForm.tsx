@@ -124,8 +124,8 @@ export function AskQuestionForm({ countryId, countryName, locale = "tr" }: AskQu
           </h4>
           <p className="mb-4 text-sm text-slate-700">
             {locale === 'en'
-              ? 'Get expert guidance throughout your visa application process. Our consultants have helped thousands of successful applications with a 98% approval rate.'
-              : 'Vize başvuru sürecinizde uzman rehberliği alın. Danışmanlarımız %98 onay oranı ile binlerce başarılı başvuruya yardımcı oldu.'}
+              ? 'Get expert guidance throughout your visa application process. Our consultants have helped thousands of successful applications with 98% customer satisfaction.'
+              : 'Vize başvuru sürecinizde uzman rehberliği alın. Danışmanlarımız %98 müşteri memnuniyeti ile binlerce başarılı başvuruya yardımcı oldu.'}
           </p>
           <div className="flex flex-wrap gap-3">
             <a

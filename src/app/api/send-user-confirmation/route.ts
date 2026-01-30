@@ -199,7 +199,7 @@ export async function POST(request: Request) {
             
             <div class="footer">
               <p><strong>Kolay Seyahat</strong> - Profesyonel Vize Danışmanlığı</p>
-              <p>%98 Onay Oranı | 10.000+ Başarılı Başvuru</p>
+              <p>%98 Müşteri Memnuniyeti | 10.000+ Başarılı Başvuru</p>
               <div class="social-links">
                 <a href="https://www.kolayseyahat.net">🌐 Web Sitesi</a>
                 <a href="https://www.instagram.com/kolayseyahat">📸 Instagram</a>
@@ -248,7 +248,7 @@ E-posta: vize@kolayseyahat.net
 WhatsApp: +90 212 909 99 71
 
 Kolay Seyahat - Profesyonel Vize Danışmanlığı
-%98 Onay Oranı | 10.000+ Başarılı Başvuru
+%98 Müşteri Memnuniyeti | 10.000+ Başarılı Başvuru
     `;
 
     // Send email using Resend

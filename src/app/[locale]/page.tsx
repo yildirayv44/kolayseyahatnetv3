@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: L
     : 'Profesyonel Vize Danışmanlığı - Kolay Seyahat';
   const description = isEnglish
     ? 'Professional visa consultancy for USA, UK, Schengen and more. 98% approval rate with 10,000+ successful applications.'
-    : 'Amerika, İngiltere, Schengen ve daha birçok ülke için profesyonel vize danışmanlık hizmeti. %98 onay oranı ile 10,000+ başarılı başvuru.';
+    : 'Amerika, İngiltere, Schengen ve daha birçok ülke için profesyonel vize danışmanlık hizmeti. %98 müşteri memnuniyeti ile 10,000+ başarılı başvuru.';
   
   const url = `https://www.kolayseyahat.net${isEnglish ? '/en' : ''}`;
   

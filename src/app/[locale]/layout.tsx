@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   ...generateSEOMetadata({
     title: "Profesyonel Vize Danışmanlığı",
     description:
-      "Amerika, İngiltere, Schengen ve daha birçok ülke için profesyonel vize danışmanlık hizmeti. %98 onay oranı ile 10,000+ başarılı başvuru.",
+      "Amerika, İngiltere, Schengen ve daha birçok ülke için profesyonel vize danışmanlık hizmeti. %98 müşteri memnuniyeti ile 10,000+ başarılı başvuru.",
     keywords: [
       "vize danışmanlığı",
       "amerika vizesi",

@@ -49,8 +49,8 @@ export function StickyCTA({ countryName, locale = 'tr' }: StickyCTAProps) {
               </p>
               <p className="text-xs text-slate-600">
                 {locale === 'en'
-                  ? '98% approval rate • 7-14 days • Free evaluation'
-                  : '%98 onay oranı • 7-14 gün süre • Ücretsiz ön değerlendirme'
+                  ? '98% customer satisfaction • 7-14 days • Free evaluation'
+                  : '%98 müşteri memnuniyeti • 7-14 gün süre • Ücretsiz ön değerlendirme'
                 }
               </p>
             </div>

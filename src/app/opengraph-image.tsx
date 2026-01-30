@@ -64,7 +64,7 @@ export default async function Image() {
               marginTop: '20px',
             }}
           >
-            %98 Onay Oranı • 10,000+ Başarılı Başvuru
+            %98 Müşteri Memnuniyeti • 10,000+ Başarılı Başvuru
           </div>
         </div>
       </div>
