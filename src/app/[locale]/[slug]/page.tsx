@@ -837,7 +837,7 @@ export default async function CountryPage({ params }: CountryPageParams) {
     title: blog.title,
     description: blog.description,
     image_url: blog.image_url,
-    slug: blog.taxonomy_slug || blog.slug || `blog/${blog.id}`,
+    slug: (blog.taxonomy_slug || blog.slug || `blog/${blog.id}`).replace(/^blog\//, ''),
     type: 'blog' as const,
     created_at: blog.created_at,
   }));
