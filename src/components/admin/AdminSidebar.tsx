@@ -21,6 +21,8 @@ import {
   Sparkles,
   Search,
   Share2,
+  BarChart3,
+  AtSign,
 } from "lucide-react";
 import { signOut } from "@/lib/auth";
 import { useRouter } from "next/navigation";
@@ -43,6 +45,8 @@ const menuItems = [
   { href: "/admin/sayfalar", label: "Sayfa Yönetimi", icon: FileCode },
   { href: "/admin/basvurular", label: "Başvurular", icon: ClipboardList },
   { href: "/admin/geri-bildirimler", label: "Geri Bildirimler", icon: Mail },
+  { href: "/admin/email-subscribers", label: "E-posta Aboneleri", icon: AtSign },
+  { href: "/admin/analytics", label: "Analitik", icon: BarChart3 },
   { href: "/admin/affiliate-basvurular", label: "Affiliate Başvuruları", icon: UserPlus },
   { href: "/admin/partnerler", label: "Partner Yönetimi", icon: Users },
   { href: "/admin/yorumlar", label: "Yorumlar", icon: MessageSquare },

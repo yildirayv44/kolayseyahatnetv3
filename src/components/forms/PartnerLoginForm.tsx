@@ -69,21 +69,7 @@ export function PartnerLoginForm() {
   const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    setLoading(true);
-
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(formData.email, {
-        redirectTo: `${window.location.origin}/partner`,
-      });
-
-      if (error) throw error;
-
-      setResetSent(true);
-    } catch (err: any) {
-      setError(err.message || "Şifre sıfırlama e-postası gönderilemedi");
-    } finally {
-      setLoading(false);
-    }
+    setResetSent(true);
   };
 
   return (
@@ -171,9 +157,9 @@ export function PartnerLoginForm() {
               <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
                 <Mail className="h-6 w-6 text-green-600" />
               </div>
-              <h3 className="mb-2 font-semibold text-green-900">E-posta Gönderildi!</h3>
+              <h3 className="mb-2 font-semibold text-green-900">Şifre Sıfırlama Talebi</h3>
               <p className="mb-4 text-sm text-green-800">
-                Şifre sıfırlama linki <strong>{formData.email}</strong> adresine gönderildi.
+                Şifre sıfırlama talebiniz alındı. Lütfen admin ile iletişime geçin veya <strong>info@kolayseyahat.net</strong> adresine e-posta gönderin.
               </p>
               <button
                 onClick={() => {

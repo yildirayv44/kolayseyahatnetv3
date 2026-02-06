@@ -32,10 +32,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Send password reset email using Supabase Auth
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.kolayseyahat.net';
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(
       email,
       {
-        redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/sifre-sifirla`,
+        redirectTo: `${siteUrl}/sifre-sifirla`,
       }
     );
 

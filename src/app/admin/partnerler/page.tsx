@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { Users, Search, Edit, Trash2, TrendingUp, DollarSign, Eye, BarChart3 } from "lucide-react";
+import { Users, Search, Edit, Trash2, TrendingUp, DollarSign, Eye, BarChart3, Key } from "lucide-react";
 
 interface Partner {
   id: number;
@@ -116,6 +116,32 @@ export default function PartnersPage() {
     } catch (error) {
       console.error("Error updating partner:", error);
       alert("Partner güncellenirken hata oluştu");
+    }
+  };
+
+  const setPartnerPassword = async (partner: Partner) => {
+    const newPassword = prompt(
+      `${partner.name} için yeni şifre belirleyin:\n\n(En az 6 karakter)`
+    );
+
+    if (!newPassword) return;
+
+    if (newPassword.length < 6) {
+      alert("Şifre en az 6 karakter olmalıdır");
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("user_affiliates")
+        .update({ password_hash: newPassword })
+        .eq("email", partner.email);
+
+      if (error) throw error;
+      alert(`${partner.name} için şifre başarıyla güncellendi.`);
+    } catch (error) {
+      console.error("Error setting password:", error);
+      alert("Şifre güncellenirken hata oluştu: " + (error as Error).message);
     }
   };
 
@@ -325,6 +351,13 @@ export default function PartnersPage() {
                           title="Seviye Değiştir"
                         >
                           <Edit className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => setPartnerPassword(partner)}
+                          className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 hover:text-amber-600"
+                          title="Şifre Belirle"
+                        >
+                          <Key className="h-4 w-4" />
                         </button>
                         <button
                           onClick={() => deletePartner(partner.id)}

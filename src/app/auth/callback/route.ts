@@ -24,6 +24,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(new URL("/giris?error=auth_failed", request.url));
     }
 
+    // Check if this is a password recovery flow
+    const type = requestUrl.searchParams.get("type");
+    if (type === "recovery") {
+      return NextResponse.redirect(new URL("/sifre-sifirla", request.url));
+    }
+
     // Check if user is admin from users table (match by email)
     if (data?.user) {
       const { data: userData } = await supabase
