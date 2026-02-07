@@ -6,6 +6,12 @@ export interface User {
   name?: string;
   role?: string;
   phone?: string;
+  ivisited?: string;
+  iwanttovisit?: string;
+  login_count?: number;
+  last_login_at?: string;
+  created_at?: string;
+  avatar?: string;
 }
 
 // Sign up with email and password
@@ -55,19 +61,25 @@ export async function getCurrentUser(): Promise<User | null> {
 
   if (!user) return null;
 
-  // Fetch phone and integer ID from users table
+  // Fetch extended profile from users table
   const { data: userData } = await supabase
     .from("users")
-    .select("id, phone")
+    .select("id, phone, ivisited, iwanttovisit, login_count, last_login_at, created_at, avatar")
     .eq("email", user.email)
     .single();
 
   return {
-    id: userData?.id?.toString() || user.id, // Use users table ID if available
+    id: userData?.id?.toString() || user.id,
     email: user.email!,
     name: user.user_metadata?.name,
     role: user.user_metadata?.role || "user",
     phone: userData?.phone || undefined,
+    ivisited: userData?.ivisited || undefined,
+    iwanttovisit: userData?.iwanttovisit || undefined,
+    login_count: userData?.login_count || 0,
+    last_login_at: userData?.last_login_at || undefined,
+    created_at: userData?.created_at || undefined,
+    avatar: userData?.avatar || undefined,
   };
 }
 

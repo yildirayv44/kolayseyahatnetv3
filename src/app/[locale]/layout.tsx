@@ -14,6 +14,7 @@ import { generateSEOMetadata, generateOrganizationSchema } from "@/components/sh
 import { locales, type Locale } from "@/i18n/config";
 import { WebVitals } from "@/app/web-vitals";
 import { ReferralTracker } from "@/components/ReferralTracker";
+import { PageViewTracker } from "@/components/PageViewTracker";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -130,6 +131,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         </noscript>
         {/* End Google Tag Manager (noscript) */}
         <ReferralTracker />
+        <PageViewTracker />
         <WebVitals />
         <PageLoadingBar />
         <Header />
