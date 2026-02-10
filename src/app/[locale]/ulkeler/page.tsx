@@ -84,7 +84,7 @@ export async function generateMetadata({ params }: CountriesPageProps): Promise<
       site: "@kolayseyahat",
     },
     alternates: {
-      canonical: "https://www.kolayseyahat.net/ulkeler",
+      canonical: isEnglish ? "https://www.kolayseyahat.net/en/ulkeler" : "https://www.kolayseyahat.net/ulkeler",
       languages: {
         "tr": "https://www.kolayseyahat.net/ulkeler",
         "en": "https://www.kolayseyahat.net/en/ulkeler",

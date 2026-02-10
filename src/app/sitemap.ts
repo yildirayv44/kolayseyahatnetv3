@@ -21,17 +21,39 @@ async function getCountryMenus() {
   return data || [];
 }
 
+async function getAnnouncements() {
+  const { data: announcements } = await supabase
+    .from("announcements")
+    .select("id, created_at, updated_at")
+    .eq("status", 1);
+
+  const { data: taxonomies } = await supabase
+    .from("taxonomies")
+    .select("model_id, slug, updated_at")
+    .like("type", "%Announcement%");
+
+  return (announcements || []).map((ann: any) => {
+    const taxonomy = taxonomies?.find((t: any) => t.model_id === ann.id);
+    const slug = taxonomy?.slug ? taxonomy.slug.replace(/^duyuru\//, '') : `${ann.id}`;
+    return {
+      slug,
+      updated_at: taxonomy?.updated_at || ann.updated_at || ann.created_at,
+    };
+  });
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   console.log('🗺️ Generating sitemap...');
   const startTime = Date.now();
   const baseUrl = "https://www.kolayseyahat.net";
   const locales = ["tr", "en"];
 
-  const [countries, blogs, customPages, countryMenus] = await Promise.all([
+  const [countries, blogs, customPages, countryMenus, announcements] = await Promise.all([
     getCountries(), 
     getBlogs(),
     getCustomPages(),
-    getCountryMenus()
+    getCountryMenus(),
+    getAnnouncements()
   ]);
 
   // Static pages with both TR and EN versions
@@ -200,7 +222,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       ];
     });
 
-  const allPages = [...staticPages, ...countryPages, ...countryMenuPages, ...blogPages, ...dynamicPages];
+  // Announcement (duyuru) pages - both TR and EN
+  const announcementPages = announcements.flatMap((ann: any) => {
+    const lastModified = getValidDate(ann.updated_at);
+    return [
+      {
+        url: `${baseUrl}/duyuru/${ann.slug}`,
+        lastModified,
+        changeFrequency: "monthly" as const,
+        priority: 0.6,
+      },
+      {
+        url: `${baseUrl}/en/duyuru/${ann.slug}`,
+        lastModified,
+        changeFrequency: "monthly" as const,
+        priority: 0.6,
+      },
+    ];
+  });
+
+  const allPages = [...staticPages, ...countryPages, ...countryMenuPages, ...blogPages, ...dynamicPages, ...announcementPages];
   
   const endTime = Date.now();
   console.log(`✅ Sitemap generated in ${endTime - startTime}ms with ${allPages.length} URLs`);

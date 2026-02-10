@@ -85,6 +85,16 @@ export function Footer({ locale = "tr" }: FooterProps) {
                   Affiliate Program
                 </Link>
               </li>
+              <li>
+                <Link href={getLocalizedUrl("bilgi-gizliligi", locale)} className="hover:text-primary">
+                  {locale === 'en' ? 'Privacy Policy' : 'Gizlilik Politikası'}
+                </Link>
+              </li>
+              <li>
+                <Link href={getLocalizedUrl("kvkk", locale)} className="hover:text-primary">
+                  KVKK
+                </Link>
+              </li>
             </ul>
           </div>
 

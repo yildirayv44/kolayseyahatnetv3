@@ -263,7 +263,7 @@ export function AskQuestionForm({ countryId, countryName, locale = "tr" }: AskQu
 
         <p className="text-center text-xs text-slate-500">
           {locale === 'en' ? 'By submitting this form, you agree to our ' : 'Formunu göndererek '}
-          <a href="/gizlilik" className="text-primary hover:underline">
+          <a href="/bilgi-gizliligi" className="text-primary hover:underline">
             {locale === 'en' ? 'Privacy Policy' : 'Gizlilik Politikası'}
           </a>
           {locale === 'en' ? '.' : "'nı kabul etmiş olursunuz."}

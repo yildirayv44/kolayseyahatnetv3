@@ -157,7 +157,7 @@ export function RegisterForm() {
 
       <p className="text-xs text-slate-500">
         Kayıt olarak{" "}
-        <a href="/gizlilik" className="underline hover:text-primary">
+        <a href="/bilgi-gizliligi" className="underline hover:text-primary">
           Gizlilik Politikası
         </a>{" "}
         ve{" "}

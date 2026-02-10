@@ -252,7 +252,7 @@ export function ExitIntentPopup() {
                 {/* Small Print */}
                 <p className="mt-4 text-center text-xs text-slate-400">
                   Email adresinizi paylaşarak{" "}
-                  <a href="/gizlilik" className="underline hover:text-slate-600">
+                  <a href="/bilgi-gizliligi" className="underline hover:text-slate-600">
                     gizlilik politikamızı
                   </a>{" "}
                   kabul etmiş olursunuz.
