@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
@@ -15,7 +16,8 @@ import {
   Link as LinkIcon,
   ImageIcon,
   Undo,
-  Redo
+  Redo,
+  Code
 } from "lucide-react";
 
 interface TiptapEditorProps {
@@ -24,6 +26,9 @@ interface TiptapEditorProps {
 }
 
 export function TiptapEditor({ value, onChange }: TiptapEditorProps) {
+  const [htmlMode, setHtmlMode] = useState(false);
+  const [htmlSource, setHtmlSource] = useState(value);
+
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -146,7 +151,7 @@ export function TiptapEditor({ value, onChange }: TiptapEditorProps) {
         <button
           type="button"
           onClick={() => editor.chain().focus().undo().run()}
-          disabled={!editor.can().undo()}
+          disabled={!editor.can().undo() || htmlMode}
           className="p-2 rounded hover:bg-slate-200 disabled:opacity-50"
           title="Undo"
         >
@@ -155,19 +160,48 @@ export function TiptapEditor({ value, onChange }: TiptapEditorProps) {
         <button
           type="button"
           onClick={() => editor.chain().focus().redo().run()}
-          disabled={!editor.can().redo()}
+          disabled={!editor.can().redo() || htmlMode}
           className="p-2 rounded hover:bg-slate-200 disabled:opacity-50"
           title="Redo"
         >
           <Redo className="h-4 w-4" />
         </button>
+        <div className="w-px bg-slate-300 mx-1" />
+        <button
+          type="button"
+          onClick={() => {
+            if (htmlMode) {
+              editor.commands.setContent(htmlSource);
+              onChange(htmlSource);
+            } else {
+              setHtmlSource(editor.getHTML());
+            }
+            setHtmlMode(!htmlMode);
+          }}
+          className={`p-2 rounded hover:bg-slate-200 ${htmlMode ? "bg-amber-200 text-amber-800" : ""}`}
+          title="HTML Kaynak Kodu"
+        >
+          <Code className="h-4 w-4" />
+        </button>
       </div>
 
-      {/* Editor */}
-      <EditorContent 
-        editor={editor} 
-        className="prose prose-sm max-w-none p-4 min-h-[300px] focus:outline-none"
-      />
+      {/* Editor / HTML Source */}
+      {htmlMode ? (
+        <textarea
+          value={htmlSource}
+          onChange={(e) => {
+            setHtmlSource(e.target.value);
+            onChange(e.target.value);
+          }}
+          className="w-full min-h-[300px] p-4 font-mono text-sm text-slate-800 bg-slate-50 focus:outline-none resize-y"
+          spellCheck={false}
+        />
+      ) : (
+        <EditorContent 
+          editor={editor} 
+          className="prose prose-sm max-w-none p-4 min-h-[300px] focus:outline-none"
+        />
+      )}
     </div>
   );
 }
