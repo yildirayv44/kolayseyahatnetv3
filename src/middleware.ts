@@ -12,7 +12,8 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith("/_next") ||
     pathname.includes(".") ||
     pathname.startsWith("/admin") ||
-    pathname.startsWith("/hesabim")
+    pathname.startsWith("/hesabim") ||
+    pathname.startsWith("/vize-basvuru-formu-std")
   ) {
     // Handle admin authentication for protected routes
     if (pathname.startsWith("/admin") && pathname !== "/admin/login") {

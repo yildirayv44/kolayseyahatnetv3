@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowRight, PhoneCall, X } from "lucide-react";
+import { useApplicationFormType, getApplicationFormLink } from "@/hooks/useApplicationFormType";
 
 interface StickyCTAProps {
   countryName: string;
@@ -10,6 +11,7 @@ interface StickyCTAProps {
 }
 
 export function StickyCTA({ countryName, locale = 'tr' }: StickyCTAProps) {
+  const formType = useApplicationFormType();
   const [isVisible, setIsVisible] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
 
@@ -64,13 +66,15 @@ export function StickyCTA({ countryName, locale = 'tr' }: StickyCTAProps) {
                 <PhoneCall className="h-4 w-4" />
                 <span>{locale === 'en' ? 'Call' : 'Ara'}</span>
               </a>
-              <Link
-                href="/vize-basvuru-formu"
+              <a
+                href={getApplicationFormLink(formType).href}
+                target={getApplicationFormLink(formType).target}
+                rel={formType === 'standalone' ? 'noopener noreferrer' : undefined}
                 className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-2 text-sm font-bold text-white shadow-lg transition-all hover:bg-primary/90"
               >
                 <span>{locale === 'en' ? 'Apply Now' : 'Başvur'}</span>
                 <ArrowRight className="h-4 w-4" />
-              </Link>
+              </a>
               <button
                 onClick={() => setIsDismissed(true)}
                 className="ml-2 rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Mail, Phone, MapPin, Building2, MessageCircle } from "lucide-react";
+import { ApplicationFormLink } from "@/components/shared/ApplicationFormLink";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -173,9 +174,9 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
               ? 'You can quickly start your visa process by filling out our online application form. Our consultants will contact you as soon as possible.'
               : 'Online başvuru formumuzu doldurarak vize sürecinizi hızlıca başlatabilirsiniz. Danışmanlarımız en kısa sürede sizinle iletişime geçecektir.'}
           </p>
-          <Link href="/vize-basvuru-formu" className="btn-primary inline-flex text-xs md:text-sm">
+          <ApplicationFormLink className="btn-primary inline-flex text-xs md:text-sm">
             {isEnglish ? 'Online Application Form' : 'Online Başvuru Formu'}
-          </Link>
+          </ApplicationFormLink>
         </div>
       </section>
 

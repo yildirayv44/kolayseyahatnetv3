@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CheckCircle2, Users, Globe2, Award } from "lucide-react";
+import { ApplicationFormLink } from "@/components/shared/ApplicationFormLink";
 
 interface AboutPageProps {
   params: Promise<{ locale: string }>;
@@ -151,9 +152,9 @@ export default async function AboutPage({ params }: AboutPageProps) {
             >
               {isEnglish ? 'Call 0212 909 99 71' : '0212 909 99 71\'i Ara'}
             </a>
-            <Link href="/vize-basvuru-formu" className="btn-primary text-xs md:text-sm">
+            <ApplicationFormLink className="btn-primary text-xs md:text-sm">
               {isEnglish ? 'Apply Online' : 'Online Başvuru Yap'}
-            </Link>
+            </ApplicationFormLink>
           </div>
         </div>
       </section>

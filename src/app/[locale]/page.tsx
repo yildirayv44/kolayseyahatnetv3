@@ -13,6 +13,7 @@ import { ComparisonTable } from "@/components/home/ComparisonTable";
 import { AppPromoBanner } from "@/components/home/AppPromoBanner";
 import { translateArray } from "@/lib/translation";
 import { type Locale } from "@/i18n/config";
+import { ApplicationFormLink } from "@/components/shared/ApplicationFormLink";
 
 // Cache'i 5 dakikada bir yenile
 export const revalidate = 300;
@@ -242,13 +243,12 @@ export default async function Home({ params }: HomePageProps) {
           
           {/* CTA Buttons */}
           <div className="flex flex-col gap-3 sm:flex-row sm:justify-center mb-8">
-            <Link
-              href={getLocalizedUrl("vize-basvuru-formu", locale)}
+            <ApplicationFormLink
               className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#1E3A8A] px-8 py-4 font-semibold text-white shadow-md transition-all hover:bg-[#1E40AF] hover:shadow-lg hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[#1E3A8A] focus:ring-offset-2"
             >
               {t.hero.cta}
               <ArrowRight className="h-5 w-5" />
-            </Link>
+            </ApplicationFormLink>
             <a
               href="https://www.kolayseyahat.tr/vize-degerlendirme.html"
               target="_blank"

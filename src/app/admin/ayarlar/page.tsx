@@ -1,13 +1,16 @@
 "use client";
 
-import { Settings, Globe, Mail, Phone, MapPin, Clock, Gift } from "lucide-react";
+import { Settings, Globe, Mail, Phone, MapPin, Clock, Gift, FileText } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 
 export default function SettingsPage() {
   const [exitIntentEnabled, setExitIntentEnabled] = useState(true);
+  const [applicationFormType, setApplicationFormType] = useState<"internal" | "standalone">("internal");
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
+  const [isSavingFormType, setIsSavingFormType] = useState(false);
+  const [formTypeSaveMessage, setFormTypeSaveMessage] = useState("");
 
   useEffect(() => {
     // Mevcut ayarı yükle
@@ -33,6 +36,29 @@ export default function SettingsPage() {
     };
 
     loadSettings();
+
+    const loadFormType = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("settings")
+          .select("val")
+          .eq("name", "application_form_type")
+          .maybeSingle();
+
+        if (error) {
+          console.error("Form type load error:", error);
+          return;
+        }
+
+        if (data && (data.val === "internal" || data.val === "standalone")) {
+          setApplicationFormType(data.val);
+        }
+      } catch (error) {
+        console.error("Form type load error:", error);
+      }
+    };
+
+    loadFormType();
   }, []);
 
   const handleSaveExitIntent = async () => {
@@ -121,6 +147,119 @@ export default function SettingsPage() {
               saveMessage.includes("✅") ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"
             }`}>
               {saveMessage}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Application Form Type Settings */}
+      <div className="card">
+        <div className="mb-4 flex items-center gap-3">
+          <div className="rounded-lg bg-blue-600 p-2">
+            <FileText className="h-5 w-5 text-white" />
+          </div>
+          <h3 className="text-lg font-semibold text-slate-900">Başvuru Formu Tipi</h3>
+        </div>
+
+        <div className="space-y-4">
+          <p className="text-sm text-slate-600">
+            "Hemen Başvur" butonlarına tıklandığında kullanıcıların yönlendirileceği başvuru formu sayfasını seçin.
+          </p>
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <button
+              type="button"
+              onClick={() => setApplicationFormType("internal")}
+              className={`rounded-xl border-2 p-4 text-left transition-all ${
+                applicationFormType === "internal"
+                  ? "border-primary bg-primary/5 shadow-md"
+                  : "border-slate-200 hover:border-primary/40"
+              }`}
+            >
+              <div className="flex items-center gap-3 mb-2">
+                <div className={`flex h-5 w-5 items-center justify-center rounded-full border-2 ${
+                  applicationFormType === "internal" ? "border-primary bg-primary" : "border-slate-300"
+                }`}>
+                  {applicationFormType === "internal" && (
+                    <svg className="h-3 w-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </div>
+                <span className="font-semibold text-slate-900">Dahili Sayfa</span>
+              </div>
+              <p className="text-xs text-slate-600 ml-8">
+                Mevcut site tasarımı içinde başvuru formu (Header/Footer ile birlikte)
+              </p>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setApplicationFormType("standalone")}
+              className={`rounded-xl border-2 p-4 text-left transition-all ${
+                applicationFormType === "standalone"
+                  ? "border-primary bg-primary/5 shadow-md"
+                  : "border-slate-200 hover:border-primary/40"
+              }`}
+            >
+              <div className="flex items-center gap-3 mb-2">
+                <div className={`flex h-5 w-5 items-center justify-center rounded-full border-2 ${
+                  applicationFormType === "standalone" ? "border-primary bg-primary" : "border-slate-300"
+                }`}>
+                  {applicationFormType === "standalone" && (
+                    <svg className="h-3 w-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </div>
+                <span className="font-semibold text-slate-900">Standalone LP</span>
+              </div>
+              <p className="text-xs text-slate-600 ml-8">
+                Yeni sekmede açılan, dönüşüm odaklı landing page (Google Ads / Reklam için ideal)
+              </p>
+            </button>
+          </div>
+
+          <div className="rounded-lg bg-slate-50 p-4">
+            <p className="text-sm text-slate-600">
+              <strong>Dahili:</strong> /vize-basvuru-formu sayfasına yönlendirir (aynı pencere).<br />
+              <strong>Standalone:</strong> /vize-basvuru-formu-std sayfasına yeni sekmede yönlendirir. Kafa karıştırıcı öğeler olmadan, sadece form ve güven öğeleri içerir.
+            </p>
+          </div>
+
+          <button
+            onClick={async () => {
+              setIsSavingFormType(true);
+              setFormTypeSaveMessage("");
+              try {
+                const { error } = await supabase
+                  .from("settings")
+                  .upsert({
+                    name: "application_form_type",
+                    val: applicationFormType,
+                    updated_at: new Date().toISOString(),
+                  }, { onConflict: "name" });
+                if (error) throw error;
+                setFormTypeSaveMessage("✅ Başvuru formu tipi kaydedildi!");
+                setTimeout(() => setFormTypeSaveMessage(""), 3000);
+              } catch (error: any) {
+                console.error("Save error:", error);
+                setFormTypeSaveMessage(`❌ Kaydetme hatası: ${error.message}`);
+              } finally {
+                setIsSavingFormType(false);
+              }
+            }}
+            disabled={isSavingFormType}
+            className="w-full rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:bg-primary-dark hover:shadow-xl disabled:opacity-50"
+          >
+            {isSavingFormType ? "Kaydediliyor..." : "Kaydet"}
+          </button>
+
+          {formTypeSaveMessage && (
+            <div className={`rounded-lg p-3 text-center text-sm font-medium ${
+              formTypeSaveMessage.includes("✅") ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"
+            }`}>
+              {formTypeSaveMessage}
             </div>
           )}
         </div>

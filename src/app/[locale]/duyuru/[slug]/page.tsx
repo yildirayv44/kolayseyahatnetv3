@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import { Calendar, ArrowLeft, Share2, Eye } from "lucide-react";
+import { ApplicationFormLink } from "@/components/shared/ApplicationFormLink";
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
@@ -190,12 +191,11 @@ export default async function DuyuruDetayPage({ params }: Props) {
           Uzman danışmanlarımız size yardımcı olmak için hazır
         </p>
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
-          <Link
-            href="/vize-basvuru-formu"
+          <ApplicationFormLink
             className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-8 py-3 font-semibold text-white shadow-lg transition-all hover:bg-primary/90"
           >
             Online Başvuru Yap
-          </Link>
+          </ApplicationFormLink>
           <a
             href="tel:02129099971"
             className="inline-flex items-center justify-center gap-2 rounded-lg border-2 border-primary bg-white px-8 py-3 font-semibold text-primary transition-all hover:bg-primary hover:text-white"

@@ -28,6 +28,7 @@ import { ContentWithIds } from "@/components/country/ContentWithIds";
 import { ExtendedCountryInfo } from "@/components/country/ExtendedCountryInfo";
 import { getBlogSlug, parseH2Headings, getMenuSlug } from "@/lib/helpers";
 import { GenericCommentSection } from "@/components/comments/GenericCommentSection";
+import { ApplicationFormLink } from "@/components/shared/ApplicationFormLink";
 import { getLocalizedFields } from "@/lib/locale-content";
 import { getLocalizedUrl } from "@/lib/locale-link";
 import { supabase } from "@/lib/supabase";
@@ -426,12 +427,11 @@ export default async function CountryPage({ params }: CountryPageParams) {
               : "Uzman danışmanlarımız size yardımcı olmak için hazır"}
           </p>
           <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
-            <Link
-              href="/vize-basvuru-formu"
+            <ApplicationFormLink
               className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-8 py-3 font-semibold text-white shadow-lg transition-all hover:bg-primary/90"
             >
               {isEnglish ? "Apply Online" : "Online Başvuru Yap"}
-            </Link>
+            </ApplicationFormLink>
             <a
               href="tel:02129099971"
               className="inline-flex items-center justify-center gap-2 rounded-lg border-2 border-primary bg-white px-8 py-3 font-semibold text-primary transition-all hover:bg-primary hover:text-white"
@@ -558,13 +558,12 @@ export default async function CountryPage({ params }: CountryPageParams) {
                   <PhoneCall className="h-5 w-5" />
                   <span>0212 909 99 71</span>
                 </a>
-                <Link
-                  href="/vize-basvuru-formu"
+                <ApplicationFormLink
                   className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-8 py-4 text-base font-bold text-white shadow-xl transition-all hover:bg-primary/90"
                 >
                   <span>Hemen Başvur</span>
                   <ArrowRight className="h-5 w-5" />
-                </Link>
+                </ApplicationFormLink>
               </div>
             </div>
           </div>
@@ -980,21 +979,18 @@ export default async function CountryPage({ params }: CountryPageParams) {
                   </span>
                   <span className="text-sm text-slate-500">/ başvuru</span>
                 </div>
-                <Link
-                  href={{
-                    pathname: getLocalizedUrl("basvuru", locale as 'tr' | 'en'),
-                    query: {
-                      country_id: country.id,
-                      country_name: country.name,
-                      package_id: product.id,
-                      package_name: product.name,
-                    },
+                <ApplicationFormLink
+                  queryParams={{
+                    country_id: country.id,
+                    country_name: country.name,
+                    package_id: product.id,
+                    package_name: product.name,
                   }}
                   className="group/btn flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 font-bold text-white shadow-lg transition-all hover:bg-primary/90 hover:shadow-xl"
                 >
                   <span>Hemen Başvur</span>
                   <ArrowRight className="h-5 w-5 transition-transform group-hover/btn:translate-x-1" />
-                </Link>
+                </ApplicationFormLink>
               </div>
             ))}
           </div>
@@ -1082,9 +1078,9 @@ export default async function CountryPage({ params }: CountryPageParams) {
             <PhoneCall className="mr-2 h-4 w-4" />
             {locale === 'en' ? 'Call 0212 909 99 71' : "0212 909 99 71'i Ara"}
           </a>
-          <Link href="/vize-basvuru-formu" className="btn-primary text-xs md:text-sm">
+          <ApplicationFormLink className="btn-primary text-xs md:text-sm">
             {locale === 'en' ? 'Apply Online' : 'Online Başvuru Yap'}
-          </Link>
+          </ApplicationFormLink>
         </div>
       </section>
 

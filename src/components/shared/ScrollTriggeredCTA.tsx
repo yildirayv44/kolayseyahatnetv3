@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, PhoneCall, Sparkles } from "lucide-react";
+import { useApplicationFormType, getApplicationFormLink } from "@/hooks/useApplicationFormType";
 
 interface ScrollTriggeredCTAProps {
   title: string;
@@ -23,6 +24,7 @@ export function ScrollTriggeredCTA({
   triggerPercentage = 50,
   locale = 'tr',
 }: ScrollTriggeredCTAProps) {
+  const formType = useApplicationFormType();
   const [isVisible, setIsVisible] = useState(false);
   const [hasShown, setHasShown] = useState(false);
 
@@ -79,13 +81,15 @@ export function ScrollTriggeredCTA({
           </div>
 
           <div className="flex flex-col gap-2">
-            <Link
-              href={primaryButtonHref}
+            <a
+              href={primaryButtonHref === '/vize-basvuru-formu' ? getApplicationFormLink(formType).href : primaryButtonHref}
+              target={primaryButtonHref === '/vize-basvuru-formu' ? getApplicationFormLink(formType).target : undefined}
+              rel={primaryButtonHref === '/vize-basvuru-formu' && formType === 'standalone' ? 'noopener noreferrer' : undefined}
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-bold text-white shadow-lg transition-all hover:bg-primary/90 hover:shadow-xl"
             >
               <span>{primaryButtonText || defaultPrimaryText}</span>
               <ArrowRight className="h-4 w-4" />
-            </Link>
+            </a>
             
             {showPhoneButton && (
               <a

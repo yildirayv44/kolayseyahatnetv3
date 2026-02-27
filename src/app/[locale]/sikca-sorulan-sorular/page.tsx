@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import { HelpCircle, ChevronDown, Phone, Mail } from "lucide-react";
+import { ApplicationFormLink } from "@/components/shared/ApplicationFormLink";
 import { generateFAQSchema } from "@/components/shared/SEOHead";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -281,15 +282,14 @@ export default async function SSSPage({ params }: { params: Promise<{ locale: st
               {isEnglish ? 'Useful Links' : 'Faydalı Linkler'}
             </h2>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <Link
-                href="/vize-basvuru-formu"
+              <ApplicationFormLink
                 className="card text-center transition-all hover:shadow-lg"
               >
                 <h3 className="font-semibold text-primary">{isEnglish ? 'Online Application' : 'Online Başvuru'}</h3>
                 <p className="mt-1 text-sm text-slate-600">
                   {isEnglish ? 'Apply now' : 'Hemen başvurunuzu yapın'}
                 </p>
-              </Link>
+              </ApplicationFormLink>
               <Link
                 href="/ulkeler"
                 className="card text-center transition-all hover:shadow-lg"

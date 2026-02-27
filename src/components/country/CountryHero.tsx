@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowRight, PhoneCall, Clock, CheckCircle2, Users, Shield, Package, MessageCircleQuestion, FileQuestion, Globe, DollarSign, Info } from "lucide-react";
 import { t } from "@/i18n/translations";
 import type { Locale } from "@/i18n/translations";
+import { useApplicationFormType, getApplicationFormLink } from "@/hooks/useApplicationFormType";
 
 interface CountryHeroProps {
   country: {
@@ -36,6 +37,7 @@ interface CountryHeroProps {
 }
 
 export function CountryHero({ country, locale = "tr", products = [] }: CountryHeroProps) {
+  const formType = useApplicationFormType();
   const [selectedPackage, setSelectedPackage] = useState<any>(products[0] || null);
 
   // Get visa requirement from database (for Turkish citizens)
@@ -561,24 +563,23 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
 
           {/* CTA Buttons */}
           <div className="grid gap-3 sm:grid-cols-3">
-            <Link
-              href={{
-                pathname: '/vize-basvuru-formu',
-                query: selectedPackage ? {
-                  country_id: country.id,
-                  country_name: country.name,
-                  package_id: selectedPackage.id,
-                  package_name: selectedPackage.name,
-                } : {
-                  country_id: country.id,
-                  country_name: country.name,
-                },
-              }}
+            <a
+              href={getApplicationFormLink(formType, selectedPackage ? {
+                country_id: country.id,
+                country_name: country.name,
+                package_id: selectedPackage.id,
+                package_name: selectedPackage.name,
+              } : {
+                country_id: country.id,
+                country_name: country.name,
+              }).href}
+              target={getApplicationFormLink(formType).target}
+              rel={formType === 'standalone' ? 'noopener noreferrer' : undefined}
               className="group inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-4 text-base font-bold text-white shadow-xl transition-all hover:bg-primary/90 hover:shadow-2xl hover:scale-105"
             >
               <span>{selectedPackage ? `${selectedPackage.name} - ${locale === 'en' ? 'Apply Now' : 'Hemen Başvur'}` : t(locale, "applyNow")}</span>
               <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
-            </Link>
+            </a>
             <a
               href="tel:02129099971"
               className="group inline-flex flex-col items-center justify-center gap-1 rounded-xl border-2 border-primary bg-white px-6 py-4 text-base font-bold text-primary transition-all hover:bg-primary hover:text-white"

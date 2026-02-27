@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, Calendar, User, Clock, MessageSquare } from "lucide-react";
+import { ApplicationFormLink } from "@/components/shared/ApplicationFormLink";
 import { getBlogBySlug, getBlogComments, getBlogs } from "@/lib/queries";
 import { Breadcrumb } from "@/components/shared/Breadcrumb";
 import { ContentWithIds } from "@/components/country/ContentWithIds";
@@ -324,12 +325,11 @@ export default async function BlogPage({ params }: BlogPageProps) {
             >
               <span>0212 909 99 71</span>
             </a>
-            <Link
-              href="/vize-basvuru-formu"
+            <ApplicationFormLink
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-8 py-4 text-base font-bold text-white shadow-xl transition-all hover:bg-primary/90"
             >
               <span>Hemen Başvur</span>
-            </Link>
+            </ApplicationFormLink>
           </div>
         </div>
 

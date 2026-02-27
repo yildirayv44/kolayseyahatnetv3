@@ -1,6 +1,7 @@
 "use client";
 
 import { Check, X, Sparkles } from "lucide-react";
+import { ApplicationFormLink } from "@/components/shared/ApplicationFormLink";
 
 interface ComparisonTableProps {
   locale?: 'tr' | 'en';
@@ -108,13 +109,12 @@ export function ComparisonTable({ locale = 'tr' }: ComparisonTableProps) {
             {isEn ? 'High success rate with professional support!' : 'Profesyonel destek ile yüksek başarı oranı!'}
           </p>
           <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
-            <a
-              href="/vize-basvuru-formu"
+            <ApplicationFormLink
               className="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-6 py-3 font-semibold text-[#1E3A8A] transition-all hover:bg-slate-50 hover:shadow-lg"
             >
               {isEn ? 'Apply Now' : 'Hemen Başvur'}
               <Check className="h-5 w-5" />
-            </a>
+            </ApplicationFormLink>
             <a
               href="tel:02129099971"
               className="inline-flex items-center justify-center gap-2 rounded-lg border-2 border-white px-6 py-3 font-semibold text-white transition-all hover:bg-white/10"

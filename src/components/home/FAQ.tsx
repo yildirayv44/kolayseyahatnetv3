@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
+import { ApplicationFormLink } from "@/components/shared/ApplicationFormLink";
 
 interface FAQItem {
   question: string;
@@ -128,12 +129,11 @@ export function FAQ() {
             >
               0212 909 99 71
             </a>
-            <Link
-              href="/vize-basvuru-formu"
+            <ApplicationFormLink
               className="flex-1 rounded-xl bg-primary px-8 py-4 text-base font-bold text-white shadow-xl transition-all hover:bg-primary/90 hover:shadow-2xl"
             >
               Hemen Başvur
-            </Link>
+            </ApplicationFormLink>
           </div>
           <p className="mt-6 text-sm text-slate-500">
             ⚡ Ortalama yanıt süresi: 2 dakika

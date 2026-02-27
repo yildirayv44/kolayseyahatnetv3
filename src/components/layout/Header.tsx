@@ -9,6 +9,7 @@ import { getCountries } from "@/lib/queries";
 import { getCountrySlug } from "@/lib/helpers";
 import { getCurrentUser, signOut, isAdmin } from "@/lib/auth";
 import { useFavorites } from "@/hooks/useFavorites";
+import { useApplicationFormType, getApplicationFormLink } from "@/hooks/useApplicationFormType";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 import { getLocalizedUrl, getLocaleFromPathname } from "@/lib/locale-link";
 import { type Locale } from "@/i18n/config";
@@ -30,6 +31,7 @@ export function Header() {
   const pathname = usePathname();
   const router = useRouter();
   const locale = getLocaleFromPathname(pathname);
+  const formType = useApplicationFormType();
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -409,9 +411,14 @@ export function Header() {
               )}
             </Link>
 
-            <Link href={getLocalizedUrl("vize-basvuru-formu", locale)} className="btn-primary text-sm">
+            <a
+              href={getApplicationFormLink(formType).href}
+              target={getApplicationFormLink(formType).target}
+              rel={formType === 'standalone' ? 'noopener noreferrer' : undefined}
+              className="btn-primary text-sm"
+            >
               {t(locale as Locale, "applyNow")}
-            </Link>
+            </a>
           </div>
         </div>
 
@@ -453,13 +460,15 @@ export function Header() {
               </div>
             </div>
 
-            <Link
-              href={getLocalizedUrl("vize-basvuru-formu", locale)}
+            <a
+              href={getApplicationFormLink(formType).href}
+              target={getApplicationFormLink(formType).target}
+              rel={formType === 'standalone' ? 'noopener noreferrer' : undefined}
               onClick={() => setMenuOpen(false)}
               className="mt-3 inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white"
             >
               Hemen Başvur
-            </Link>
+            </a>
           </nav>
         </div>
       )}
