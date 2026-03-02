@@ -132,6 +132,21 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
             </div>
           </div>
         </div>
+
+        <div className="card space-y-3 text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-blue-500/10 text-blue-600">
+            <MapPin className="h-6 w-6" />
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-slate-900">{isEnglish ? 'USA Office' : 'Amerika Ofisi'}</h3>
+            <div className="mt-1 text-sm text-slate-600 space-y-1">
+              <p className="font-medium">Kolay Tech Mobility LLC</p>
+              <p>1209 Mountain Road PL NE, STE N</p>
+              <p>Albuquerque, New Mexico 87110, USA</p>
+              <a href="tel:+12314032205" className="block text-primary hover:text-primary/80 font-medium mt-1">+1 (231) 403-2205</a>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Company Information */}
@@ -142,22 +157,45 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
           </div>
           <div className="flex-1">
             <h2 className="text-lg font-semibold text-slate-900 mb-4">{isEnglish ? 'Company Information' : 'Şirket Bilgileri'}</h2>
-            <div className="grid gap-3 sm:grid-cols-2 text-sm">
+            <div className="space-y-4">
               <div>
-                <p className="text-xs text-slate-600 mb-1">{isEnglish ? 'Company Name' : 'Şirket Adı'}</p>
-                <p className="font-semibold text-slate-900">Kolay Seyahat Teknoloji Ltd. Şti.</p>
+                <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">{isEnglish ? 'Turkey' : 'Türkiye'}</h3>
+                <div className="grid gap-3 sm:grid-cols-2 text-sm">
+                  <div>
+                    <p className="text-xs text-slate-600 mb-1">{isEnglish ? 'Company Name' : 'Şirket Adı'}</p>
+                    <p className="font-semibold text-slate-900">Kolay Seyahat Teknoloji Ltd. Şti.</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-600 mb-1">{isEnglish ? 'Tax Number' : 'Vergi No'}</p>
+                    <p className="font-semibold text-slate-900">5751077320</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-600 mb-1">{isEnglish ? 'Tax Office' : 'Vergi Dairesi'}</p>
+                    <p className="font-semibold text-slate-900">Uluçınar</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-600 mb-1">MERSİS No</p>
+                    <p className="font-semibold text-slate-900">0575107732000001</p>
+                  </div>
+                </div>
               </div>
-              <div>
-                <p className="text-xs text-slate-600 mb-1">{isEnglish ? 'Tax Number' : 'Vergi No'}</p>
-                <p className="font-semibold text-slate-900">5751077320</p>
-              </div>
-              <div>
-                <p className="text-xs text-slate-600 mb-1">{isEnglish ? 'Tax Office' : 'Vergi Dairesi'}</p>
-                <p className="font-semibold text-slate-900">Uluçınar</p>
-              </div>
-              <div>
-                <p className="text-xs text-slate-600 mb-1">MERSİS No</p>
-                <p className="font-semibold text-slate-900">0575107732000001</p>
+              <div className="border-t border-slate-200 pt-4">
+                <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">{isEnglish ? 'United States' : 'Amerika Birleşik Devletleri'}</h3>
+                <div className="grid gap-3 sm:grid-cols-2 text-sm">
+                  <div>
+                    <p className="text-xs text-slate-600 mb-1">{isEnglish ? 'Company Name' : 'Şirket Adı'}</p>
+                    <p className="font-semibold text-slate-900">Kolay Tech Mobility LLC</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-600 mb-1">{isEnglish ? 'Address' : 'Adres'}</p>
+                    <p className="font-semibold text-slate-900">1209 Mountain Road PL NE, STE N</p>
+                    <p className="text-slate-600">Albuquerque, NM 87110, USA</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-600 mb-1">{isEnglish ? 'Phone' : 'Telefon'}</p>
+                    <p className="font-semibold text-slate-900">+1 (231) 403-2205</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

@@ -103,6 +103,19 @@ export function Footer({ locale = "tr" }: FooterProps) {
             <ul className="space-y-2 text-slate-600 text-sm">
               <li>0212 909 99 71</li>
             </ul>
+            <div className="mt-4 pt-4 border-t border-slate-200">
+              <h4 className="mb-2 font-semibold text-slate-900 text-xs">
+                {locale === 'en' ? 'USA Office' : 'Amerika Ofisi'}
+              </h4>
+              <ul className="space-y-1 text-slate-600 text-xs">
+                <li className="font-medium">Kolay Tech Mobility LLC</li>
+                <li>1209 Mountain Road PL NE, STE N</li>
+                <li>Albuquerque, NM 87110, USA</li>
+                <li>
+                  <a href="tel:+12314032205" className="hover:text-primary">+1 (231) 403-2205</a>
+                </li>
+              </ul>
+            </div>
           </div>
 
           <div>
