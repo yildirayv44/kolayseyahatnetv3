@@ -47,6 +47,7 @@ const menuItems = [
   { href: "/admin/geri-bildirimler", label: "Geri Bildirimler", icon: Mail },
   { href: "/admin/email-subscribers", label: "E-posta Aboneleri", icon: AtSign },
   { href: "/admin/analytics", label: "Analitik", icon: BarChart3 },
+  { href: "/admin/kullanici-aktiviteleri", label: "Kullanıcı Aktiviteleri", icon: Users, highlight: true },
   { href: "/admin/affiliate-basvurular", label: "Affiliate Başvuruları", icon: UserPlus },
   { href: "/admin/partnerler", label: "Partner Yönetimi", icon: Users },
   { href: "/admin/yorumlar", label: "Yorumlar", icon: MessageSquare },
@@ -95,15 +96,14 @@ export function AdminSidebar() {
               )}
               <Link
                 href={item.href}
-                className={`flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-all ${
-                  isActive
+                className={`flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-all ${isActive
                     ? isHighlight
                       ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg"
                       : "bg-primary text-white"
                     : isHighlight
-                    ? "text-purple-700 hover:bg-gradient-to-r hover:from-purple-50 hover:to-blue-50 border border-purple-200"
-                    : "text-slate-700 hover:bg-slate-100"
-                }`}
+                      ? "text-purple-700 hover:bg-gradient-to-r hover:from-purple-50 hover:to-blue-50 border border-purple-200"
+                      : "text-slate-700 hover:bg-slate-100"
+                  }`}
               >
                 <Icon className={`h-5 w-5 ${isHighlight && !isActive ? 'animate-pulse' : ''}`} />
                 {item.label}

@@ -9,7 +9,7 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-export type ActivityType = 
+export type ActivityType =
   | 'page_view'
   | 'country_view'
   | 'package_view'
@@ -21,7 +21,7 @@ export type ActivityType =
   | 'filter_change';
 
 interface ActivityData {
-  partnerId: string;
+  partnerId: string | null;
   activityType: ActivityType;
   pageUrl?: string;
   pageTitle?: string;
@@ -57,7 +57,7 @@ function generateVisitorId(): string {
  */
 export function getSessionId(): string {
   if (typeof window === 'undefined') return '';
-  
+
   let sessionId = sessionStorage.getItem('ks_session_id');
   if (!sessionId) {
     sessionId = generateSessionId();
@@ -71,7 +71,7 @@ export function getSessionId(): string {
  */
 export function getVisitorId(): string {
   if (typeof window === 'undefined') return '';
-  
+
   let visitorId = localStorage.getItem('ks_visitor_id');
   if (!visitorId) {
     visitorId = generateVisitorId();
@@ -89,12 +89,12 @@ function getDeviceInfo(): DeviceInfo {
   }
 
   const ua = navigator.userAgent;
-  
+
   // Device type
   let deviceType = 'desktop';
   if (/mobile/i.test(ua)) deviceType = 'mobile';
   else if (/tablet|ipad/i.test(ua)) deviceType = 'tablet';
-  
+
   // Browser
   let browser = 'unknown';
   if (/chrome/i.test(ua) && !/edg/i.test(ua)) browser = 'Chrome';
@@ -102,7 +102,7 @@ function getDeviceInfo(): DeviceInfo {
   else if (/firefox/i.test(ua)) browser = 'Firefox';
   else if (/edg/i.test(ua)) browser = 'Edge';
   else if (/opera|opr/i.test(ua)) browser = 'Opera';
-  
+
   // OS
   let os = 'unknown';
   if (/windows/i.test(ua)) os = 'Windows';
@@ -110,20 +110,20 @@ function getDeviceInfo(): DeviceInfo {
   else if (/linux/i.test(ua)) os = 'Linux';
   else if (/android/i.test(ua)) os = 'Android';
   else if (/ios|iphone|ipad/i.test(ua)) os = 'iOS';
-  
+
   return { deviceType, browser, os };
 }
 
 /**
  * Initialize or update partner session
  */
-export async function initPartnerSession(partnerId: string): Promise<void> {
+export async function initPartnerSession(partnerId: string | null): Promise<void> {
   if (typeof window === 'undefined') return;
-  
+
   const sessionId = getSessionId();
   const visitorId = getVisitorId();
   const deviceInfo = getDeviceInfo();
-  
+
   try {
     // Check if session exists
     const { data: existingSession } = await supabase
@@ -131,11 +131,11 @@ export async function initPartnerSession(partnerId: string): Promise<void> {
       .select('id')
       .eq('session_id', sessionId)
       .single();
-    
+
     if (!existingSession) {
       // Create new session
       await supabase.from('partner_sessions').insert({
-        partner_id: partnerId,
+        partner_id: partnerId || null,
         session_id: sessionId,
         visitor_id: visitorId,
         referrer_url: document.referrer || null,
@@ -156,14 +156,14 @@ export async function initPartnerSession(partnerId: string): Promise<void> {
  */
 export async function trackPartnerActivity(data: ActivityData): Promise<void> {
   if (typeof window === 'undefined') return;
-  
+
   const sessionId = getSessionId();
   const visitorId = getVisitorId();
   const deviceInfo = getDeviceInfo();
-  
+
   try {
     await supabase.from('partner_activities').insert({
-      partner_id: data.partnerId,
+      partner_id: data.partnerId || null,
       session_id: sessionId,
       visitor_id: visitorId,
       activity_type: data.activityType,
@@ -188,21 +188,26 @@ export async function trackPartnerActivity(data: ActivityData): Promise<void> {
 /**
  * Mark session as converted (form submitted)
  */
-export async function markSessionConverted(partnerId: string): Promise<void> {
+export async function markSessionConverted(partnerId: string | null): Promise<void> {
   if (typeof window === 'undefined') return;
-  
+
   const sessionId = getSessionId();
-  
+
   try {
-    await supabase
+    const query = supabase
       .from('partner_sessions')
       .update({
         converted: true,
         conversion_date: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })
-      .eq('session_id', sessionId)
-      .eq('partner_id', partnerId);
+      .eq('session_id', sessionId);
+
+    if (partnerId) {
+      await query.eq('partner_id', partnerId);
+    } else {
+      await query.is('partner_id', null);
+    }
   } catch (error) {
     console.error('Error marking session as converted:', error);
   }
@@ -211,7 +216,7 @@ export async function markSessionConverted(partnerId: string): Promise<void> {
 /**
  * Track page view
  */
-export async function trackPageView(partnerId: string, pageData?: {
+export async function trackPageView(partnerId: string | null, pageData?: {
   countryId?: number;
   countryName?: string;
   packageId?: number;
@@ -228,7 +233,7 @@ export async function trackPageView(partnerId: string, pageData?: {
  * Track country view
  */
 export async function trackCountryView(
-  partnerId: string,
+  partnerId: string | null,
   countryId: number,
   countryName: string
 ): Promise<void> {
@@ -244,7 +249,7 @@ export async function trackCountryView(
  * Track package view
  */
 export async function trackPackageView(
-  partnerId: string,
+  partnerId: string | null,
   packageId: number,
   packageName: string,
   countryName?: string
@@ -261,7 +266,7 @@ export async function trackPackageView(
 /**
  * Track form start
  */
-export async function trackFormStart(partnerId: string, formData?: {
+export async function trackFormStart(partnerId: string | null, formData?: {
   countryId?: number;
   countryName?: string;
   packageId?: number;
@@ -277,7 +282,7 @@ export async function trackFormStart(partnerId: string, formData?: {
 /**
  * Track form submission
  */
-export async function trackFormSubmit(partnerId: string, formData: {
+export async function trackFormSubmit(partnerId: string | null, formData: {
   countryId?: number;
   countryName?: string;
   packageId?: number;
@@ -297,7 +302,7 @@ export async function trackFormSubmit(partnerId: string, formData: {
       customer_email: formData.customerEmail,
     },
   });
-  
+
   // Mark session as converted
   await markSessionConverted(partnerId);
 }
@@ -306,7 +311,7 @@ export async function trackFormSubmit(partnerId: string, formData: {
  * Track button click
  */
 export async function trackButtonClick(
-  partnerId: string,
+  partnerId: string | null,
   buttonName: string,
   metadata?: Record<string, any>
 ): Promise<void> {

@@ -15,19 +15,15 @@ export function ReferralTracker() {
   useEffect(() => {
     // Sayfa yüklendiğinde URL'den partner_id'yi yakala
     const partnerId = captureReferral();
-    
-    // Partner ID varsa session başlat
-    if (partnerId) {
-      initPartnerSession(partnerId);
-    }
+
+    // Her durumda bir session başlat (organic veya partner)
+    initPartnerSession(partnerId);
   }, []);
 
   useEffect(() => {
-    // Her sayfa değişiminde activity track et
+    // Her sayfa değişiminde activity track et (organic veya partner)
     const partnerId = getReferralPartnerId();
-    if (partnerId) {
-      trackPageView(partnerId);
-    }
+    trackPageView(partnerId);
   }, [pathname]);
 
   // Görünmez component
