@@ -64,9 +64,9 @@ export async function getCountries() {
     price: number;
     currency_id: number;
   }>>();
-  
+
   const priceMap = new Map<number, { price: number; currency_id: number }>();
-  
+
   products?.forEach(product => {
     // Paketleri grupla
     if (!packagesMap.has(product.country_id)) {
@@ -78,7 +78,7 @@ export async function getCountries() {
       price: parseFloat(product.price),
       currency_id: product.currency_id || 1
     });
-    
+
     // En düşük fiyatı bul (ilk ürün zaten en düşük fiyatlı)
     if (!priceMap.has(product.country_id)) {
       priceMap.set(product.country_id, {
@@ -101,7 +101,7 @@ export async function getCountries() {
   const countriesWithSlugs = countries.map(country => {
     // Öncelik sırası: taxonomy slug > mapping > fallback
     const slug = taxonomyMap.get(country.id) || COUNTRY_ID_TO_SLUG[country.id] || `country-${country.id}`;
-    
+
     // Fiyat: products tablosundan en düşük fiyat ve para birimi
     const productData = priceMap.get(country.id);
 
@@ -109,14 +109,14 @@ export async function getCountries() {
     const visaData = country.country_code ? visaMap.get(country.country_code) : null;
     const visaStatus = visaData?.visa_status || null;
     const availableMethods = visaData?.available_methods || [];
-    
+
     // Vize durumu etiketlerini belirle (birden fazla yöntem olabilir)
     const visaLabels: string[] = [];
     let isVisaFree = false;
-    
+
     // available_methods varsa onları kullan, yoksa visa_status'a bak
     const methodsToCheck = availableMethods.length > 0 ? availableMethods : (visaStatus ? [visaStatus] : []);
-    
+
     methodsToCheck.forEach(method => {
       const m = method.toLowerCase();
       if (m === "visa_free" || m === "visa-free") {
@@ -131,12 +131,12 @@ export async function getCountries() {
         if (!visaLabels.includes("Vize Gerekli")) visaLabels.push("Vize Gerekli");
       }
     });
-    
+
     // Eğer hiç etiket yoksa varsayılan olarak "Vize Gerekli" ekle
     if (visaLabels.length === 0 && visaStatus) {
       visaLabels.push("Vize Gerekli");
     }
-    
+
     return {
       ...country,
       slug,
@@ -347,7 +347,7 @@ export async function getCountryMenuBySlug(slug: string) {
       .eq("slug", slug)
       .eq("type", "Country\\CountryController@menuDetail")
       .maybeSingle();
-    
+
     tax = result.data;
   }
 
@@ -416,7 +416,7 @@ export async function getCountryQuestions(countryId: number) {
         .select("id, title, contents")
         .eq("parent_id", question.id)
         .eq("status", 1);
-      
+
       return {
         ...question,
         answers: answers || []
@@ -535,12 +535,29 @@ export async function getBlogs(options?: { home?: number; limit?: number }) {
 
 export async function getBlogBySlug(slug: string) {
   // Try with blog/ prefix first, then without
-  const slugsToTry = slug.startsWith('blog/') 
-    ? [slug, slug.replace('blog/', '')] 
+  const slugsToTry = slug.startsWith('blog/')
+    ? [slug, slug.replace('blog/', '')]
     : [slug, `blog/${slug}`];
 
+  // 1. Önce doğrudan `blogs` tablosundaki yeni "slug" yapısıyla aramayı dene 
+  // (Yeni bloglar sadece burada slug tutuyor)
+  for (const trySlug of slugsToTry) {
+    const cleanSlug = trySlug.replace('blog/', ''); // blogs tablosunda blog/ prefixi olmadan tutulabilir
+    const { data: directBlog, error: directError } = await supabase
+      .from("blogs")
+      .select("*")
+      .eq("slug", cleanSlug)
+      .eq("status", 1)
+      .maybeSingle();
+
+    if (!directError && directBlog) {
+      return directBlog;
+    }
+  }
+
+  // 2. Bulamazsa taxonomies tablosundaki eski yapıya bak
   let taxonomy = null;
-  
+
   for (const trySlug of slugsToTry) {
     const { data, error } = await supabase
       .from("taxonomies")
@@ -548,7 +565,7 @@ export async function getBlogBySlug(slug: string) {
       .eq("slug", trySlug)
       .or("type.eq.Blog\\BlogController@detail,type.eq.Country\\CountryController@blogDetail")
       .maybeSingle();
-    
+
     if (!error && data) {
       taxonomy = data;
       break;
@@ -611,7 +628,7 @@ export async function getConsultantComments(consultantId: number) {
     .eq("status", 1)
     .is("parent_id", null)
     .order("created_at", { ascending: false });
-  
+
   if (error) {
     console.error("getConsultantComments error", error);
     return [];
@@ -634,7 +651,7 @@ export async function getConsultantComments(consultantId: number) {
   const commentsWithUsers = await Promise.all(
     comments.map(async (comment: any) => {
       let userName = "Anonim";
-      
+
       // user_id = yorum yapan kullanıcı
       if (comment.user_id) {
         const { data: user } = await supabase
@@ -642,7 +659,7 @@ export async function getConsultantComments(consultantId: number) {
           .select("name")
           .eq("id", comment.user_id)
           .maybeSingle();
-        
+
         if (user?.name) {
           userName = user.name;
         }
@@ -653,14 +670,14 @@ export async function getConsultantComments(consultantId: number) {
       const repliesWithUsers = await Promise.all(
         replies.map(async (reply: any) => {
           let replyUserName = "Anonim";
-          
+
           if (reply.user_id) {
             const { data: user } = await supabase
               .from("users")
               .select("name")
               .eq("id", reply.user_id)
               .maybeSingle();
-            
+
             if (user?.name) {
               replyUserName = user.name;
             }
@@ -959,28 +976,28 @@ export async function getCountryPageData(countryId: number) {
     // Menus
     menuIds.length > 0
       ? supabase
-          .from("country_menus")
-          .select("*")
-          .in("id", menuIds)
-          .eq("status", 1)
-          .order("sorted", { ascending: true })
+        .from("country_menus")
+        .select("*")
+        .in("id", menuIds)
+        .eq("status", 1)
+        .order("sorted", { ascending: true })
       : Promise.resolve({ data: [] }),
     // Questions
     questionIds.length > 0
       ? supabase
-          .from("questions")
-          .select("*")
-          .in("id", questionIds)
-          .eq("status", 1)
+        .from("questions")
+        .select("*")
+        .in("id", questionIds)
+        .eq("status", 1)
       : Promise.resolve({ data: [] }),
     // Blogs
     blogIds.length > 0
       ? supabase
-          .from("blogs")
-          .select("*")
-          .in("id", blogIds)
-          .eq("status", 1)
-          .limit(5)
+        .from("blogs")
+        .select("*")
+        .in("id", blogIds)
+        .eq("status", 1)
+        .limit(5)
       : Promise.resolve({ data: [] }),
   ]);
 
@@ -993,18 +1010,18 @@ export async function getCountryPageData(countryId: number) {
     // Get all answers for all questions in one query
     questions.length > 0
       ? supabase
-          .from("questions")
-          .select("id, title, contents, parent_id")
-          .in("parent_id", questions.map((q: any) => q.id))
-          .eq("status", 1)
+        .from("questions")
+        .select("id, title, contents, parent_id")
+        .in("parent_id", questions.map((q: any) => q.id))
+        .eq("status", 1)
       : Promise.resolve({ data: [] }),
     // Get all taxonomy slugs for menus in one query
     menus.length > 0
       ? supabase
-          .from("taxonomies")
-          .select("model_id, slug")
-          .in("model_id", menus.map((m: any) => m.id))
-          .eq("type", "Country\\CountryController@menuDetail")
+        .from("taxonomies")
+        .select("model_id, slug")
+        .in("model_id", menus.map((m: any) => m.id))
+        .eq("type", "Country\\CountryController@menuDetail")
       : Promise.resolve({ data: [] }),
   ]);
 
