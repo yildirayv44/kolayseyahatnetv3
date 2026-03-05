@@ -28,9 +28,29 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        // Başlıktan slug oluştur
+        const slug = body.title
+            .toLowerCase()
+            .replace(/ğ/g, 'g')
+            .replace(/ü/g, 'u')
+            .replace(/ş/g, 's')
+            .replace(/ı/g, 'i')
+            .replace(/ö/g, 'o')
+            .replace(/ç/g, 'c')
+            .replace(/[^a-z0-9]/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/^-|-$/g, '');
+
+        const blogData = {
+            ...body,
+            slug,
+            home: body.home !== undefined ? body.home : 0,
+            type: body.type !== undefined ? body.type : 1,
+        };
+
         const { data, error } = await supabase
             .from('blogs')
-            .insert([body])
+            .insert([blogData])
             .select()
             .single();
 
