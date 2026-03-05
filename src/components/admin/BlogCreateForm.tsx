@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
 import { Save, ArrowLeft, Sparkles, Search, CheckCircle, Languages, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { RichTextEditor } from "./RichTextEditor";
@@ -92,26 +91,26 @@ export function BlogCreateForm() {
       const data = await response.json();
       if (data.success) {
         setSeoScore(data.score);
-        
+
         let message = `📊 SEO Skoru: ${data.score}/100\n\n`;
-        
+
         if (data.meta_title) {
           message += `📝 Meta Title: ${data.meta_title.status === 'good' ? '✅' : '⚠️'} ${data.meta_title.length} karakter\n`;
           if (data.meta_title.suggestion) message += `   💡 ${data.meta_title.suggestion}\n`;
         }
-        
+
         if (data.content) {
           message += `\n📄 İçerik: ${data.content.status === 'good' ? '✅' : '⚠️'} ${data.content.word_count} kelime\n`;
           if (data.content.suggestion) message += `   💡 ${data.content.suggestion}\n`;
         }
-        
+
         if (data.improvements && data.improvements.length > 0) {
           message += `\n🔧 İyileştirmeler:\n`;
           data.improvements.forEach((imp: string) => {
             message += `   • ${imp}\n`;
           });
         }
-        
+
         alert(message);
       } else {
         alert("Hata: " + data.error);
@@ -143,41 +142,41 @@ export function BlogCreateForm() {
       const data = await response.json();
       if (data.success) {
         setQualityScore(data.overall_score);
-        
+
         let message = `📊 Kalite Skoru: ${data.overall_score}/100\n\n`;
-        
+
         if (data.grammar) {
           message += `✍️ Gramer: ${data.grammar.score}/100 (${data.grammar.status})\n`;
           if (data.grammar.errors && data.grammar.errors.length > 0) {
             message += `   ⚠️ ${data.grammar.errors.length} hata bulundu\n`;
           }
         }
-        
+
         if (data.spelling) {
           message += `📝 Yazım: ${data.spelling.score}/100 (${data.spelling.status})\n`;
           if (data.spelling.errors && data.spelling.errors.length > 0) {
             message += `   ⚠️ ${data.spelling.errors.length} hata bulundu\n`;
           }
         }
-        
+
         if (data.readability) {
           message += `📖 Okunabilirlik: ${data.readability.score}/100 (${data.readability.status})\n`;
         }
-        
+
         if (data.suggestions && data.suggestions.length > 0) {
           message += `\n💡 Öneriler:\n`;
           data.suggestions.slice(0, 5).forEach((sug: string) => {
             message += `   • ${sug}\n`;
           });
         }
-        
+
         if (data.strengths && data.strengths.length > 0) {
           message += `\n✨ Güçlü Yönler:\n`;
           data.strengths.slice(0, 3).forEach((str: string) => {
             message += `   • ${str}\n`;
           });
         }
-        
+
         alert(message);
       } else {
         alert("Hata: " + data.error);
@@ -194,13 +193,17 @@ export function BlogCreateForm() {
     setLoading(true);
 
     try {
-      const { data, error } = await supabase
-        .from("blogs")
-        .insert([formData])
-        .select()
-        .single();
+      const response = await fetch('/api/admin/blogs/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
 
-      if (error) throw error;
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || result.details || 'Bilinmeyen hata');
+      }
 
       alert("Blog yazısı başarıyla eklendi!");
       router.push("/admin/bloglar");
@@ -263,26 +266,24 @@ export function BlogCreateForm() {
           </div>
           <div className="flex items-center gap-2">
             {seoScore !== null && (
-              <span className={`text-sm font-semibold px-3 py-1 rounded-full ${
-                seoScore >= 80 ? 'bg-green-100 text-green-700' :
+              <span className={`text-sm font-semibold px-3 py-1 rounded-full ${seoScore >= 80 ? 'bg-green-100 text-green-700' :
                 seoScore >= 60 ? 'bg-yellow-100 text-yellow-700' :
-                'bg-red-100 text-red-700'
-              }`}>
+                  'bg-red-100 text-red-700'
+                }`}>
                 SEO: {seoScore}/100
               </span>
             )}
             {qualityScore !== null && (
-              <span className={`text-sm font-semibold px-3 py-1 rounded-full ${
-                qualityScore >= 80 ? 'bg-green-100 text-green-700' :
+              <span className={`text-sm font-semibold px-3 py-1 rounded-full ${qualityScore >= 80 ? 'bg-green-100 text-green-700' :
                 qualityScore >= 60 ? 'bg-yellow-100 text-yellow-700' :
-                'bg-red-100 text-red-700'
-              }`}>
+                  'bg-red-100 text-red-700'
+                }`}>
                 Kalite: {qualityScore}/100
               </span>
             )}
           </div>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <button
             type="button"
@@ -383,7 +384,7 @@ export function BlogCreateForm() {
           <label className="block text-sm font-semibold text-slate-900">
             İçerik
           </label>
-          
+
           <RichTextEditor
             value={formData.contents}
             onChange={(value) => setFormData({ ...formData, contents: value })}
