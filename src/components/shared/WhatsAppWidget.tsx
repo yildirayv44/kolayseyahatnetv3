@@ -14,7 +14,7 @@ export function WhatsAppWidget() {
     return () => clearTimeout(timer);
   }, []);
 
-  const phoneNumber = "902129099971"; // WhatsApp numarası (0212 909 99 71)
+  const phoneNumber = "12314032205"; // WhatsApp numarası +1 (231) 403-2205
   const message = "Merhaba! Web sitesinden ulaşıyorum. Vize başvurusu hakkında bilgi almak istiyorum.";
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
 
