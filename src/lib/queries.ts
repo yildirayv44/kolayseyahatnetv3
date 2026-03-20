@@ -1069,3 +1069,196 @@ export async function getCountryPageData(countryId: number) {
     comments,
   };
 }
+
+// ============================================================================
+// NEW: Multi-Source Visa System Functions
+// ============================================================================
+
+/**
+ * Get source countries (countries that can be selected as passport holders)
+ */
+export async function getSourceCountries() {
+  const { data: countries, error } = await supabase
+    .from("countries")
+    .select("id, name, country_code, flag_emoji, passport_rank, passport_power_score, region")
+    .eq("is_source_country", true)
+    .eq("status", 1)
+    .order("passport_rank", { ascending: true, nullsLast: true });
+
+  if (error) {
+    console.error("getSourceCountries error", error);
+    return [];
+  }
+
+  return countries || [];
+}
+
+/**
+ * Get countries by source country code (for visa checker)
+ * @param sourceCountryCode - ISO 3166-1 alpha-3 code (e.g., TUR, TKM, DEU)
+ */
+export async function getCountriesBySource(sourceCountryCode: string = 'TUR') {
+  const { data: countries, error } = await supabase
+    .from("countries")
+    .select("*")
+    .eq("status", 1)
+    .order("sorted", { ascending: true });
+
+  if (error) {
+    console.error("getCountriesBySource error", error);
+    return [];
+  }
+
+  if (!countries) return [];
+
+  const countryIds = countries.map(c => c.id);
+  const countryCodes = countries.map(c => c.country_code).filter((code): code is string => !!code);
+
+  // Get taxonomy slugs
+  const { data: taxonomies } = await supabase
+    .from("taxonomies")
+    .select("model_id, slug")
+    .in("model_id", countryIds)
+    .eq("type", "Country\\CountryController@detail");
+
+  const taxonomyMap = new Map<number, string>();
+  taxonomies?.forEach(tax => {
+    taxonomyMap.set(tax.model_id, tax.slug);
+  });
+
+  // Get visa requirements for source country
+  const { data: visaReqs } = await supabase
+    .from("visa_requirements")
+    .select("country_code, visa_status, allowed_stay, available_methods, conditions, notes")
+    .eq("source_country_code", sourceCountryCode)
+    .in("country_code", countryCodes);
+
+  const visaReqMap = new Map<string, any>();
+  visaReqs?.forEach(req => {
+    visaReqMap.set(req.country_code, req);
+  });
+
+  // Get products for source country
+  const { data: products } = await supabase
+    .from("products")
+    .select("id, country_id, name, price, currency_id")
+    .eq("source_country_code", sourceCountryCode)
+    .in("country_id", countryIds)
+    .eq("status", 1)
+    .order("price", { ascending: true });
+
+  const packagesMap = new Map<number, Array<any>>();
+  const priceMap = new Map<number, { price: number; currency_id: number }>();
+
+  products?.forEach(product => {
+    if (!packagesMap.has(product.country_id)) {
+      packagesMap.set(product.country_id, []);
+    }
+    packagesMap.get(product.country_id)!.push({
+      id: product.id,
+      name: product.name,
+      price: parseFloat(product.price),
+      currency_id: product.currency_id || 1
+    });
+
+    if (!priceMap.has(product.country_id)) {
+      priceMap.set(product.country_id, {
+        price: parseFloat(product.price),
+        currency_id: product.currency_id || 1
+      });
+    }
+  });
+
+  // Combine data
+  return countries.map(country => {
+    const visaReq = visaReqMap.get(country.country_code);
+    const packages = packagesMap.get(country.id) || [];
+    const priceInfo = priceMap.get(country.id);
+
+    return {
+      ...country,
+      slug: taxonomyMap.get(country.id) || country.slug,
+      visa_status: visaReq?.visa_status || 'unknown',
+      visa_required: visaReq?.visa_status === 'visa-required' || visaReq?.visa_status === 'evisa',
+      allowed_stay: visaReq?.allowed_stay || null,
+      available_methods: visaReq?.available_methods || [],
+      conditions: visaReq?.conditions || null,
+      notes: visaReq?.notes || null,
+      packages,
+      price: priceInfo?.price || null,
+      currency_id: priceInfo?.currency_id || 1,
+    };
+  });
+}
+
+/**
+ * Get visa requirement between two countries
+ * @param sourceCountryCode - Source country (passport holder)
+ * @param destinationCountryCode - Destination country
+ */
+export async function getVisaRequirement(
+  sourceCountryCode: string,
+  destinationCountryCode: string
+) {
+  const { data, error } = await supabase
+    .from("visa_requirements")
+    .select("*")
+    .eq("source_country_code", sourceCountryCode)
+    .eq("country_code", destinationCountryCode)
+    .maybeSingle();
+
+  if (error) {
+    console.error("getVisaRequirement error", error);
+    return null;
+  }
+
+  return data;
+}
+
+/**
+ * Get products (visa packages) for a specific source-destination pair
+ * @param countryId - Destination country ID
+ * @param sourceCountryCode - Source country code (default: TUR)
+ */
+export async function getCountryProductsBySource(
+  countryId: number,
+  sourceCountryCode: string = 'TUR'
+) {
+  const { data } = await supabase
+    .from("products")
+    .select("*")
+    .eq("country_id", countryId)
+    .eq("source_country_code", sourceCountryCode)
+    .eq("status", 1)
+    .order("price", { ascending: true });
+
+  return data || [];
+}
+
+/**
+ * Get SEO content for a visa page
+ * @param sourceCountryCode - Source country code
+ * @param destinationCountryCode - Destination country code
+ * @param locale - Locale (tr or en)
+ */
+export async function getVisaPageSEO(
+  sourceCountryCode: string,
+  destinationCountryCode: string,
+  locale: string = 'tr'
+) {
+  const { data, error } = await supabase
+    .from("visa_pages_seo")
+    .select("*")
+    .eq("source_country_code", sourceCountryCode)
+    .eq("destination_country_code", destinationCountryCode)
+    .eq("locale", locale)
+    .eq("content_status", "published")
+    .maybeSingle();
+
+  if (error) {
+    console.error("getVisaPageSEO error", error);
+    return null;
+  }
+
+  return data;
+}
