@@ -50,6 +50,9 @@ interface GeneratedContent {
   health_requirements?: string;
   customs_rules?: string;
   why_kolay_seyahat?: string;
+  popular_cities?: string;
+  best_time_to_visit?: string;
+  application_steps?: string;
   country_info?: {
     capital: string;
     language: string;
@@ -233,6 +236,21 @@ function generateTurkishContent(
   const why_kolay_seyahat = `<h2>Neden Kolay Seyahat?</h2>
 <p>Kolay Seyahat ile ${destinationName} seyahatinizde danışmanlık hizmeti.</p>`;
 
+  // Popular Cities
+  const popular_cities = `<p>${destinationName}'ın başkenti ve diğer popüler şehirlerini keşfedin. Tarihi ve kültürel zenginlikleriyle ünlü bu şehirler mutlaka görülmesi gereken yerlerdir.</p>`;
+
+  // Best Time to Visit
+  const best_time_to_visit = `<p>Mayıs-Eylül arası sahil tatili için ideal dönemdir. İlkbahar ve sonbahar ayları şehir gezileri için uygundur.</p>`;
+
+  // Application Steps
+  const application_steps = `<ol>
+<li>Online başvuru formunu doldurun</li>
+<li>Gerekli belgeleri hazırlayın</li>
+<li>Randevu alın (gerekiyorsa)</li>
+<li>Başvurunuzu tamamlayın</li>
+<li>Vizenizi teslim alın</li>
+</ol>`;
+
   // Country Info
   const country_info = {
     capital: destinationName,
@@ -259,6 +277,9 @@ function generateTurkishContent(
     health_requirements,
     customs_rules,
     why_kolay_seyahat,
+    popular_cities,
+    best_time_to_visit,
+    application_steps,
     country_info
   };
 }
@@ -331,6 +352,21 @@ function generateEnglishContent(
   const why_kolay_seyahat = `<h2>Why Kolay Seyahat?</h2>
 <p>Kolay Seyahat provides consultation services for your ${destinationName} travel.</p>`;
 
+  // Popular Cities
+  const popular_cities = `<p>Discover the capital and other popular cities of ${destinationName}. These cities are must-see destinations famous for their historical and cultural richness.</p>`;
+
+  // Best Time to Visit
+  const best_time_to_visit = `<p>May-September is the ideal period for beach holidays. Spring and autumn months are suitable for city tours.</p>`;
+
+  // Application Steps
+  const application_steps = `<ol>
+<li>Fill out the online application form</li>
+<li>Prepare required documents</li>
+<li>Schedule an appointment (if required)</li>
+<li>Complete your application</li>
+<li>Collect your visa</li>
+</ol>`;
+
   // Country Info
   const country_info = {
     capital: destinationName,
@@ -357,6 +393,9 @@ function generateEnglishContent(
     health_requirements,
     customs_rules,
     why_kolay_seyahat,
+    popular_cities,
+    best_time_to_visit,
+    application_steps,
     country_info
   };
 }
