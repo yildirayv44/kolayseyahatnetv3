@@ -29,12 +29,13 @@ export async function POST() {
       }, { status: 409 });
     }
 
-    // Get total source countries count
+    // Get total source countries count (exclude Turkey - TUR)
     const { count } = await supabase
       .from('countries')
       .select('id', { count: 'exact', head: true })
       .eq('is_source_country', true)
-      .eq('status', 1);
+      .eq('status', 1)
+      .neq('country_code', 'TUR');
 
     if (!count || count === 0) {
       return NextResponse.json({

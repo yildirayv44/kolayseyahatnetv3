@@ -16,10 +16,11 @@ export async function GET() {
     // Get all source countries
     const { data: countries, error: countriesError } = await supabase
       .from('countries')
-      .select('id, name, country_code, flag_emoji, passport_rank, is_source_country')
+      .select('id, name, country_code, is_source_country, passport_rank, flag_emoji')
       .eq('is_source_country', true)
       .eq('status', 1)
-      .order('name', { ascending: true });
+      .neq('country_code', 'TUR')
+      .order('passport_rank', { ascending: true, nullsFirst: false });
 
     if (countriesError) throw countriesError;
 
