@@ -43,7 +43,7 @@ export async function getBilateralVisaPage(slug: string) {
     .from('visa_pages_seo')
     .select('*')
     .eq('slug', slug)
-    .eq('content_status', 'published')
+    .in('content_status', ['published', 'generated'])
     .maybeSingle();
 
   if (error) {
@@ -58,7 +58,7 @@ export async function getBilateralVisaPage(slug: string) {
   // Manually fetch country data
   const { data: countries } = await supabase
     .from('countries')
-    .select('name, name_en, country_code, flag_emoji')
+    .select('name, country_code, flag_emoji')
     .in('country_code', [visaPage.source_country_code, visaPage.destination_country_code]);
 
   const sourceCountry = countries?.find(c => c.country_code === visaPage.source_country_code);
@@ -97,7 +97,7 @@ export async function getCountryCodeFromSlug(countrySlug: string): Promise<strin
   const { data: country } = await supabase
     .from('countries')
     .select('country_code')
-    .or(`name.ilike.%${countrySlug}%,name_en.ilike.%${countrySlug}%`)
+    .or(`name.ilike.%${countrySlug}%`)
     .maybeSingle();
 
   return country?.country_code || null;
@@ -125,7 +125,7 @@ export async function generateBilateralVisaSlug(
   // Get country names
   const { data: countries } = await supabase
     .from('countries')
-    .select('country_code, name, name_en')
+    .select('country_code, name')
     .in('country_code', [sourceCode, destinationCode]);
 
   if (!countries || countries.length !== 2) return null;
@@ -135,13 +135,25 @@ export async function generateBilateralVisaSlug(
 
   if (!source || !destination) return null;
 
-  const sourceName = locale === 'en' ? (source.name_en || source.name) : source.name;
-  const destinationName = locale === 'en' ? (destination.name_en || destination.name) : destination.name;
+  const sourceName = source.name;
+  const destinationName = destination.name;
   const suffix = locale === 'tr' ? 'vize' : 'visa';
 
-  // Slugify: lowercase, replace spaces with hyphens, remove special chars
+  // Slugify with Turkish character support
   const slugify = (text: string) => 
     text.toLowerCase()
+      .replace(/ğ/g, 'g')
+      .replace(/ü/g, 'u')
+      .replace(/ş/g, 's')
+      .replace(/ı/g, 'i')
+      .replace(/ö/g, 'o')
+      .replace(/ç/g, 'c')
+      .replace(/Ğ/g, 'g')
+      .replace(/Ü/g, 'u')
+      .replace(/Ş/g, 's')
+      .replace(/İ/g, 'i')
+      .replace(/Ö/g, 'o')
+      .replace(/Ç/g, 'c')
       .replace(/[^a-z0-9\s-]/g, '')
       .replace(/\s+/g, '-')
       .replace(/-+/g, '-')

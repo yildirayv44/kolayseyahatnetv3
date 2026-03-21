@@ -8,6 +8,32 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's')
+    .replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ç/g, 'c')
+    .replace(/Ğ/g, 'g').replace(/Ü/g, 'u').replace(/Ş/g, 's')
+    .replace(/İ/g, 'i').replace(/Ö/g, 'o').replace(/Ç/g, 'c')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim();
+}
+
+async function generateSlug(sourceCode: string, destCode: string, locale: string): Promise<string> {
+  const { data: countries } = await supabase
+    .from('countries')
+    .select('country_code, name')
+    .in('country_code', [sourceCode, destCode]);
+
+  const source = countries?.find(c => c.country_code === sourceCode);
+  const dest = countries?.find(c => c.country_code === destCode);
+  const suffix = locale === 'en' ? 'visa' : 'vize';
+
+  return `${slugify(source?.name || sourceCode)}-${slugify(dest?.name || destCode)}-${suffix}`;
+}
+
 /**
  * POST /api/admin/visa-pages/generate
  * Generate AI content for a bilateral visa page
@@ -36,6 +62,10 @@ export async function POST(request: NextRequest) {
     );
     console.log('[API] Content generated successfully');
 
+    // Generate proper slug with Turkish character support
+    const slug = await generateSlug(source_country_code, destination_country_code, locale);
+    console.log('[API] Generated slug:', slug);
+
     // Check if page already exists
     const { data: existing } = await supabase
       .from('visa_pages_seo')
@@ -53,6 +83,7 @@ export async function POST(request: NextRequest) {
         .from('visa_pages_seo')
         .update({
           ...content,
+          slug,
           content_status: 'generated',
           generated_at: new Date().toISOString(),
           ai_model: 'internal-template',
@@ -72,6 +103,7 @@ export async function POST(request: NextRequest) {
           source_country_code,
           destination_country_code,
           locale,
+          slug,
           ...content,
           content_status: 'generated',
           generated_at: new Date().toISOString(),

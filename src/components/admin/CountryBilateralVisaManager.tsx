@@ -62,7 +62,7 @@ export function CountryBilateralVisaManager({ country }: { country: Country }) {
     try {
       setLoading(true);
       const response = await fetch(
-        `/api/admin/visa-pages?source_country_code=${country.country_code}`
+        `/api/admin/visa-pages?source=${country.country_code}`
       );
       const data = await response.json();
       if (data.success) {
@@ -334,7 +334,7 @@ export function CountryBilateralVisaManager({ country }: { country: Country }) {
                     <td className="px-4 py-4">
                       <div className="flex items-center justify-end gap-2">
                         <Link
-                          href={`/${page.slug}`}
+                          href={`/${page.locale === 'en' ? 'en' : 'tr'}/${page.slug}`}
                           target="_blank"
                           className="rounded-lg p-2 text-slate-600 hover:bg-slate-100"
                           title="Görüntüle"
