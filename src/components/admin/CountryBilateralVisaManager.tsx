@@ -32,10 +32,31 @@ export function CountryBilateralVisaManager({ country }: { country: Country }) {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [destinationCode, setDestinationCode] = useState("");
   const [locale, setLocale] = useState<"tr" | "en">("tr");
+  const [countries, setCountries] = useState<Country[]>([]);
+  const [loadingCountries, setLoadingCountries] = useState(false);
 
   useEffect(() => {
     fetchPages();
+    fetchCountries();
   }, [country.country_code]);
+
+  const fetchCountries = async () => {
+    try {
+      setLoadingCountries(true);
+      const response = await fetch('/api/admin/countries');
+      const data = await response.json();
+      if (data.success && data.countries) {
+        // Filter out the source country and only include countries with country_code
+        setCountries(data.countries.filter((c: Country) => 
+          c.country_code && c.country_code !== country.country_code
+        ));
+      }
+    } catch (error) {
+      console.error('Failed to fetch countries:', error);
+    } finally {
+      setLoadingCountries(false);
+    }
+  };
 
   const fetchPages = async () => {
     try {
@@ -163,19 +184,27 @@ export function CountryBilateralVisaManager({ country }: { country: Country }) {
               </div>
               <div>
                 <label className="mb-2 block text-sm font-semibold text-slate-900">
-                  Hedef Ülke Kodu *
+                  Hedef Ülke *
                 </label>
-                <input
-                  type="text"
+                <select
                   value={destinationCode}
-                  onChange={(e) => setDestinationCode(e.target.value.toUpperCase())}
-                  placeholder="Örn: USA, GBR, DEU"
+                  onChange={(e) => setDestinationCode(e.target.value)}
                   className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  maxLength={3}
-                />
-                <p className="mt-1 text-xs text-slate-500">
-                  ISO 3166-1 alpha-3 ülke kodu (3 harf)
-                </p>
+                  disabled={loadingCountries}
+                >
+                  <option value="">Hedef ülke seçin...</option>
+                  {countries
+                    .filter(c => c.country_code)
+                    .sort((a, b) => a.name.localeCompare(b.name, 'tr'))
+                    .map((c) => (
+                      <option key={c.id} value={c.country_code}>
+                        {c.name} ({c.country_code})
+                      </option>
+                    ))}
+                </select>
+                {loadingCountries && (
+                  <p className="mt-1 text-xs text-slate-500">Ülkeler yükleniyor...</p>
+                )}
               </div>
             </div>
 
