@@ -12,28 +12,37 @@ export async function GET(
   try {
     const { id } = await params;
 
-    const { data, error } = await supabase
+    const { data: visaPage, error } = await supabase
       .from('visa_pages_seo')
-      .select(`
-        *,
-        source_country:countries!visa_pages_seo_source_country_code_fkey(name, country_code, flag_emoji),
-        destination_country:countries!visa_pages_seo_destination_country_code_fkey(name, country_code, flag_emoji)
-      `)
+      .select('*')
       .eq('id', id)
       .single();
 
     if (error) throw error;
 
-    if (!data) {
+    if (!visaPage) {
       return NextResponse.json(
         { success: false, error: 'Visa page not found' },
         { status: 404 }
       );
     }
 
+    // Manually fetch country data
+    const { data: countries } = await supabase
+      .from('countries')
+      .select('name, country_code, flag_emoji')
+      .in('country_code', [visaPage.source_country_code, visaPage.destination_country_code]);
+
+    const sourceCountry = countries?.find(c => c.country_code === visaPage.source_country_code);
+    const destinationCountry = countries?.find(c => c.country_code === visaPage.destination_country_code);
+
     return NextResponse.json({
       success: true,
-      data
+      data: {
+        ...visaPage,
+        source_country: sourceCountry,
+        destination_country: destinationCountry
+      }
     });
   } catch (error: any) {
     console.error('Get visa page error:', error);

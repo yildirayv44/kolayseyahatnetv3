@@ -16,11 +16,7 @@ export async function GET(request: NextRequest) {
 
     let query = supabase
       .from('visa_pages_seo')
-      .select(`
-        *,
-        source_country:countries!visa_pages_seo_source_country_code_fkey(name, country_code, flag_emoji),
-        destination_country:countries!visa_pages_seo_destination_country_code_fkey(name, country_code, flag_emoji)
-      `)
+      .select('*')
       .order('created_at', { ascending: false });
 
     if (sourceCountry) {
@@ -43,14 +39,42 @@ export async function GET(request: NextRequest) {
       query = query.or(`slug.ilike.%${search}%,meta_title.ilike.%${search}%`);
     }
 
-    const { data, error } = await query;
+    const { data: visaPages, error } = await query;
 
     if (error) throw error;
 
+    // Manually fetch country data for all pages
+    if (visaPages && visaPages.length > 0) {
+      const countryCodes = new Set<string>();
+      visaPages.forEach(page => {
+        countryCodes.add(page.source_country_code);
+        countryCodes.add(page.destination_country_code);
+      });
+
+      const { data: countries } = await supabase
+        .from('countries')
+        .select('name, country_code, flag_emoji')
+        .in('country_code', Array.from(countryCodes));
+
+      const countryMap = new Map(countries?.map(c => [c.country_code, c]) || []);
+
+      const enrichedData = visaPages.map(page => ({
+        ...page,
+        source_country: countryMap.get(page.source_country_code),
+        destination_country: countryMap.get(page.destination_country_code)
+      }));
+
+      return NextResponse.json({
+        success: true,
+        data: enrichedData,
+        count: enrichedData.length
+      });
+    }
+
     return NextResponse.json({
       success: true,
-      data: data || [],
-      count: data?.length || 0
+      data: [],
+      count: 0
     });
   } catch (error: any) {
     console.error('Get visa pages error:', error);

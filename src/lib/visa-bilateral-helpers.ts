@@ -39,13 +39,9 @@ export function parseBilateralVisaSlug(slug: string): { source: string; destinat
  * Get bilateral visa page data from database
  */
 export async function getBilateralVisaPage(slug: string) {
-  const { data, error } = await supabase
+  const { data: visaPage, error } = await supabase
     .from('visa_pages_seo')
-    .select(`
-      *,
-      source_country:countries!visa_pages_seo_source_country_code_fkey(name, name_en, country_code, flag_emoji),
-      destination_country:countries!visa_pages_seo_destination_country_code_fkey(name, name_en, country_code, flag_emoji)
-    `)
+    .select('*')
     .eq('slug', slug)
     .eq('content_status', 'published')
     .maybeSingle();
@@ -55,7 +51,24 @@ export async function getBilateralVisaPage(slug: string) {
     return null;
   }
 
-  return data;
+  if (!visaPage) {
+    return null;
+  }
+
+  // Manually fetch country data
+  const { data: countries } = await supabase
+    .from('countries')
+    .select('name, name_en, country_code, flag_emoji')
+    .in('country_code', [visaPage.source_country_code, visaPage.destination_country_code]);
+
+  const sourceCountry = countries?.find(c => c.country_code === visaPage.source_country_code);
+  const destinationCountry = countries?.find(c => c.country_code === visaPage.destination_country_code);
+
+  return {
+    ...visaPage,
+    source_country: sourceCountry,
+    destination_country: destinationCountry
+  };
 }
 
 /**
