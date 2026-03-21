@@ -27,12 +27,13 @@ export async function getCountries() {
     .in("model_id", countryIds)
     .eq("type", "Country\\CountryController@detail");
 
-  // Tek sorguda tüm ülkelerin paketlerini çek (tüm bilgilerle)
+  // Tek sorguda tüm ülkelerin paketlerini çek (TUR - Türkiye kaynaklı)
   const { data: products, error: productsError } = await supabase
     .from("products")
     .select("id, country_id, name, price, currency_id")
     .in("country_id", countryIds)
     .eq("status", 1)
+    .eq("source_country_code", "TUR")
     .order("price", { ascending: true });
 
   if (productsError) {
@@ -45,10 +46,11 @@ export async function getCountries() {
     .map(c => c.country_code)
     .filter((code): code is string => !!code);
 
-  // Vize gerekliliklerini çek (available_methods dahil)
+  // Vize gerekliliklerini çek (TUR - Türkiye için, available_methods dahil)
   const { data: visaRequirements } = await supabase
     .from("visa_requirements")
     .select("country_code, visa_status, available_methods")
+    .eq("source_country_code", "TUR")
     .in("country_code", countryCodes);
 
   // Taxonomy map'i oluştur

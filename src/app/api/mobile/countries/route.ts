@@ -271,10 +271,11 @@ export async function GET(request: Request) {
       taxonomyMap.set(tax.model_id, tax.slug);
     });
 
-    // Get visa requirements from visa_requirements table (accurate data)
+    // Get visa requirements from visa_requirements table (TUR - Türkiye için)
     const { data: visaReqs } = await supabase
       .from('visa_requirements')
       .select('country_code, visa_status, allowed_stay, available_methods')
+      .eq('source_country_code', 'TUR')
       .in('country_code', countryCodes);
 
     const visaReqMap = new Map<string, any>();
