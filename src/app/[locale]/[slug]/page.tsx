@@ -41,6 +41,7 @@ import { SocialProofNotifications } from "@/components/shared/SocialProofNotific
 import { SlideInVisaWidget } from "@/components/shared/SlideInVisaWidget";
 import { getReadingTime } from "@/lib/reading-time";
 import { optimizeHtmlContent } from "@/lib/optimize-html-images";
+import { isBilateralVisaSlug, getBilateralVisaPage, incrementVisaPageViews } from "@/lib/visa-bilateral-helpers";
 
 // ⚡ PERFORMANCE: Revalidate every 24 hours (86400 seconds) since country content rarely changes
 // Admin can trigger on-demand revalidation when content is updated
@@ -78,6 +79,21 @@ export async function generateStaticParams() {
     { locale: "tr", slug: tax.slug },
     { locale: "en", slug: tax.slug }
   ]);
+
+  // Add bilateral visa pages (published only)
+  const { data: visaPages } = await supabaseClient
+    .from("visa_pages_seo")
+    .select("slug, locale")
+    .eq("content_status", "published")
+    .limit(100); // Limit to top 100 for build time
+
+  if (visaPages) {
+    visaPages.forEach(page => {
+      if (page.slug) {
+        params.push({ locale: page.locale, slug: page.slug });
+      }
+    });
+  }
 
   return params;
 }
@@ -129,6 +145,43 @@ const getCachedCountryPageData = unstable_cache(
 export async function generateMetadata({ params }: CountryPageParams): Promise<Metadata> {
   const { slug, locale } = await params;
   const decodedSlug = decodeURIComponent(slug);
+
+  // Check if this is a bilateral visa page
+  if (isBilateralVisaSlug(decodedSlug)) {
+    const visaPage = await getBilateralVisaPage(decodedSlug);
+    
+    if (visaPage) {
+      const url = `https://www.kolayseyahat.net/${locale === 'en' ? 'en/' : ''}${decodedSlug}`;
+      
+      return {
+        title: visaPage.meta_title || `${visaPage.source_country?.name} - ${visaPage.destination_country?.name} Visa`,
+        description: visaPage.meta_description,
+        openGraph: {
+          title: visaPage.meta_title,
+          description: visaPage.meta_description,
+          type: 'website',
+          url,
+          siteName: 'Kolay Seyahat',
+          locale: locale === 'en' ? 'en_US' : 'tr_TR',
+        },
+        twitter: {
+          card: 'summary_large_image',
+          title: visaPage.meta_title,
+          description: visaPage.meta_description,
+          creator: '@kolayseyahat',
+          site: '@kolayseyahat',
+        },
+        alternates: {
+          canonical: url,
+          languages: {
+            'tr': `https://www.kolayseyahat.net/${decodedSlug}`,
+            'en': `https://www.kolayseyahat.net/en/${decodedSlug}`,
+            'x-default': `https://www.kolayseyahat.net/${decodedSlug}`,
+          },
+        },
+      };
+    }
+  }
 
   // Check if this is a visa requirements table page
   if (decodedSlug.endsWith('-vize-tablosu')) {
@@ -435,6 +488,20 @@ export async function generateMetadata({ params }: CountryPageParams): Promise<M
 export default async function CountryPage({ params }: CountryPageParams) {
   const { slug, locale } = await params;
   const decodedSlug = decodeURIComponent(slug);
+  
+  // Check if this is a bilateral visa page
+  if (isBilateralVisaSlug(decodedSlug)) {
+    const visaPage = await getBilateralVisaPage(decodedSlug);
+    
+    if (visaPage) {
+      // Increment view count
+      await incrementVisaPageViews(decodedSlug);
+      
+      const { BilateralVisaPage } = await import('@/components/visa-bilateral/BilateralVisaPage');
+      
+      return <BilateralVisaPage data={visaPage} locale={locale as 'tr' | 'en'} />;
+    }
+  }
   
   // Check if this is a visa requirements table page (ends with -vize-tablosu)
   if (decodedSlug.endsWith('-vize-tablosu')) {
