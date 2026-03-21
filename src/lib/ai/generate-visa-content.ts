@@ -84,7 +84,7 @@ export async function generateVisaPageContent(
   
   const { data: countries, error: countriesError } = await supabase
     .from('countries')
-    .select('country_code, name, name_en')
+    .select('country_code, name')
     .in('country_code', [sourceCountryCode, destinationCountryCode]);
 
   console.log('[DEBUG] Countries fetched:', countries);
@@ -106,8 +106,8 @@ export async function generateVisaPageContent(
   
   console.log('[DEBUG] Countries validated successfully');
 
-  const sourceName = locale === 'en' ? (sourceCountry.name_en || sourceCountry.name) : sourceCountry.name;
-  const destinationName = locale === 'en' ? (destinationCountry.name_en || destinationCountry.name) : destinationCountry.name;
+  const sourceName = sourceCountry.name;
+  const destinationName = destinationCountry.name;
 
   // Generate content based on visa status
   const visaStatus = visaReq?.visa_status || 'visa-required';
