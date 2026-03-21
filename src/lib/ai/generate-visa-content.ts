@@ -63,11 +63,10 @@ export async function generateVisaPageContent(
     .eq('country_code', destinationCountryCode)
     .single();
 
-  // Fetch country data using admin client to bypass RLS
+  // Fetch country data (RLS allows public read access)
   console.log('[DEBUG] Fetching countries:', sourceCountryCode, destinationCountryCode);
   
-  const supabaseAdmin = getAdminClient();
-  const { data: countries, error: countriesError } = await supabaseAdmin
+  const { data: countries, error: countriesError } = await supabase
     .from('countries')
     .select('country_code, name, name_en')
     .in('country_code', [sourceCountryCode, destinationCountryCode]);

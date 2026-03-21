@@ -8,22 +8,27 @@ import { generateVisaPageContent } from '@/lib/ai/generate-visa-content';
  */
 export async function POST(request: NextRequest) {
   try {
+    console.log('[API] POST /api/admin/visa-pages/generate called');
     const body = await request.json();
+    console.log('[API] Request body:', body);
     const { source_country_code, destination_country_code, locale = 'tr' } = body;
 
     if (!source_country_code || !destination_country_code) {
+      console.log('[API] Missing country codes');
       return NextResponse.json(
         { success: false, error: 'Source and destination country codes are required' },
         { status: 400 }
       );
     }
 
+    console.log('[API] Calling generateVisaPageContent...');
     // Generate AI content
     const content = await generateVisaPageContent(
       source_country_code,
       destination_country_code,
       locale as 'tr' | 'en'
     );
+    console.log('[API] Content generated successfully');
 
     // Check if page already exists
     const { data: existing } = await supabase
