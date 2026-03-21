@@ -101,6 +101,77 @@ export function BilateralVisaPage({ data, locale }: BilateralVisaPageProps) {
             </div>
           )}
 
+          {/* Important Notes */}
+          {data.important_notes && (
+            <div 
+              className="mb-8"
+              dangerouslySetInnerHTML={{ __html: data.important_notes }}
+            />
+          )}
+
+          {/* Travel Tips */}
+          {data.travel_tips && (
+            <div className="bg-white rounded-lg shadow-md p-8 mb-8">
+              <div 
+                className="prose prose-lg max-w-none"
+                dangerouslySetInnerHTML={{ __html: data.travel_tips }}
+              />
+            </div>
+          )}
+
+          {/* Health Requirements */}
+          {data.health_requirements && (
+            <div className="bg-white rounded-lg shadow-md p-8 mb-8">
+              <div 
+                className="prose prose-lg max-w-none"
+                dangerouslySetInnerHTML={{ __html: data.health_requirements }}
+              />
+            </div>
+          )}
+
+          {/* Customs Rules */}
+          {data.customs_rules && (
+            <div className="bg-white rounded-lg shadow-md p-8 mb-8">
+              <div 
+                className="prose prose-lg max-w-none"
+                dangerouslySetInnerHTML={{ __html: data.customs_rules }}
+              />
+            </div>
+          )}
+
+          {/* Why Kolay Seyahat */}
+          {data.why_kolay_seyahat && (
+            <div className="bg-white rounded-lg shadow-md p-8 mb-8">
+              <div 
+                className="prose prose-lg max-w-none"
+                dangerouslySetInnerHTML={{ __html: data.why_kolay_seyahat }}
+              />
+            </div>
+          )}
+
+          {/* Country Info & Emergency */}
+          {data.country_info && (
+            <div className="bg-white rounded-lg shadow-md p-8 mb-8">
+              <h2 className="text-2xl font-bold mb-6">
+                🌍 {isEnglish ? 'Country Information & Emergency' : 'Ülke Bilgileri & Acil Durum'}
+              </h2>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <p className="mb-2"><strong>{isEnglish ? 'Capital' : 'Başkent'}:</strong> {data.country_info.capital}</p>
+                  <p className="mb-2"><strong>{isEnglish ? 'Official Language' : 'Resmi Dil'}:</strong> {data.country_info.language}</p>
+                  <p className="mb-2"><strong>{isEnglish ? 'Currency' : 'Para Birimi'}:</strong> {data.country_info.currency}</p>
+                  <p className="mb-2"><strong>{isEnglish ? 'Timezone' : 'Saat Dilimi'}:</strong> {data.country_info.timezone}</p>
+                </div>
+                <div className="bg-red-50 p-4 rounded-lg">
+                  <h3 className="font-bold text-red-800 mb-3">🚨 {isEnglish ? 'Emergency Numbers' : 'Acil Durum İletişim Bilgileri'}</h3>
+                  <p className="mb-1"><strong>{isEnglish ? 'Police' : 'Polis'}:</strong> {data.country_info.emergency_numbers.police}</p>
+                  <p className="mb-1"><strong>{isEnglish ? 'Ambulance' : 'Ambulans'}:</strong> {data.country_info.emergency_numbers.ambulance}</p>
+                  <p className="mb-1"><strong>{isEnglish ? 'Fire Department' : 'İtfaiye'}:</strong> {data.country_info.emergency_numbers.fire}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* FAQ Section */}
           {data.faq_json && data.faq_json.length > 0 && (
             <div className="bg-white rounded-lg shadow-md p-8 mb-8">

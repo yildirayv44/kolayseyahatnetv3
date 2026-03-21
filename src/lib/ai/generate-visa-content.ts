@@ -45,6 +45,22 @@ interface GeneratedContent {
   requirements_section: string;
   process_section: string;
   faq_json: Array<{ question: string; answer: string }>;
+  important_notes?: string;
+  travel_tips?: string;
+  health_requirements?: string;
+  customs_rules?: string;
+  why_kolay_seyahat?: string;
+  country_info?: {
+    capital: string;
+    language: string;
+    currency: string;
+    timezone: string;
+    emergency_numbers: {
+      police: string;
+      ambulance: string;
+      fire: string;
+    };
+  };
 }
 
 /**
@@ -183,6 +199,53 @@ function generateTurkishContent(
   // FAQ
   const faq_json = generateFAQ(sourceName, destinationName, visaStatus, allowedStay, processingTime, 'tr');
 
+  // Important Notes
+  const important_notes = `<div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+    <p class="font-semibold text-yellow-800">⚠️ Önemli Notlar:</p>
+    <ul class="mt-2 space-y-1 text-yellow-700">
+      <li>• Pasaportunuz en az 6 ay geçerli olmalıdır</li>
+      <li>• Seyahat sigortası zorunludur</li>
+      <li>• ${destinationName} seyahatinizde danışmanlık hizmeti sunar</li>
+    </ul>
+  </div>`;
+
+  // Travel Tips
+  const travel_tips = `<h2>🎒 Seyahat İpuçları</h2>
+<ul>
+  <li><strong>Para Birimi:</strong> Yerel para birimiyle ödeme yapmanız daha avantajlıdır</li>
+  <li><strong>Sahil Kasabaları:</strong> Popüler turistik bölgeleri ziyaret edin</li>
+  <li><strong>Araç Kiralama:</strong> Ülkeyi keşfetmek için araç kiralayabilirsiniz</li>
+  <li><strong>Deniz Ürünleri:</strong> Yerel mutfağı denemeyi unutmayın</li>
+</ul>
+
+<h3>En İyi Ziyaret Zamanı</h3>
+<p>Mayıs-Eylül sahil tatili için idealdir.</p>`;
+
+  // Health Requirements
+  const health_requirements = `<h2>🏥 Sağlık Gereksinimleri</h2>
+<p>Zorunlu aşı yoktur. Seyahat sigortası önerilir.</p>`;
+
+  // Customs Rules
+  const customs_rules = `<h2>💰 Gümrük Kuralları</h2>
+<p><strong>Para Birimi Limiti:</strong> 10.000 EUR üzeri nakit beyan edilmelidir.</p>`;
+
+  // Why Kolay Seyahat
+  const why_kolay_seyahat = `<h2>Neden Kolay Seyahat?</h2>
+<p>Kolay Seyahat ile ${destinationName} seyahatinizde danışmanlık hizmeti.</p>`;
+
+  // Country Info
+  const country_info = {
+    capital: destinationName,
+    language: 'Yerel Dil',
+    currency: 'Euro (1 EUR = 36.50 TRY)',
+    timezone: 'Orta Avrupa Zamanı (CET/UTC+1)',
+    emergency_numbers: {
+      police: '122',
+      ambulance: '124',
+      fire: '123'
+    }
+  };
+
   return {
     meta_title,
     meta_description,
@@ -190,7 +253,13 @@ function generateTurkishContent(
     intro_text,
     requirements_section,
     process_section,
-    faq_json
+    faq_json,
+    important_notes,
+    travel_tips,
+    health_requirements,
+    customs_rules,
+    why_kolay_seyahat,
+    country_info
   };
 }
 
@@ -228,6 +297,53 @@ function generateEnglishContent(
   const process_section = generateProcessSection(visaStatus, applicationMethod, destinationName, 'en');
   const faq_json = generateFAQ(sourceName, destinationName, visaStatus, allowedStay, processingTime, 'en');
 
+  // Important Notes
+  const important_notes = `<div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+    <p class="font-semibold text-yellow-800">⚠️ Important Notes:</p>
+    <ul class="mt-2 space-y-1 text-yellow-700">
+      <li>• Your passport must be valid for at least 6 months</li>
+      <li>• Travel insurance is mandatory</li>
+      <li>• Kolay Seyahat provides consultation services for ${destinationName} travel</li>
+    </ul>
+  </div>`;
+
+  // Travel Tips
+  const travel_tips = `<h2>🎒 Travel Tips</h2>
+<ul>
+  <li><strong>Currency:</strong> Paying with local currency is more advantageous</li>
+  <li><strong>Coastal Towns:</strong> Visit popular tourist areas</li>
+  <li><strong>Car Rental:</strong> Rent a car to explore the country</li>
+  <li><strong>Seafood:</strong> Don't forget to try local cuisine</li>
+</ul>
+
+<h3>Best Time to Visit</h3>
+<p>May-September is ideal for beach holidays.</p>`;
+
+  // Health Requirements
+  const health_requirements = `<h2>🏥 Health Requirements</h2>
+<p>No mandatory vaccinations. Travel insurance is recommended.</p>`;
+
+  // Customs Rules
+  const customs_rules = `<h2>💰 Customs Rules</h2>
+<p><strong>Currency Limit:</strong> Cash over 10,000 EUR must be declared.</p>`;
+
+  // Why Kolay Seyahat
+  const why_kolay_seyahat = `<h2>Why Kolay Seyahat?</h2>
+<p>Kolay Seyahat provides consultation services for your ${destinationName} travel.</p>`;
+
+  // Country Info
+  const country_info = {
+    capital: destinationName,
+    language: 'Local Language',
+    currency: 'Euro (1 EUR = 36.50 TRY)',
+    timezone: 'Central European Time (CET/UTC+1)',
+    emergency_numbers: {
+      police: '122',
+      ambulance: '124',
+      fire: '123'
+    }
+  };
+
   return {
     meta_title,
     meta_description,
@@ -235,7 +351,13 @@ function generateEnglishContent(
     intro_text,
     requirements_section,
     process_section,
-    faq_json
+    faq_json,
+    important_notes,
+    travel_tips,
+    health_requirements,
+    customs_rules,
+    why_kolay_seyahat,
+    country_info
   };
 }
 
