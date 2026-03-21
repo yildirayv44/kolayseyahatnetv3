@@ -29,6 +29,7 @@ export function CountryEditForm({ country }: { country: any }) {
     visa: false,
     extended: false,
     country: false,
+    bilateral: false,
   });
 
   const toggleSection = (section: keyof typeof expandedSections) => {
@@ -1043,6 +1044,76 @@ export function CountryEditForm({ country }: { country: any }) {
                     className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                     placeholder="Örn: 112"
                   />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Bilateral Visa Pages Section */}
+      <div className="card">
+        <button
+          type="button"
+          onClick={() => toggleSection('bilateral')}
+          className="flex w-full items-center justify-between p-6"
+        >
+          <div className="flex items-center gap-3">
+            <Sparkles className="h-5 w-5 text-purple-600" />
+            <div className="text-left">
+              <h3 className="text-lg font-semibold text-slate-900">
+                İki Yönlü Vize Sayfaları
+              </h3>
+              <p className="text-sm text-slate-600">
+                {country.name} → Diğer ülkeler vize sayfalarını yönetin
+              </p>
+            </div>
+          </div>
+          {expandedSections.bilateral ? (
+            <ChevronUp className="h-5 w-5 text-slate-400" />
+          ) : (
+            <ChevronDown className="h-5 w-5 text-slate-400" />
+          )}
+        </button>
+
+        {expandedSections.bilateral && (
+          <div className="border-t border-slate-100 p-6">
+            <div className="mb-4 rounded-lg bg-blue-50 p-4">
+              <p className="text-sm text-blue-800">
+                💡 <strong>Bilateral Vize Sayfaları:</strong> {country.name} vatandaşlarının diğer ülkelere seyahat ederken ihtiyaç duyduğu vize bilgilerini içeren sayfalar oluşturun. Mevcut güçlü AI içerik üretimi sisteminiz kullanılacak.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-semibold text-slate-900">
+                    Mevcut Bilateral Vize Sayfaları
+                  </h4>
+                  <p className="text-sm text-slate-600">
+                    {country.name} → Hedef ülke vize sayfaları
+                  </p>
+                </div>
+                <Link
+                  href={`/admin/ulkeler/${country.id}/bilateral-vize`}
+                  className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg transition-all hover:from-purple-700 hover:to-blue-700"
+                >
+                  <Sparkles className="h-4 w-4" />
+                  Bilateral Vize Sayfalarını Yönet
+                </Link>
+              </div>
+
+              <div className="rounded-lg border border-slate-200 p-4">
+                <p className="text-sm text-slate-600">
+                  Bu ülke için bilateral vize sayfalarını görüntülemek, düzenlemek ve yeni sayfalar oluşturmak için yukarıdaki butona tıklayın.
+                </p>
+                <div className="mt-3 flex gap-2">
+                  <Link
+                    href="/admin/ulkeler/vize-sayfalari"
+                    className="text-sm text-blue-600 hover:underline"
+                  >
+                    Tüm Bilateral Vize Sayfaları →
+                  </Link>
                 </div>
               </div>
             </div>
