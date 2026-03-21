@@ -143,20 +143,36 @@ function generateTurkishContent(
   // H1 Title
   const h1_title = `${sourceName}'dan ${destinationName}'a Vize Başvurusu`;
 
-  // Intro Text
-  let intro_text = `${sourceName} vatandaşları ${destinationName}'a seyahat etmek için `;
+  // Intro Text - Detailed content similar to existing country pages
+  let intro_text = `<p>${sourceName}, ${destinationName}'ın muhteşem doğasını keşfetmek için önce vize gereksinimlerini detaylı şekilde Kolay Seyahat'ten öğrenin.</p>\n\n`;
+  
+  intro_text += `<h2>${destinationName}'a Vizesiz Seyahat</h2>\n`;
+  intro_text += `<p>${sourceName} vatandaşları için ${destinationName} seyahat ederken vize zorunluluğu bulunmamaktadır. `;
   
   if (visaStatus === 'visa-free') {
-    intro_text += `vize almalarına gerek yoktur. ${stayDuration ? `${stayDuration} süreyle vizesiz kalabilirsiniz.` : 'Vizesiz giriş yapabilirsiniz.'}`;
+    intro_text += `Ancak, ülkeye girişte yanınızda bulundurmanız gereken belgeler şunlardır:</p>\n\n`;
+    intro_text += `<ul>\n`;
+    intro_text += `<li><strong>Dönüş Uçak Bileti:</strong> Seyahatinizin sonunda ${sourceName}'a ayrılacağınızı göstermek için dönüş uçak biletinizi yanınızda bulundurmalısınız.</li>\n`;
+    intro_text += `<li><strong>Otel Rezervasyonu:</strong> Seyahatiniz boyunca konaklamayı planladığınız yerin rezervasyon bilgilerini yanınızda bulundurmanız önerilir.</li>\n`;
+    intro_text += `<li><strong>Yeterli Maddi Kaynak:</strong> Seyahatiniz süresince geçiminizi sağlayacak maddi kaynaklarınızın olduğuna dair kanıt sunmanız gerekebilir.</li>\n`;
+    intro_text += `</ul>\n\n`;
+    intro_text += `<h2>Seyahat Süresi ve Sınırlamalar</h2>\n`;
+    intro_text += `<p>${sourceName}'a yapacağınız vizesiz seyahatlerde kalış süreniz 30 gün ile sınırlıdır. Bu süre zarfında ülkeyi turistik amaçlarla ziyaret edebilir, ${stayDuration ? `${stayDuration} süreyle ` : ''}ancak, 30 günü aşan bir kalış planlıyorsanız, uygun vize türünü almanız gerekecektir.</p>`;
   } else if (visaStatus === 'visa-on-arrival') {
-    intro_text += `varışta vize alabilirler. ${stayDuration ? `${stayDuration} süreyle kalış için ` : ''}Havalimanında vize işlemleri tamamlanır.`;
+    intro_text += `${destinationName}'a giriş yaparken havalimanında vize alabilirsiniz. ${stayDuration ? `${stayDuration} süreyle kalış için ` : ''}Havalimanında vize işlemleri tamamlanır.</p>\n\n`;
+    intro_text += `<h2>Gerekli Belgeler</h2>\n`;
+    intro_text += `<p>${destinationName}'a girişte yanınızda bulundurmanız gereken belgeler şunlardır:</p>\n`;
   } else if (visaStatus === 'eta' || visaStatus === 'evisa') {
-    intro_text += `elektronik vize (e-vize) başvurusu yapmaları gerekmektedir. Online başvuru ile ${processingTime || 'kısa sürede'} vize alabilirsiniz.`;
+    intro_text += `${destinationName}'a seyahat etmek için elektronik vize (e-vize) başvurusu yapmanız gerekmektedir. Online başvuru ile ${processingTime || 'kısa sürede'} vize alabilirsiniz.</p>\n\n`;
+    intro_text += `<h2>${destinationName} E-Vize Başvurusu</h2>\n`;
+    intro_text += `<p>E-vize başvurusu online olarak yapılır ve genellikle ${processingTime || '1-3 iş günü'} içinde onaylanır.</p>\n`;
   } else {
-    intro_text += `vize başvurusu yapmaları gerekmektedir. ${processingTime ? `İşlem süresi yaklaşık ${processingTime}.` : 'Konsolosluk randevusu almanız gerekir.'}`;
+    intro_text += `${destinationName}'a seyahat etmek için vize başvurusu yapmanız gerekmektedir. ${processingTime ? `İşlem süresi yaklaşık ${processingTime}.` : 'Konsolosluk randevusu almanız gerekir.'}</p>\n\n`;
+    intro_text += `<h2>${destinationName} Vize Başvurusu</h2>\n`;
+    intro_text += `<p>Vize başvurusu için konsolosluk veya vize merkezine randevu almanız gerekmektedir. Başvuru süreci genellikle ${processingTime || '5-15 iş günü'} sürmektedir.</p>\n`;
   }
 
-  intro_text += `\n\nBu sayfada ${destinationName} vizesi için gerekli belgeler, başvuru süreci ve önemli bilgiler yer almaktadır.`;
+  intro_text += `\n\nBu sayfada ${destinationName} vizesi için gerekli belgeler, başvuru süreci ve önemli bilgiler detaylı şekilde yer almaktadır.`;
 
   // Requirements Section
   const requirements_section = generateRequirementsSection(visaStatus, destinationName, 'tr');
