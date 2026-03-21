@@ -19,7 +19,6 @@ export async function GET() {
       .select('id, name, country_code, is_source_country, passport_rank, flag_emoji')
       .eq('is_source_country', true)
       .eq('status', 1)
-      .neq('country_code', 'TUR')
       .order('passport_rank', { ascending: true, nullsFirst: false });
 
     if (countriesError) throw countriesError;

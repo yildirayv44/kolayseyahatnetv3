@@ -74,13 +74,12 @@ export async function GET(request: NextRequest) {
 
 async function processNextCountry(job: any) {
   try {
-    // Get all source countries (exclude Turkey - TUR)
+    // Get all source countries
     const { data: sourceCountries, error: countriesError } = await supabase
       .from('countries')
       .select('id, name, country_code, flag_emoji')
       .eq('is_source_country', true)
       .eq('status', 1)
-      .neq('country_code', 'TUR')
       .order('passport_rank', { ascending: true, nullsFirst: false });
 
     if (countriesError) throw countriesError;
