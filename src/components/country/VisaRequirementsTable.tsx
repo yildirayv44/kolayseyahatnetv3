@@ -98,33 +98,52 @@ export function VisaRequirementsTable({
   const fetchVisaRequirements = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      // Fetch visa requirements
+      const { data: visaData, error: visaError } = await supabase
         .from('visa_requirements')
-        .select(`
-          country_code,
-          visa_status,
-          allowed_stay,
-          application_method,
-          conditions,
-          countries!visa_requirements_country_code_fkey (
-            name,
-            flag_emoji
-          )
-        `)
-        .eq('source_country_code', sourceCountryCode)
-        .order('countries(name)', { ascending: true });
+        .select('country_code, visa_status, allowed_stay, application_method, conditions')
+        .eq('source_country_code', sourceCountryCode);
 
-      if (error) throw error;
+      if (visaError) throw visaError;
 
-      const formattedData: VisaRequirement[] = (data || []).map((item: any) => ({
-        country_code: item.country_code,
-        country_name: item.countries?.name || item.country_code,
-        visa_status: item.visa_status,
-        allowed_stay: item.allowed_stay,
-        application_method: item.application_method,
-        conditions: item.conditions,
-        flag_emoji: item.countries?.flag_emoji,
-      }));
+      if (!visaData || visaData.length === 0) {
+        setRequirements([]);
+        setFilteredRequirements([]);
+        return;
+      }
+
+      // Get country codes
+      const countryCodes = visaData.map(v => v.country_code);
+
+      // Fetch country details
+      const { data: countriesData, error: countriesError } = await supabase
+        .from('countries')
+        .select('country_code, name, flag_emoji')
+        .in('country_code', countryCodes);
+
+      if (countriesError) throw countriesError;
+
+      // Create country lookup map
+      const countryMap = new Map(
+        (countriesData || []).map(c => [c.country_code, c])
+      );
+
+      // Combine data
+      const formattedData: VisaRequirement[] = visaData.map((item: any) => {
+        const country = countryMap.get(item.country_code);
+        return {
+          country_code: item.country_code,
+          country_name: country?.name || item.country_code,
+          visa_status: item.visa_status,
+          allowed_stay: item.allowed_stay,
+          application_method: item.application_method,
+          conditions: item.conditions,
+          flag_emoji: country?.flag_emoji,
+        };
+      });
+
+      // Sort by country name
+      formattedData.sort((a, b) => a.country_name.localeCompare(b.country_name));
 
       setRequirements(formattedData);
       setFilteredRequirements(formattedData);
