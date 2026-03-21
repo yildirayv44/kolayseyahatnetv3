@@ -1083,7 +1083,7 @@ export async function getSourceCountries() {
     .select("id, name, country_code, flag_emoji, passport_rank, passport_power_score, region")
     .eq("is_source_country", true)
     .eq("status", 1)
-    .order("passport_rank", { ascending: true, nullsLast: true });
+    .order("passport_rank", { ascending: true, nullsFirst: false });
 
   if (error) {
     console.error("getSourceCountries error", error);

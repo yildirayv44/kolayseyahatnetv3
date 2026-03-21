@@ -10,6 +10,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const countryCode = searchParams.get("country_code");
+    const sourceCountryCode = searchParams.get("source_country_code") || "TUR"; // Default to Turkey
 
     if (!countryCode) {
       return NextResponse.json(
@@ -22,6 +23,7 @@ export async function GET(request: NextRequest) {
       .from("visa_requirements")
       .select("*")
       .eq("country_code", countryCode)
+      .eq("source_country_code", sourceCountryCode)
       .maybeSingle();
 
     if (error) {

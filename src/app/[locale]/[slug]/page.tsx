@@ -119,6 +119,62 @@ export async function generateMetadata({ params }: CountryPageParams): Promise<M
   const { slug, locale } = await params;
   const decodedSlug = decodeURIComponent(slug);
 
+  // Check if this is a visa requirements table page
+  if (decodedSlug.endsWith('-vize-tablosu')) {
+    const countrySlug = decodedSlug.replace('-vize-tablosu', '');
+    
+    const supabaseClient = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+
+    const { data: country } = await supabaseClient
+      .from('countries')
+      .select('name, flag_emoji')
+      .eq('slug', countrySlug)
+      .eq('status', 1)
+      .maybeSingle();
+
+    if (country) {
+      const isEnglish = locale === 'en';
+      const title = isEnglish 
+        ? `${country.name} Visa Requirements for 199 Countries - Kolay Seyahat`
+        : `${country.name} Vize Gereklilikleri - 199 Ülke - Kolay Seyahat`;
+      const description = isEnglish
+        ? `Complete visa requirements table for ${country.name} passport holders. Visa-free, visa on arrival, e-visa and visa required information for 199 countries.`
+        : `${country.name} pasaportu sahipleri için 199 ülkenin vize gereklilikleri. Vizesiz giriş, varışta vize, e-vize ve konsolosluk başvurusu bilgileri.`;
+      const url = `https://www.kolayseyahat.net/${locale === 'en' ? 'en/' : ''}${decodedSlug}`;
+
+      return {
+        title,
+        description,
+        openGraph: {
+          title,
+          description,
+          type: 'website',
+          url,
+          siteName: 'Kolay Seyahat',
+          locale: locale === 'en' ? 'en_US' : 'tr_TR',
+        },
+        twitter: {
+          card: 'summary_large_image',
+          title,
+          description,
+          creator: '@kolayseyahat',
+          site: '@kolayseyahat',
+        },
+        alternates: {
+          canonical: url,
+          languages: {
+            'tr': `https://www.kolayseyahat.net/${countrySlug}-vize-tablosu`,
+            'en': `https://www.kolayseyahat.net/en/${countrySlug}-vize-tablosu`,
+            'x-default': `https://www.kolayseyahat.net/${countrySlug}-vize-tablosu`,
+          },
+        },
+      };
+    }
+  }
+
   // ⚡ OPTIMIZATION: Use cached data
   const { customPageData: customPageMeta, country: countryData } = await getCachedPageData(decodedSlug);
 
@@ -368,6 +424,40 @@ export async function generateMetadata({ params }: CountryPageParams): Promise<M
 export default async function CountryPage({ params }: CountryPageParams) {
   const { slug, locale } = await params;
   const decodedSlug = decodeURIComponent(slug);
+  
+  // Check if this is a visa requirements table page (ends with -vize-tablosu)
+  if (decodedSlug.endsWith('-vize-tablosu')) {
+    const countrySlug = decodedSlug.replace('-vize-tablosu', '');
+    
+    const supabaseClient = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+
+    const { data: country } = await supabaseClient
+      .from('countries')
+      .select('country_code, name, flag_emoji')
+      .eq('slug', countrySlug)
+      .eq('status', 1)
+      .maybeSingle();
+
+    if (!country) {
+      notFound();
+    }
+
+    const { VisaRequirementsTable } = await import('@/components/country/VisaRequirementsTable');
+
+    return (
+      <div className="container mx-auto max-w-7xl px-4 py-8">
+        <VisaRequirementsTable
+          sourceCountryCode={country.country_code}
+          sourceCountryName={country.name}
+          sourceCountryFlag={country.flag_emoji || '🌍'}
+          locale={locale as 'tr' | 'en'}
+        />
+      </div>
+    );
+  }
   
   // Translations
   const t = locale === "en" ? {

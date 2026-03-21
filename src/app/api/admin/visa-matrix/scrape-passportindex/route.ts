@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
-import { load } from 'cheerio';
+import { createClient } from '@supabase/supabase-js';
+
+// Use service role key for admin operations to bypass RLS
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 /**
  * POST /api/admin/visa-matrix/scrape-passportindex
@@ -271,10 +276,10 @@ function getCountrySlug(countryCode: string): string {
 
 function extractCountryCode(href: string): string {
   // Extract from URL like: /country/afghanistan/
-  const match = href.match(/\/country\/([^/]+)\//);
+  const match = href.match(/\/country\/([^/]+)\/?/);
   if (!match) return '';
   
-  const slug = match[1];
+  const slug = match[1].toLowerCase();
   
   // Try to find by slug
   for (const [code, mappedSlug] of Object.entries(COUNTRY_SLUG_MAP)) {
@@ -287,8 +292,24 @@ function extractCountryCode(href: string): string {
       .toLowerCase()
       .replace(/\s+/g, '-')
       .replace(/[()]/g, '')
-      .replace(/\./g, '');
+      .replace(/\./g, '')
+      .replace(/'/g, '')
+      .replace(/,/g, '');
     if (nameSlug === slug) return code;
+  }
+  
+  // If still not found, try partial match
+  for (const [code, name] of Object.entries(COUNTRY_NAMES)) {
+    const nameSlug = name
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[()]/g, '')
+      .replace(/\./g, '')
+      .replace(/'/g, '')
+      .replace(/,/g, '');
+    if (nameSlug.includes(slug) || slug.includes(nameSlug)) {
+      return code;
+    }
   }
   
   return '';
@@ -339,74 +360,79 @@ export async function POST(request: NextRequest) {
 
     const logId = logEntry?.id;
 
-    // Fetch real HTML from PassportIndex website
-    const countrySlug = sourceCountryCode.toLowerCase();
-    const passportIndexUrl = `https://www.passportindex.org/passport/${getCountrySlug(sourceCountryCode)}/`;
+    // Fetch data from GitHub CSV dataset (more reliable than HTML scraping)
+    const csvUrl = 'https://raw.githubusercontent.com/ilyankou/passport-index-dataset/master/passport-index-tidy-iso3.csv';
     
-    console.log(`Scraping PassportIndex: ${passportIndexUrl}`);
+    console.log(`Fetching PassportIndex dataset from GitHub...`);
     
-    const htmlResponse = await fetch(passportIndexUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
-      },
-    });
-
-    if (!htmlResponse.ok) {
-      throw new Error(`Failed to fetch PassportIndex HTML: ${htmlResponse.status}`);
+    const csvResponse = await fetch(csvUrl);
+    if (!csvResponse.ok) {
+      throw new Error(`Failed to fetch PassportIndex CSV: ${csvResponse.status}`);
     }
 
-    const html = await htmlResponse.text();
-    const $ = load(html);
+    const csvText = await csvResponse.text();
+    const lines = csvText.split('\n');
     
-    // Parse the visa requirements table
+    // Parse CSV (format: Passport,Destination,Requirement)
     const visaData: PassportIndexData[] = [];
     
-    $('#psprt-dashboard-table tbody tr').each((_index: number, element: any) => {
-      const $row = $(element);
-      const classes = $row.attr('class') || '';
+    for (let i = 1; i < lines.length; i++) { // Skip header
+      const line = lines[i].trim();
+      if (!line) continue;
       
-      // Extract country name and code
-      const countryLink = $row.find('td:first-child a');
-      const countryName = countryLink.text().trim();
-      const countryHref = countryLink.attr('href') || '';
-      const countryCode = extractCountryCode(countryHref);
+      const parts = line.split(',');
+      if (parts.length < 3) continue;
       
-      if (!countryName || !countryCode) return;
+      const passport = parts[0].trim();
+      const destination = parts[1].trim();
+      const requirement = parts[2].trim();
       
-      // Extract visa status
-      const visaCell = $row.find('td:last-child');
-      const visaRules = visaCell.find('.vrules').text().trim().toLowerCase();
-      const visaDays = visaCell.find('.vdays').text().trim();
+      // Only process rows for the selected source country
+      if (passport !== sourceCountryCode) continue;
       
-      // Determine visa status
+      // Get destination country name
+      const destCountryName = COUNTRY_NAMES[destination] || destination;
+      
+      // Parse requirement value
       let visaStatus: PassportIndexData['visaStatus'] = 'visa-required';
       let applicationMethod: PassportIndexData['applicationMethod'] = 'embassy';
+      let allowedStay: string | undefined = undefined;
       
-      if (classes.includes('vf') || visaRules.includes('visa-free')) {
+      const reqLower = requirement.toLowerCase();
+      
+      if (reqLower === 'visa free' || reqLower === 'visa-free') {
         visaStatus = 'visa-free';
         applicationMethod = 'not-required';
-      } else if (classes.includes('voa') || visaRules.includes('visa on arrival')) {
+      } else if (!isNaN(parseInt(requirement))) {
+        // Number of days for visa-free
+        visaStatus = 'visa-free';
+        applicationMethod = 'not-required';
+        allowedStay = `${requirement} days`;
+      } else if (reqLower === 'visa on arrival' || reqLower.includes('on arrival')) {
         visaStatus = 'visa-on-arrival';
         applicationMethod = 'on-arrival';
-      } else if (classes.includes('eta') || visaRules.includes('eta') || visaRules.includes('pre-enrollment')) {
+      } else if (reqLower === 'eta' || reqLower === 'e-visa' || reqLower === 'evisa') {
         visaStatus = 'eta';
         applicationMethod = 'online';
-      } else if (visaRules.includes('evisa')) {
-        visaStatus = 'eta';
-        applicationMethod = 'online';
+      } else if (reqLower === 'visa required' || reqLower.includes('required')) {
+        visaStatus = 'visa-required';
+        applicationMethod = 'embassy';
+      } else if (reqLower === 'no admission' || reqLower === '-1') {
+        visaStatus = 'visa-required';
+        applicationMethod = 'embassy';
       }
       
       visaData.push({
-        countryCode: countryCode.toUpperCase(),
-        countryName,
+        countryCode: destination,
+        countryName: destCountryName,
         visaStatus,
-        allowedStay: visaDays || undefined,
-        conditions: visaRules,
+        allowedStay,
+        conditions: requirement !== reqLower ? requirement : undefined,
         applicationMethod,
       });
-    });
+    }
     
-    console.log(`Parsed ${visaData.length} countries from PassportIndex`);
+    console.log(`Parsed ${visaData.length} countries from PassportIndex dataset`);
 
     let scraped = 0;
     let skipped = 0;

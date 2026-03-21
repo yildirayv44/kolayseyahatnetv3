@@ -9,10 +9,19 @@ interface Country {
   name: string;
   country_code: string;
   slug: string;
+  flag_emoji?: string;
+}
+
+interface SourceCountry {
+  id: number;
+  name: string;
+  country_code: string;
+  flag_emoji: string;
 }
 
 interface VisaRequirement {
   id: number;
+  source_country_code: string;
   country_code: string;
   country_name: string;
   visa_status: string;
@@ -31,6 +40,8 @@ const VISA_METHODS = [
 ];
 
 export default function VisaRequirementsPage() {
+  const [sourceCountries, setSourceCountries] = useState<SourceCountry[]>([]);
+  const [selectedSourceCountry, setSelectedSourceCountry] = useState<SourceCountry | null>(null);
   const [countries, setCountries] = useState<Country[]>([]);
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
   const [visaReq, setVisaReq] = useState<VisaRequirement | null>(null);
@@ -40,8 +51,23 @@ export default function VisaRequirementsPage() {
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
+    fetchSourceCountries();
     fetchCountries();
   }, []);
+
+  const fetchSourceCountries = async () => {
+    try {
+      const response = await fetch("/api/admin/countries/source");
+      const data = await response.json();
+      const sources = data.countries || [];
+      setSourceCountries(sources);
+      // Auto-select Turkey as default
+      const turkey = sources.find((c: SourceCountry) => c.country_code === "TUR");
+      if (turkey) setSelectedSourceCountry(turkey);
+    } catch (error) {
+      console.error("Error fetching source countries:", error);
+    }
+  };
 
   const fetchCountries = async () => {
     try {
@@ -54,9 +80,13 @@ export default function VisaRequirementsPage() {
   };
 
   const fetchVisaRequirement = async (countryCode: string) => {
+    if (!selectedSourceCountry) return;
+    
     setLoading(true);
     try {
-      const response = await fetch(`/api/admin/visa-requirements/get?country_code=${countryCode}`);
+      const response = await fetch(
+        `/api/admin/visa-requirements/get?country_code=${countryCode}&source_country_code=${selectedSourceCountry.country_code}`
+      );
       const data = await response.json();
       
       if (data.requirement) {
@@ -65,6 +95,7 @@ export default function VisaRequirementsPage() {
         // Create empty requirement
         setVisaReq({
           id: 0,
+          source_country_code: selectedSourceCountry.country_code,
           country_code: countryCode,
           country_name: selectedCountry?.name || "",
           visa_status: "visa-required",
@@ -153,11 +184,44 @@ export default function VisaRequirementsPage() {
         </div>
       </div>
 
+      {/* Source Country Selector */}
+      <div className="card">
+        <h2 className="text-lg font-semibold text-slate-900 mb-3">Kaynak Ülke (Pasaport Sahibi)</h2>
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          {sourceCountries.map((country) => (
+            <button
+              key={country.id}
+              onClick={() => {
+                setSelectedSourceCountry(country);
+                setSelectedCountry(null);
+                setVisaReq(null);
+              }}
+              className={`rounded-lg border-2 p-3 text-left transition-all ${
+                selectedSourceCountry?.id === country.id
+                  ? "border-primary bg-primary/5"
+                  : "border-slate-200 hover:border-slate-300"
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">{country.flag_emoji}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-sm truncate">{country.name}</div>
+                  <div className="text-xs text-slate-500">{country.country_code}</div>
+                </div>
+                {selectedSourceCountry?.id === country.id && (
+                  <CheckCircle className="h-4 w-4 text-primary flex-shrink-0" />
+                )}
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Countries List */}
         <div className="card space-y-4">
           <div>
-            <h2 className="text-lg font-semibold text-slate-900 mb-2">Ülkeler</h2>
+            <h2 className="text-lg font-semibold text-slate-900 mb-2">Hedef Ülkeler</h2>
             <input
               type="text"
               placeholder="Ülke ara..."
@@ -209,7 +273,9 @@ export default function VisaRequirementsPage() {
             <>
               <div>
                 <h2 className="text-xl font-bold text-slate-900">{selectedCountry.name}</h2>
-                <p className="text-sm text-slate-600">Türk vatandaşları için vize gereklilikleri</p>
+                <p className="text-sm text-slate-600">
+                  {selectedSourceCountry?.flag_emoji} {selectedSourceCountry?.name} vatandaşları için vize gereklilikleri
+                </p>
               </div>
 
               {message && (

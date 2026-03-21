@@ -19,6 +19,8 @@ interface SourceCountry {
   is_source_country: boolean;
   passport_rank: number | null;
   flag_emoji: string | null;
+  lastScraped?: string | null;
+  lastScrapedCount?: number | null;
 }
 
 export default function VisaMatrixPage() {
@@ -26,7 +28,9 @@ export default function VisaMatrixPage() {
   const [selectedSource, setSelectedSource] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [scraping, setScraping] = useState(false);
+  const [batchScraping, setBatchScraping] = useState(false);
   const [scrapingStatus, setScrapingStatus] = useState<string>('');
+  const [batchProgress, setBatchProgress] = useState<string>('');
   const [stats, setStats] = useState({
     totalCountries: 0,
     sourceCountries: 0,
@@ -41,14 +45,28 @@ export default function VisaMatrixPage() {
   const fetchSourceCountries = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      // Fetch source countries with last scraping info
+      const response = await fetch('/api/admin/countries/source-with-logs');
+      if (!response.ok) throw new Error('Failed to fetch source countries');
+      
+      const sourceCountriesData = await response.json();
+      
+      // Also fetch non-source countries
+      const { data: allCountries, error } = await supabase
         .from('countries')
         .select('id, name, country_code, is_source_country, passport_rank, flag_emoji')
         .eq('status', 1)
         .order('name', { ascending: true });
 
       if (error) throw error;
-      setSourceCountries(data || []);
+      
+      // Merge data: use source countries with logs, add non-source countries
+      const mergedData = allCountries?.map(country => {
+        const sourceCountry = sourceCountriesData.find((sc: any) => sc.country_code === country.country_code);
+        return sourceCountry || country;
+      }) || [];
+      
+      setSourceCountries(mergedData);
     } catch (error: any) {
       console.error('Error fetching countries:', error);
       alert('Ülkeler yüklenirken hata oluştu: ' + error.message);
@@ -90,6 +108,67 @@ export default function VisaMatrixPage() {
     } catch (error: any) {
       console.error('Error updating country:', error);
       alert('Güncelleme hatası: ' + error.message);
+    }
+  };
+
+  const handleBatchScrape = async () => {
+    const sourceCountriesList = sourceCountries.filter(c => c.is_source_country);
+    
+    if (sourceCountriesList.length === 0) {
+      alert('Hiç kaynak ülke bulunamadı. Lütfen önce kaynak ülkeleri işaretleyin.');
+      return;
+    }
+
+    if (!confirm(`TÜM kaynak ülkeler (${sourceCountriesList.length} ülke) için vize verilerini çekmek istediğinizden emin misiniz?\n\nBu işlem yaklaşık ${sourceCountriesList.length * 2} dakika sürebilir.\n\nÜlkeler:\n${sourceCountriesList.map(c => `• ${c.flag_emoji} ${c.name}`).join('\n')}`)) {
+      return;
+    }
+
+    setBatchScraping(true);
+    setBatchProgress('🚀 Batch işlem başlatılıyor...');
+
+    try {
+      const response = await fetch('/api/cron/scrape-all-countries', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_CRON_SECRET || 'dev-secret'}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        const successMsg = `
+✅ Batch İşlem Tamamlandı!
+
+📊 Özet:
+• Toplam Ülke: ${data.summary.total}
+• Başarılı: ${data.summary.successful}
+• Başarısız: ${data.summary.failed}
+
+📋 Detaylar:
+${data.results.map((r: any) => {
+  if (r.status === 'success') {
+    return `✅ ${r.country}: ${r.scraped} ülke`;
+  } else {
+    return `❌ ${r.country}: ${r.error}`;
+  }
+}).join('\n')}
+        `;
+        alert(successMsg);
+        fetchStats();
+      } else {
+        throw new Error(data.error || 'Bilinmeyen hata');
+      }
+    } catch (error: any) {
+      console.error('Batch scraping error:', error);
+      alert(`❌ Batch işlem hatası:\n${error.message}`);
+    } finally {
+      setBatchScraping(false);
+      setBatchProgress('');
     }
   };
 
@@ -261,14 +340,34 @@ ${error.message || 'Bilinmeyen hata'}
             </select>
           </div>
 
-          <button
-            onClick={handleScrape}
-            disabled={scraping || !selectedSource}
-            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary/90 disabled:opacity-50"
-          >
-            <Download className={`h-4 w-4 ${scraping ? 'animate-bounce' : ''}`} />
-            {scraping ? 'Çekiliyor...' : 'Veri Çek'}
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={handleScrape}
+              disabled={scraping || batchScraping || !selectedSource}
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary/90 disabled:opacity-50"
+            >
+              <Download className={`h-4 w-4 ${scraping ? 'animate-bounce' : ''}`} />
+              {scraping ? 'Çekiliyor...' : 'Tek Ülke Çek'}
+            </button>
+
+            <button
+              onClick={handleBatchScrape}
+              disabled={scraping || batchScraping}
+              className="inline-flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-700 disabled:opacity-50"
+            >
+              <RefreshCw className={`h-4 w-4 ${batchScraping ? 'animate-spin' : ''}`} />
+              {batchScraping ? 'Batch İşlem...' : 'Tüm Ülkeleri Çek'}
+            </button>
+          </div>
+
+          {batchProgress && (
+            <div className="rounded-lg bg-blue-50 border-2 border-blue-300 p-4">
+              <div className="flex items-center gap-2 text-blue-900">
+                <RefreshCw className="h-5 w-5 animate-spin" />
+                <span className="font-medium">{batchProgress}</span>
+              </div>
+            </div>
+          )}
 
           {scrapingStatus && (
             <div className={`rounded-lg border-2 p-6 ${
@@ -340,6 +439,9 @@ ${error.message || 'Bilinmeyen hata'}
                   Pasaport Sırası
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                  Son Veri Çekme
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                   Kaynak Ülke
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
@@ -350,14 +452,14 @@ ${error.message || 'Bilinmeyen hata'}
             <tbody className="divide-y divide-gray-200 bg-white">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center">
+                  <td colSpan={6} className="px-6 py-12 text-center">
                     <RefreshCw className="mx-auto h-8 w-8 animate-spin text-gray-400" />
                     <p className="mt-2 text-sm text-gray-500">Yükleniyor...</p>
                   </td>
                 </tr>
               ) : sourceCountries.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center">
+                  <td colSpan={6} className="px-6 py-12 text-center">
                     <Globe className="mx-auto h-12 w-12 text-gray-300" />
                     <p className="mt-2 text-sm text-gray-500">Ülke bulunamadı</p>
                   </td>

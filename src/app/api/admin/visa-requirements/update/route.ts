@@ -14,6 +14,7 @@ export async function POST(request: Request) {
       id,
       country_code,
       country_name,
+      source_country_code = "TUR", // Default to Turkey
       visa_status,
       allowed_stay,
       conditions,
@@ -44,6 +45,7 @@ export async function POST(request: Request) {
     }
 
     const updateData = {
+      source_country_code,
       country_code,
       country_name,
       visa_status: primaryStatus,
@@ -59,7 +61,7 @@ export async function POST(request: Request) {
     const { data, error } = await supabase
       .from("visa_requirements")
       .upsert(updateData, {
-        onConflict: "country_code",
+        onConflict: "source_country_code,country_code",
       })
       .select()
       .single();

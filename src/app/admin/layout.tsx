@@ -17,27 +17,23 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="tr" suppressHydrationWarning>
-      <body suppressHydrationWarning>
-        <AuthGuard>
-          <div className="flex h-screen overflow-hidden bg-slate-50">
-            {/* Sidebar */}
-            <AdminSidebar />
+    <AuthGuard>
+      <div className="flex h-screen overflow-hidden bg-slate-50">
+        {/* Sidebar */}
+        <AdminSidebar />
 
-            {/* Main Content */}
-            <div className="flex flex-1 flex-col overflow-hidden">
-              <AdminHeader />
-              <main className="flex-1 overflow-y-auto p-6">{children}</main>
-            </div>
-          </div>
-          
-          {/* AI Assistant - Floating */}
-          <AIAssistant />
-          
-          {/* Keyboard Shortcuts */}
-          <KeyboardShortcuts />
-        </AuthGuard>
-      </body>
-    </html>
+        {/* Main Content */}
+        <div className="flex flex-1 flex-col overflow-hidden">
+          <AdminHeader />
+          <main className="flex-1 overflow-y-auto p-6">{children}</main>
+        </div>
+      </div>
+      
+      {/* AI Assistant - Floating */}
+      <AIAssistant />
+      
+      {/* Keyboard Shortcuts */}
+      <KeyboardShortcuts />
+    </AuthGuard>
   );
 }
