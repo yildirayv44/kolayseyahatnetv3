@@ -36,6 +36,7 @@ export function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [sourceCountryCode, setSourceCountryCode] = useState("TUR"); // Kaynak ülke (default: Türkiye)
   const [countries, setCountries] = useState<any[]>([]);
   const [filteredCountries, setFilteredCountries] = useState<any[]>([]);
   const [user, setUser] = useState<any>(null);
@@ -60,6 +61,12 @@ export function Header() {
   // Set mounted flag to prevent hydration mismatch
   useEffect(() => {
     setIsMounted(true);
+    
+    // Load source country from localStorage
+    const savedSourceCountry = localStorage.getItem('sourceCountryCode');
+    if (savedSourceCountry) {
+      setSourceCountryCode(savedSourceCountry);
+    }
   }, []);
 
   useEffect(() => {
@@ -131,8 +138,10 @@ export function Header() {
       const query = searchQuery.toLocaleLowerCase('tr');
       const filtered = countries
         .filter((c) => 
-          c.name.toLocaleLowerCase('tr').includes(query) ||
-          (c.slug && c.slug.toLocaleLowerCase('tr').includes(query))
+          // Kaynak ülkeye göre filtrele
+          c.source_country_code === sourceCountryCode &&
+          (c.name.toLocaleLowerCase('tr').includes(query) ||
+          (c.slug && c.slug.toLocaleLowerCase('tr').includes(query)))
         )
         .sort((a, b) => {
           const aName = a.name.toLocaleLowerCase('tr');
@@ -256,6 +265,36 @@ export function Header() {
 
         {/* Search Bar */}
         <div className="search-container relative flex-1 max-w-md md:max-w-md">
+          {/* Source Country Selector */}
+          <div className="mb-2 flex items-center gap-2">
+            <label className="text-xs font-semibold text-slate-600">
+              {locale === 'en' ? 'From:' : 'Nereden:'}
+            </label>
+            <select
+              value={sourceCountryCode}
+              onChange={(e) => {
+                const newSource = e.target.value;
+                setSourceCountryCode(newSource);
+                localStorage.setItem('sourceCountryCode', newSource);
+                setSearchQuery(''); // Reset search when source changes
+              }}
+              className="rounded-md border border-slate-300 px-2 py-1 text-xs font-medium focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30"
+            >
+              <option value="TUR">🇹🇷 Türkiye</option>
+              <option value="MNE">🇲🇪 Karadağ</option>
+              <option value="USA">🇺🇸 Amerika</option>
+              <option value="GBR">🇬🇧 İngiltere</option>
+              <option value="DEU">🇩🇪 Almanya</option>
+              <option value="FRA">🇫🇷 Fransa</option>
+              <option value="ITA">🇮🇹 İtalya</option>
+              <option value="ESP">🇪🇸 İspanya</option>
+            </select>
+            <span className="text-xs text-slate-500">→</span>
+            <span className="text-xs font-semibold text-primary">
+              {locale === 'en' ? 'To:' : 'Nereye:'}
+            </span>
+          </div>
+          
           <div className="relative">
             {/* Pulse Animation Ring */}
             <div className="absolute -inset-1 rounded-lg bg-primary/20 opacity-75 blur-sm animate-pulse pointer-events-none"></div>
