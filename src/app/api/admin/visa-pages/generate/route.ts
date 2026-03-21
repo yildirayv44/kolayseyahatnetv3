@@ -24,14 +24,17 @@ function slugify(text: string): string {
 async function generateSlug(sourceCode: string, destCode: string, locale: string): Promise<string> {
   const { data: countries } = await supabase
     .from('countries')
-    .select('country_code, name')
+    .select('country_code, name, name_en')
     .in('country_code', [sourceCode, destCode]);
 
   const source = countries?.find(c => c.country_code === sourceCode);
   const dest = countries?.find(c => c.country_code === destCode);
   const suffix = locale === 'en' ? 'visa' : 'vize';
 
-  return `${slugify(source?.name || sourceCode)}-${slugify(dest?.name || destCode)}-${suffix}`;
+  const sourceName = locale === 'en' ? (source?.name_en || source?.name) : source?.name;
+  const destName = locale === 'en' ? (dest?.name_en || dest?.name) : dest?.name;
+
+  return `${slugify(sourceName || sourceCode)}-${slugify(destName || destCode)}-${suffix}`;
 }
 
 /**

@@ -58,7 +58,7 @@ export async function getBilateralVisaPage(slug: string) {
   // Manually fetch country data
   const { data: countries } = await supabase
     .from('countries')
-    .select('name, country_code, flag_emoji')
+    .select('name, name_en, country_code, flag_emoji')
     .in('country_code', [visaPage.source_country_code, visaPage.destination_country_code]);
 
   const sourceCountry = countries?.find(c => c.country_code === visaPage.source_country_code);
@@ -125,7 +125,7 @@ export async function generateBilateralVisaSlug(
   // Get country names
   const { data: countries } = await supabase
     .from('countries')
-    .select('country_code, name')
+    .select('country_code, name, name_en')
     .in('country_code', [sourceCode, destinationCode]);
 
   if (!countries || countries.length !== 2) return null;
@@ -135,8 +135,8 @@ export async function generateBilateralVisaSlug(
 
   if (!source || !destination) return null;
 
-  const sourceName = source.name;
-  const destinationName = destination.name;
+  const sourceName = locale === 'en' ? (source.name_en || source.name) : source.name;
+  const destinationName = locale === 'en' ? (destination.name_en || destination.name) : destination.name;
   const suffix = locale === 'tr' ? 'vize' : 'visa';
 
   // Slugify with Turkish character support
