@@ -56,16 +56,27 @@ export async function generateStaticParams() {
   // Fetch all active countries
   const { data: countries } = await supabaseClient
     .from("countries")
-    .select("slug")
+    .select("id")
     .eq("status", 1)
     .order("views", { ascending: false });
 
   if (!countries) return [];
 
+  const countryIds = countries.map(c => c.id);
+
+  // Fetch slugs from taxonomies
+  const { data: taxonomies } = await supabaseClient
+    .from("taxonomies")
+    .select("slug")
+    .in("model_id", countryIds)
+    .eq("type", "Country\\CountryController@detail");
+
+  if (!taxonomies) return [];
+
   // Generate params for both TR and EN locales
-  const params = countries.flatMap(country => [
-    { locale: "tr", slug: country.slug },
-    { locale: "en", slug: country.slug }
+  const params = taxonomies.flatMap(tax => [
+    { locale: "tr", slug: tax.slug },
+    { locale: "en", slug: tax.slug }
   ]);
 
   return params;
