@@ -32,6 +32,7 @@ CREATE INDEX IF NOT EXISTS idx_content_suggestions_status ON content_suggestions
 ALTER TABLE content_suggestions ENABLE ROW LEVEL SECURITY;
 
 -- Create policy for authenticated users (admin)
+DROP POLICY IF EXISTS "Allow all for authenticated users" ON content_suggestions;
 CREATE POLICY "Allow all for authenticated users" ON content_suggestions
   FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
