@@ -6,11 +6,19 @@
 import { supabase } from '@/lib/supabase';
 import { createClient } from '@supabase/supabase-js';
 
-// Service role client to bypass RLS
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+// Create admin client with service role key
+function getAdminClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    }
+  );
+}
 
 interface VisaRequirementData {
   source_country_code: string;
@@ -56,20 +64,32 @@ export async function generateVisaPageContent(
     .single();
 
   // Fetch country data using admin client to bypass RLS
+  console.log('[DEBUG] Fetching countries:', sourceCountryCode, destinationCountryCode);
+  
+  const supabaseAdmin = getAdminClient();
   const { data: countries, error: countriesError } = await supabaseAdmin
     .from('countries')
     .select('country_code, name, name_en')
     .in('country_code', [sourceCountryCode, destinationCountryCode]);
 
+  console.log('[DEBUG] Countries fetched:', countries);
+  console.log('[DEBUG] Countries error:', countriesError);
+
   const sourceCountry = countries?.find(c => c.country_code === sourceCountryCode);
   const destinationCountry = countries?.find(c => c.country_code === destinationCountryCode);
 
-  console.log('Source country:', sourceCountry);
-  console.log('Destination country:', destinationCountry);
+  console.log('[DEBUG] Source country found:', sourceCountry);
+  console.log('[DEBUG] Destination country found:', destinationCountry);
 
   if (!sourceCountry || !destinationCountry) {
+    console.error('[ERROR] Country data not found!');
+    console.error('[ERROR] Source:', sourceCountry);
+    console.error('[ERROR] Destination:', destinationCountry);
+    console.error('[ERROR] All countries:', countries);
     throw new Error(`Country data not found - Source: ${sourceCountry?.country_code || 'missing'}, Dest: ${destinationCountry?.country_code || 'missing'}`);
   }
+  
+  console.log('[DEBUG] Countries validated successfully');
 
   const sourceName = locale === 'en' ? (sourceCountry.name_en || sourceCountry.name) : sourceCountry.name;
   const destinationName = locale === 'en' ? (destinationCountry.name_en || destinationCountry.name) : destinationCountry.name;
