@@ -124,7 +124,14 @@ async function processNextCountry(job: any) {
       .eq('id', job.id);
 
     // Call the scrape endpoint for this country
-    const scrapeUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/admin/visa-matrix/scrape-passportindex`;
+    // Use VERCEL_URL in production, localhost in development
+    const baseUrl = process.env.VERCEL_URL 
+      ? `https://${process.env.VERCEL_URL}`
+      : process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    
+    const scrapeUrl = `${baseUrl}/api/admin/visa-matrix/scrape-passportindex`;
+    
+    console.log(`📡 Calling scrape endpoint: ${scrapeUrl}`);
     
     const scrapeResponse = await fetch(scrapeUrl, {
       method: 'POST',
