@@ -4,6 +4,13 @@
  */
 
 import { supabase } from '@/lib/supabase';
+import { createClient } from '@supabase/supabase-js';
+
+// Service role client to bypass RLS
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 interface VisaRequirementData {
   source_country_code: string;
@@ -48,8 +55,8 @@ export async function generateVisaPageContent(
     .eq('country_code', destinationCountryCode)
     .single();
 
-  // Fetch country data
-  const { data: countries } = await supabase
+  // Fetch country data using admin client to bypass RLS
+  const { data: countries, error: countriesError } = await supabaseAdmin
     .from('countries')
     .select('country_code, name, name_en')
     .in('country_code', [sourceCountryCode, destinationCountryCode]);
@@ -57,8 +64,11 @@ export async function generateVisaPageContent(
   const sourceCountry = countries?.find(c => c.country_code === sourceCountryCode);
   const destinationCountry = countries?.find(c => c.country_code === destinationCountryCode);
 
+  console.log('Source country:', sourceCountry);
+  console.log('Destination country:', destinationCountry);
+
   if (!sourceCountry || !destinationCountry) {
-    throw new Error('Country data not found');
+    throw new Error(`Country data not found - Source: ${sourceCountry?.country_code || 'missing'}, Dest: ${destinationCountry?.country_code || 'missing'}`);
   }
 
   const sourceName = locale === 'en' ? (sourceCountry.name_en || sourceCountry.name) : sourceCountry.name;
