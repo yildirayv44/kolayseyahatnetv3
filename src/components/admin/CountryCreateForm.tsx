@@ -32,7 +32,8 @@ export function CountryCreateForm() {
   const [formData, setFormData] = useState({
     name: "",
     slug: "",
-    country_code: "", // ISO 3166-1 alpha-3 code
+    country_code: "", // ISO 3166-1 alpha-3 code (destination/hedef ülke)
+    source_country_code: "TUR", // Kaynak ülke (default: Türkiye)
     title: "",
     meta_title: "",
     meta_description: "",
@@ -110,9 +111,20 @@ export function CountryCreateForm() {
     try {
       // 1. Ülkeyi kaydet (slug hariç - o taxonomies'e gidecek)
       const { slug, ...countryData } = formData;
+      
+      // Vize gerekliliklerini kontrol et (kaynak ve hedef ülkeye göre)
+      const visaReqResponse = await fetch(
+        `/api/admin/visa-requirements/check?source=${formData.source_country_code}&destination=${formData.country_code}`
+      );
+      const visaReqData = await visaReqResponse.json();
+      
       const { data: country, error: countryError } = await supabase
         .from("countries")
-        .insert([countryData])
+        .insert([{
+          ...countryData,
+          // Vize gerekliliklerini ekle
+          visa_requirement: visaReqData?.visa_status || null,
+        }])
         .select()
         .single();
 
@@ -330,6 +342,54 @@ export function CountryCreateForm() {
                   </div>
                 </div>
               )}
+            </div>
+
+            <div className="space-y-2">
+              <label className="flex items-center gap-1 text-sm font-semibold text-slate-900">
+                Kaynak Ülke
+                <span className="text-xs text-slate-500 font-normal ml-1">(Hangi ülkeden?)</span>
+              </label>
+              <select
+                value={formData.source_country_code}
+                onChange={(e) => {
+                  setFormData({ ...formData, source_country_code: e.target.value });
+                  setHasUnsavedChanges(true);
+                }}
+                className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              >
+                <option value="TUR">🇹🇷 Türkiye (Varsayılan)</option>
+                <option value="MNE">🇲🇪 Karadağ</option>
+                <option value="USA">🇺🇸 Amerika</option>
+                <option value="GBR">🇬🇧 İngiltere</option>
+                <option value="DEU">🇩🇪 Almanya</option>
+                <option value="FRA">🇫🇷 Fransa</option>
+                <option value="ITA">🇮🇹 İtalya</option>
+                <option value="ESP">🇪🇸 İspanya</option>
+                <option value="NLD">🇳🇱 Hollanda</option>
+                <option value="BEL">🇧🇪 Belçika</option>
+                <option value="CHE">🇨🇭 İsviçre</option>
+                <option value="AUT">🇦🇹 Avusturya</option>
+                <option value="SWE">🇸🇪 İsveç</option>
+                <option value="NOR">🇳🇴 Norveç</option>
+                <option value="DNK">🇩🇰 Danimarka</option>
+                <option value="FIN">🇫🇮 Finlandiya</option>
+                <option value="POL">🇵🇱 Polonya</option>
+                <option value="CZE">🇨🇿 Çekya</option>
+                <option value="HUN">🇭🇺 Macaristan</option>
+                <option value="ROU">🇷🇴 Romanya</option>
+                <option value="BGR">🇧🇬 Bulgaristan</option>
+                <option value="GRC">🇬🇷 Yunanistan</option>
+                <option value="HRV">🇭🇷 Hırvatistan</option>
+                <option value="SRB">🇷🇸 Sırbistan</option>
+                <option value="BIH">🇧🇦 Bosna Hersek</option>
+                <option value="MKD">🇲🇰 Kuzey Makedonya</option>
+                <option value="ALB">🇦🇱 Arnavutluk</option>
+                <option value="KOS">🇽🇰 Kosova</option>
+              </select>
+              <p className="text-xs text-slate-500">
+                Türkiye dışındaki ülkeler için bilateral vize sayfası oluşturulur.
+                Örn: Karadağ → Kuveyt vize sayfası
+              </p>
             </div>
           </div>
 
