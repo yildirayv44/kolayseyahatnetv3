@@ -7,12 +7,14 @@ import type { Locale } from "@/i18n/translations";
 import { getCurrentUser } from "@/lib/auth";
 
 interface AskQuestionFormProps {
-  countryId: number;
+  countryId?: number;
   countryName: string;
   locale?: Locale;
+  sourceCountryCode?: string;
+  destinationCountryCode?: string;
 }
 
-export function AskQuestionForm({ countryId, countryName, locale = "tr" }: AskQuestionFormProps) {
+export function AskQuestionForm({ countryId, countryName, locale = "tr", sourceCountryCode, destinationCountryCode }: AskQuestionFormProps) {
   const [userId, setUserId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: "",
@@ -49,6 +51,8 @@ export function AskQuestionForm({ countryId, countryName, locale = "tr" }: AskQu
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           country_id: countryId,
+          source_country_code: sourceCountryCode,
+          destination_country_code: destinationCountryCode,
           question: formData.question,
           user_id: userId,
         }),

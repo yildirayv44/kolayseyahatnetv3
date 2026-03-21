@@ -248,9 +248,10 @@ export function BilateralVisaPage({ data, locale }: BilateralVisaPageProps) {
                 : 'Uzman danışmanlarımız sorularınızı kısa sürede yanıtlayacak.'}
             </p>
             <AskQuestionForm 
-              countryId={0}
               countryName={destinationCountry.name}
               locale={locale}
+              sourceCountryCode={data.source_country_code}
+              destinationCountryCode={data.destination_country_code}
             />
           </div>
 
