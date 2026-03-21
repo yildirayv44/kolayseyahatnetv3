@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Plus, Edit, Trash2, Eye, Sparkles, Search, Filter, RefreshCw, Languages, Loader2, CheckSquare, Square } from "lucide-react";
+import { Plus, Edit, Trash2, Eye, Sparkles, Search, Filter, RefreshCw, Languages, Loader2, CheckSquare, Square, ArrowRightLeft } from "lucide-react";
 
 interface Country {
   id: number;
@@ -216,8 +216,8 @@ export function CountriesListWithFilters({ initialCountries }: { initialCountrie
             href="/admin/ulkeler/vize-sayfalari"
             className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-lg transition-all hover:from-indigo-700 hover:to-purple-700"
           >
-            <Sparkles className="h-4 w-4" />
-            Vize Sayfaları
+            <ArrowRightLeft className="h-4 w-4" />
+            Bilateral Vize Sayfaları
           </Link>
           <Link
             href="/admin/ulkeler/toplu-ceviri"
@@ -491,6 +491,15 @@ export function CountriesListWithFilters({ initialCountries }: { initialCountrie
                         >
                           <Eye className="h-4 w-4" />
                         </Link>
+                        {country.country_code && (
+                          <Link
+                            href={`/admin/ulkeler/${country.id}/bilateral-vize`}
+                            className="rounded-lg p-2 text-purple-600 hover:bg-purple-50"
+                            title="Bilateral Vize Sayfaları"
+                          >
+                            <ArrowRightLeft className="h-4 w-4" />
+                          </Link>
+                        )}
                         <Link
                           href={`/admin/ulkeler/${country.id}/duzenle`}
                           className="rounded-lg p-2 text-blue-600 hover:bg-blue-50"
