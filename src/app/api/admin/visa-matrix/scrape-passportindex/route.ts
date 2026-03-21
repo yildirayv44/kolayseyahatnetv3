@@ -11,6 +11,7 @@ const supabase = createClient(
  * POST /api/admin/visa-matrix/scrape-passportindex
  * 
  * Scrape visa requirements from PassportIndex for a specific source country
+ * Used by cron worker for background processing
  * 
  * Body:
  * {
