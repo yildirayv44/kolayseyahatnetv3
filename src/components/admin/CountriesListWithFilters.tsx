@@ -213,6 +213,13 @@ export function CountriesListWithFilters({ initialCountries }: { initialCountrie
         </div>
         <div className="flex gap-3">
           <Link
+            href="/admin/ulkeler/vize-sayfalari"
+            className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-lg transition-all hover:from-indigo-700 hover:to-purple-700"
+          >
+            <Sparkles className="h-4 w-4" />
+            Vize Sayfaları
+          </Link>
+          <Link
             href="/admin/ulkeler/toplu-ceviri"
             className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-600 px-4 py-2 text-sm font-semibold text-white shadow-lg transition-all hover:from-blue-700 hover:to-cyan-700"
           >
