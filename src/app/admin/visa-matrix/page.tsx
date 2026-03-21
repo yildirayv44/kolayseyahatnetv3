@@ -31,6 +31,8 @@ export default function VisaMatrixPage() {
   const [batchScraping, setBatchScraping] = useState(false);
   const [scrapingStatus, setScrapingStatus] = useState<string>('');
   const [batchProgress, setBatchProgress] = useState<string>('');
+  const [queueJob, setQueueJob] = useState<any>(null);
+  const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null);
   const [stats, setStats] = useState({
     totalCountries: 0,
     sourceCountries: 0,
@@ -124,53 +126,93 @@ export default function VisaMatrixPage() {
     }
 
     setBatchScraping(true);
-    setBatchProgress('🚀 Batch işlem başlatılıyor...');
+    setBatchProgress('Job oluşturuluyor...');
 
     try {
-      const response = await fetch('/api/cron/scrape-all-countries', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_CRON_SECRET || 'dev-secret'}`,
-        },
+      const response = await fetch('/api/admin/visa-matrix/trigger-batch', {
+        method: 'POST',
       });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
 
       const data = await response.json();
 
-      if (data.success) {
-        const successMsg = `
-✅ Batch İşlem Tamamlandı!
+      if (response.status === 409) {
+        // Job already in progress
+        alert(`⚠️ Zaten bir batch işlem devam ediyor!\n\nJob ID: ${data.jobId}\nDurum: ${data.status}`);
+        setQueueJob(data);
+        startPolling();
+        return;
+      }
 
-📊 Özet:
-• Toplam Ülke: ${data.summary.total}
-• Başarılı: ${data.summary.successful}
-• Başarısız: ${data.summary.failed}
-
-📋 Detaylar:
-${data.results.map((r: any) => {
-  if (r.status === 'success') {
-    return `✅ ${r.country}: ${r.scraped} ülke`;
-  } else {
-    return `❌ ${r.country}: ${r.error}`;
-  }
-}).join('\n')}
-        `;
-        alert(successMsg);
-        fetchStats();
-      } else {
+      if (!response.ok) {
         throw new Error(data.error || 'Bilinmeyen hata');
       }
+
+      alert(`✅ Batch işlem başlatıldı!\n\nJob ID: ${data.jobId}\nToplam Ülke: ${data.totalCountries}\n\nİşlem arka planda devam edecek. Sayfayı kapatabilirsiniz.`);
+      
+      setQueueJob(data);
+      startPolling();
+      fetchStats();
     } catch (error: any) {
-      console.error('Batch scraping error:', error);
-      alert(`❌ Batch işlem hatası:\n${error.message}`);
-    } finally {
+      console.error('Batch trigger error:', error);
+      alert(`❌ Batch işlem başlatılamadı:\n${error.message}`);
       setBatchScraping(false);
       setBatchProgress('');
     }
   };
+
+  const startPolling = () => {
+    // Clear existing interval
+    if (pollingInterval) {
+      clearInterval(pollingInterval);
+    }
+
+    // Poll every 5 seconds
+    const interval = setInterval(async () => {
+      try {
+        const response = await fetch('/api/admin/visa-matrix/trigger-batch');
+        const data = await response.json();
+        
+        if (data.jobs && data.jobs.length > 0) {
+          const latestJob = data.jobs[0];
+          setQueueJob(latestJob);
+          
+          const percentage = latestJob.total_countries > 0 
+            ? Math.round((latestJob.processed_countries / latestJob.total_countries) * 100)
+            : 0;
+          
+          setBatchProgress(`${latestJob.current_country_name || 'İşleniyor...'} (${latestJob.processed_countries}/${latestJob.total_countries}) - %${percentage}`);
+          
+          // Stop polling if job is completed or failed
+          if (latestJob.status === 'completed' || latestJob.status === 'failed') {
+            clearInterval(interval);
+            setPollingInterval(null);
+            setBatchScraping(false);
+            
+            if (latestJob.status === 'completed') {
+              alert(`✅ Batch işlem tamamlandı!\n\nBaşarılı: ${latestJob.successful_countries}\nBaşarısız: ${latestJob.failed_countries}`);
+            } else {
+              alert(`❌ Batch işlem başarısız!\n\nHata: ${latestJob.error_message}`);
+            }
+            
+            fetchStats();
+          }
+        }
+      } catch (error) {
+        console.error('Polling error:', error);
+      }
+    }, 5000);
+
+    setPollingInterval(interval as any);
+  };
+
+  // Cleanup polling on unmount
+  useEffect(() => {
+    return () => {
+      if (pollingInterval) {
+        clearInterval(pollingInterval);
+      }
+    };
+  }, [pollingInterval]);
 
   const handleScrape = async () => {
     if (!selectedSource) {

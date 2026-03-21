@@ -300,6 +300,18 @@ export function CountriesListWithFilters({ initialCountries, locale = 'tr' }: Co
                     </p>
                   )}
                   
+                  {/* Vize Tablosu Linki */}
+                  <div className="border-t border-slate-100 pt-3">
+                    <Link
+                      href={locale === 'en' ? `/en/${country.slug}-vize-tablosu` : `/${country.slug}-vize-tablosu`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="flex items-center justify-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/10"
+                    >
+                      <Globe className="h-4 w-4" />
+                      {locale === 'en' ? 'Visa Requirements Table' : 'Vize Gereklilikleri Tablosu'}
+                    </Link>
+                  </div>
+
                   {/* Fiyat Gösterimi */}
                   {country.price ? (
                     <div className="flex items-end justify-between border-t border-slate-100 pt-3">
