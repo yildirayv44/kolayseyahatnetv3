@@ -149,6 +149,51 @@ export function BilateralVisaPage({ data, locale }: BilateralVisaPageProps) {
             </div>
           )}
 
+          {/* Popular Cities */}
+          {(locale === 'en' ? data.popular_cities_en : data.popular_cities) && (
+            <div className="bg-white rounded-lg shadow-md p-8 mb-8">
+              <h2 className="text-2xl font-bold mb-6">
+                🏙️ {isEnglish ? 'Popular Cities' : 'Popüler Şehirler'}
+              </h2>
+              <div 
+                className="prose prose-lg max-w-none"
+                dangerouslySetInnerHTML={{ 
+                  __html: locale === 'en' ? data.popular_cities_en : data.popular_cities 
+                }}
+              />
+            </div>
+          )}
+
+          {/* Best Time to Visit */}
+          {(locale === 'en' ? data.best_time_to_visit_en : data.best_time_to_visit) && (
+            <div className="bg-white rounded-lg shadow-md p-8 mb-8">
+              <h2 className="text-2xl font-bold mb-6">
+                📅 {isEnglish ? 'Best Time to Visit' : 'En İyi Ziyaret Zamanı'}
+              </h2>
+              <div 
+                className="prose prose-lg max-w-none"
+                dangerouslySetInnerHTML={{ 
+                  __html: locale === 'en' ? data.best_time_to_visit_en : data.best_time_to_visit 
+                }}
+              />
+            </div>
+          )}
+
+          {/* Application Steps */}
+          {(locale === 'en' ? data.application_steps_en : data.application_steps) && (
+            <div className="bg-white rounded-lg shadow-md p-8 mb-8">
+              <h2 className="text-2xl font-bold mb-6">
+                📋 {isEnglish ? 'Application Steps' : 'Başvuru Adımları'}
+              </h2>
+              <div 
+                className="prose prose-lg max-w-none"
+                dangerouslySetInnerHTML={{ 
+                  __html: locale === 'en' ? data.application_steps_en : data.application_steps 
+                }}
+              />
+            </div>
+          )}
+
           {/* Country Info & Emergency */}
           {data.country_info && (
             <div className="bg-white rounded-lg shadow-md p-8 mb-8">
