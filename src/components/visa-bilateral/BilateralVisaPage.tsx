@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import { Breadcrumb } from '@/components/shared/Breadcrumb';
 import { generateFAQSchema, generateBreadcrumbSchema } from '@/components/shared/SEOHead';
+import { AskQuestionForm } from '@/components/country/AskQuestionForm';
 
 interface BilateralVisaPageProps {
   data: any;
@@ -236,6 +237,23 @@ export function BilateralVisaPage({ data, locale }: BilateralVisaPageProps) {
             </div>
           )}
 
+          {/* Ask Question Form */}
+          <div className="bg-white rounded-lg shadow-md p-8 mb-8">
+            <h2 className="text-2xl font-bold mb-6">
+              {isEnglish ? `${destinationCountry.name} Visa Questions` : `${destinationCountry.name} Vizesi Hakkında Soru Sor`}
+            </h2>
+            <p className="text-gray-600 mb-6">
+              {isEnglish 
+                ? 'Our expert consultants will answer your questions shortly.'
+                : 'Uzman danışmanlarımız sorularınızı kısa sürede yanıtlayacak.'}
+            </p>
+            <AskQuestionForm 
+              countryId={0}
+              countryName={destinationCountry.name}
+              locale={locale}
+            />
+          </div>
+
           {/* CTA Section */}
           <div className="bg-blue-600 text-white rounded-lg shadow-md p-8 text-center">
             <h2 className="text-2xl font-bold mb-4">
@@ -248,12 +266,20 @@ export function BilateralVisaPage({ data, locale }: BilateralVisaPageProps) {
                 ? 'Our expert team is ready to assist you with your visa application process.'
                 : 'Uzman ekibimiz vize başvuru sürecinizde size yardımcı olmaya hazır.'}
             </p>
-            <a
-              href={isEnglish ? '/en/contact' : '/iletisim'}
-              className="inline-block bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
-            >
-              {isEnglish ? 'Contact Us' : 'Bize Ulaşın'}
-            </a>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <a
+                href="tel:02129099971"
+                className="inline-flex items-center justify-center gap-2 bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
+              >
+                📞 0212 909 99 71 {isEnglish ? 'Call' : 'Ara'}
+              </a>
+              <a
+                href={isEnglish ? '/en/vize-basvuru-formu-std' : '/vize-basvuru-formu-std'}
+                className="inline-flex items-center justify-center gap-2 bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
+              >
+                {isEnglish ? 'Apply Online' : 'Online Başvuru Yap'}
+              </a>
+            </div>
           </div>
 
           {/* Structured Data */}
