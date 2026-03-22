@@ -34,9 +34,14 @@ interface CountryHeroProps {
     price: string;
     currency_id: number;
   }>;
+  bilateralContext?: {
+    sourceCode: string;
+    sourceName: string;
+    bilateralSlug: string;
+  } | null;
 }
 
-export function CountryHero({ country, locale = "tr", products = [] }: CountryHeroProps) {
+export function CountryHero({ country, locale = "tr", products = [], bilateralContext = null }: CountryHeroProps) {
   const formType = useApplicationFormType();
   const [selectedPackage, setSelectedPackage] = useState<any>(products[0] || null);
 
@@ -259,9 +264,12 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
           <div>
             <div className="mb-3 flex items-center gap-3">
               <h1 className="text-3xl font-bold text-slate-900 md:text-4xl">
-                {(country.title || `${country.name} Vizesi`)
-                  .replace(/\s*[-|]\s*Kolay Seyahat\s*$/i, '')
-                  .trim()}
+                {bilateralContext 
+                  ? `${bilateralContext.sourceName} → ${country.name} ${locale === 'en' ? 'Visa' : 'Vizesi'}`
+                  : (country.title || `${country.name} Vizesi`)
+                      .replace(/\s*[-|]\s*Kolay Seyahat\s*$/i, '')
+                      .trim()
+                }
               </h1>
               {visaReq && visaReq.visa_status === 'visa-free' && (
                 <span className="rounded-full bg-emerald-500 px-3 py-1 text-sm font-bold text-white">
@@ -270,10 +278,14 @@ export function CountryHero({ country, locale = "tr", products = [] }: CountryHe
               )}
             </div>
             <p className="text-base leading-relaxed text-slate-600 md:text-lg">
-              {country.description ||
-                (locale === 'en' 
-                  ? `Professional consultation for your ${country.name} visa applications. Document preparation, appointment and process tracking from one point.`
-                  : `${country.name} vizesi başvurularınız için profesyonel danışmanlık. Evrak hazırlığı, randevu ve süreç takibi tek noktadan.`)}
+              {bilateralContext
+                ? (locale === 'en'
+                    ? `${bilateralContext.sourceName} citizens' ${country.name} visa requirements`
+                    : `${bilateralContext.sourceName} vatandaşları için ${country.name} vize gereklilikleri`)
+                : (country.description ||
+                    (locale === 'en' 
+                      ? `Professional consultation for your ${country.name} visa applications. Document preparation, appointment and process tracking from one point.`
+                      : `${country.name} vizesi başvurularınız için profesyonel danışmanlık. Evrak hazırlığı, randevu ve süreç takibi tek noktadan.`))}
             </p>
           </div>
 

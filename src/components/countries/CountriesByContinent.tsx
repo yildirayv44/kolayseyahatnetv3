@@ -196,14 +196,17 @@ export function CountriesByContinent({ countries, visaData, locale = 'tr' }: Pro
                           
                           {/* Vize Tablosu Linki */}
                           <div className="border-t border-slate-100 pt-3">
-                            <Link
-                              href={locale === 'en' ? `/en/${country.slug}-vize-tablosu` : `/${country.slug}-vize-tablosu`}
-                              onClick={(e) => e.stopPropagation()}
-                              className="flex items-center justify-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/10"
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                window.location.href = locale === 'en' ? `/en/${country.slug}-vize-tablosu` : `/${country.slug}-vize-tablosu`;
+                              }}
+                              className="flex w-full items-center justify-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/10"
                             >
                               <Globe2 className="h-4 w-4" />
                               {locale === 'en' ? 'Visa Requirements Table' : 'Vize Gereklilikleri Tablosu'}
-                            </Link>
+                            </button>
                           </div>
 
                           {country.price ? (

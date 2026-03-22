@@ -6,17 +6,43 @@ import { supabase } from './supabase';
 
 /**
  * Check if a slug is a bilateral visa page
- * Pattern: {source-country}-{destination-country}-vize or -visa
+ * Patterns: 
+ * - English: {source-country}-to-{destination-country}-visa
+ * - Turkish: {source-country}-vatandaslari-{destination-country}-vizesi
  */
 export function isBilateralVisaSlug(slug: string): boolean {
-  return slug.endsWith('-vize') || slug.endsWith('-visa');
+  return (
+    (slug.includes('-to-') && slug.endsWith('-visa')) ||
+    (slug.includes('-vatandaslari-') && slug.endsWith('-vizesi'))
+  );
 }
 
 /**
  * Parse bilateral visa slug to extract country slugs
- * Example: "turkiye-amerika-vize" -> { source: "turkiye", destination: "amerika" }
+ * Examples: 
+ * - "montenegro-to-kuwait-visa" -> { source: "montenegro", destination: "kuwait", locale: "en" }
+ * - "karadag-vatandaslari-kuveyt-vizesi" -> { source: "karadag", destination: "kuveyt", locale: "tr" }
  */
 export function parseBilateralVisaSlug(slug: string): { source: string; destination: string; locale: 'tr' | 'en' } | null {
+  // Check for Turkish SEO format: source-vatandaslari-destination-vizesi
+  if (slug.includes('-vatandaslari-') && slug.endsWith('-vizesi')) {
+    const withoutSuffix = slug.replace('-vizesi', '');
+    const parts = withoutSuffix.split('-vatandaslari-');
+    if (parts.length === 2) {
+      return { source: parts[0], destination: parts[1], locale: 'tr' };
+    }
+  }
+  
+  // Check for English format: source-to-destination-visa
+  if (slug.includes('-to-') && slug.endsWith('-visa')) {
+    const withoutSuffix = slug.replace('-visa', '');
+    const parts = withoutSuffix.split('-to-');
+    if (parts.length === 2) {
+      return { source: parts[0], destination: parts[1], locale: 'en' };
+    }
+  }
+  
+  // Fallback to old format (for backward compatibility)
   const suffix = slug.endsWith('-vize') ? '-vize' : slug.endsWith('-visa') ? '-visa' : null;
   
   if (!suffix) return null;
@@ -28,7 +54,6 @@ export function parseBilateralVisaSlug(slug: string): { source: string; destinat
   if (parts.length < 2) return null;
   
   // Find the split point - last part is destination, rest is source
-  // Handle multi-word countries like "birlesik-arap-emirlikleri"
   const destination = parts[parts.length - 1];
   const source = parts.slice(0, -1).join('-');
   
@@ -36,14 +61,31 @@ export function parseBilateralVisaSlug(slug: string): { source: string; destinat
 }
 
 /**
- * Get bilateral visa page data from database
+ * Get bilateral visa page data from countries table
+ * Bilateral pages are stored in countries table with source_country_code
  */
 export async function getBilateralVisaPage(slug: string) {
-  const { data: visaPage, error } = await supabase
-    .from('visa_pages_seo')
+  // Parse slug to get source and destination
+  const parsed = parseBilateralVisaSlug(slug);
+  if (!parsed) return null;
+  
+  const { source, destination } = parsed;
+  
+  // Get country codes from slugs
+  const [sourceCode, destCode] = await Promise.all([
+    getCountryCodeFromSlug(source),
+    getCountryCodeFromSlug(destination)
+  ]);
+  
+  if (!sourceCode || !destCode) return null;
+  
+  // Fetch bilateral country page from countries table
+  const { data: bilateralCountry, error } = await supabase
+    .from('countries')
     .select('*')
-    .eq('slug', slug)
-    .in('content_status', ['published', 'generated'])
+    .eq('country_code', destCode)
+    .eq('source_country_code', sourceCode)
+    .eq('status', 1)
     .maybeSingle();
 
   if (error) {
@@ -51,31 +93,48 @@ export async function getBilateralVisaPage(slug: string) {
     return null;
   }
 
-  if (!visaPage) {
+  if (!bilateralCountry) {
     return null;
   }
 
-  // Manually fetch country data
+  // Fetch source and destination country names
   const { data: countries } = await supabase
     .from('countries')
     .select('name, name_en, country_code, flag_emoji')
-    .in('country_code', [visaPage.source_country_code, visaPage.destination_country_code]);
+    .in('country_code', [sourceCode, destCode])
+    .is('source_country_code', null);
 
-  const sourceCountry = countries?.find(c => c.country_code === visaPage.source_country_code);
-  const destinationCountry = countries?.find(c => c.country_code === visaPage.destination_country_code);
+  const sourceCountry = countries?.find(c => c.country_code === sourceCode);
+  const destinationCountry = countries?.find(c => c.country_code === destCode);
 
   return {
-    ...visaPage,
+    ...bilateralCountry,
+    source_country_code: sourceCode,
+    destination_country_code: destCode,
     source_country: sourceCountry,
-    destination_country: destinationCountry
+    destination_country: destinationCountry,
+    slug: slug
   };
 }
 
 /**
  * Get country code from country slug
+ * Supports both database slugs and dynamically generated slugs from country names
  */
 export async function getCountryCodeFromSlug(countrySlug: string): Promise<string | null> {
-  // First try to find by taxonomy slug
+  // First try direct slug match in countries table
+  const { data: directMatch } = await supabase
+    .from('countries')
+    .select('country_code')
+    .eq('slug', countrySlug)
+    .eq('status', 1)
+    .maybeSingle();
+
+  if (directMatch) {
+    return directMatch.country_code;
+  }
+
+  // Second try: find by taxonomy slug
   const { data: taxonomy } = await supabase
     .from('taxonomies')
     .select('model_id')
@@ -93,14 +152,32 @@ export async function getCountryCodeFromSlug(countrySlug: string): Promise<strin
     return country?.country_code || null;
   }
 
-  // Fallback: try direct country name match
-  const { data: country } = await supabase
+  // Fallback: Get all countries and match by slugified name
+  const { data: countries } = await supabase
     .from('countries')
-    .select('country_code')
-    .or(`name.ilike.%${countrySlug}%`)
-    .maybeSingle();
+    .select('country_code, name, name_en')
+    .eq('status', 1);
 
-  return country?.country_code || null;
+  if (countries) {
+    const slugify = (text: string) => 
+      text.toLowerCase()
+        .replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's')
+        .replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ç/g, 'c')
+        .replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').trim();
+
+    for (const country of countries) {
+      // Check Turkish name
+      if (slugify(country.name) === countrySlug) {
+        return country.country_code;
+      }
+      // Check English name
+      if (country.name_en && slugify(country.name_en) === countrySlug) {
+        return country.country_code;
+      }
+    }
+  }
+
+  return null;
 }
 
 /**

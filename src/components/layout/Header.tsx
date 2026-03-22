@@ -28,17 +28,37 @@ const getMenuItems = (locale: 'tr' | 'en') => [
   { path: "iletisim", label: locale === 'en' ? "Contact" : "İletişim" },
 ];
 
+// Helper function to generate bilateral visa URL
+const getBilateralVisaUrl = (sourceSlug: string, destSlug: string, locale: string) => {
+  let bilateralSlug: string;
+  
+  if (locale === 'en') {
+    // English: source-to-destination-visa
+    bilateralSlug = `${sourceSlug}-to-${destSlug}-visa`;
+  } else {
+    // Turkish SEO: source-vatandaslari-destination-vizesi
+    bilateralSlug = `${sourceSlug}-vatandaslari-${destSlug}-vizesi`;
+  }
+  
+  return locale === 'en' ? `/en/${bilateralSlug}` : `/${bilateralSlug}`;
+};
+
 export function Header() {
   const pathname = usePathname();
   const router = useRouter();
   const locale = getLocaleFromPathname(pathname);
   const formType = useApplicationFormType();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [sourceCountryCode, setSourceCountryCode] = useState("TUR"); // Kaynak ülke (default: Türkiye)
+  const [sourceQuery, setSourceQuery] = useState(""); // Kaynak ülke arama
+  const [sourceCountryCode, setSourceCountryCode] = useState("TUR"); // Seçili kaynak ülke kodu
+  const [sourceCountryName, setSourceCountryName] = useState("Türkiye"); // Seçili kaynak ülke adı
+  const [sourceCountrySlug, setSourceCountrySlug] = useState("turkiye"); // Seçili kaynak ülke slug
   const [countries, setCountries] = useState<any[]>([]);
-  const [filteredCountries, setFilteredCountries] = useState<any[]>([]);
+  const [filteredSourceCountries, setFilteredSourceCountries] = useState<any[]>([]); // Kaynak ülke sonuçları
+  const [filteredDestCountries, setFilteredDestCountries] = useState<any[]>([]); // Hedef ülke sonuçları
+  const [sourceSearchOpen, setSourceSearchOpen] = useState(false);
+  const [destSearchOpen, setDestSearchOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [isUserAdmin, setIsUserAdmin] = useState(false);
   const { count: favoritesCount } = useFavorites();
@@ -62,12 +82,48 @@ export function Header() {
   useEffect(() => {
     setIsMounted(true);
     
-    // Load source country from localStorage
+    // Load source country from localStorage or set based on locale
     const savedSourceCountry = localStorage.getItem('sourceCountryCode');
-    if (savedSourceCountry) {
+    const savedSourceName = localStorage.getItem('sourceCountryName');
+    const savedSourceSlug = localStorage.getItem('sourceCountrySlug');
+    
+    if (savedSourceCountry && savedSourceName && savedSourceSlug) {
       setSourceCountryCode(savedSourceCountry);
+      setSourceCountryName(savedSourceName);
+      setSourceCountrySlug(savedSourceSlug);
+    } else if (locale === 'tr') {
+      // Türkçe dil için varsayılan Türkiye
+      setSourceCountryCode('TUR');
+      setSourceCountryName('Türkiye');
+      setSourceCountrySlug('turkiye');
+      localStorage.setItem('sourceCountryCode', 'TUR');
+      localStorage.setItem('sourceCountryName', 'Türkiye');
+      localStorage.setItem('sourceCountrySlug', 'turkiye');
     }
+    // İngilizce için varsayılan yok, kullanıcı seçmeli
   }, []);
+
+  // Update source country name and slug when locale changes
+  useEffect(() => {
+    if (!sourceCountryCode || !countries.length) return;
+    
+    const country = countries.find(c => c.country_code === sourceCountryCode);
+    if (country) {
+      const displayName = locale === 'en' ? (country.name_en || country.name) : country.name;
+      // Generate slug from display name
+      const slugify = (text: string) => 
+        text.toLowerCase()
+          .replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's')
+          .replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ç/g, 'c')
+          .replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').trim();
+      
+      const newSlug = slugify(displayName);
+      setSourceCountryName(displayName);
+      setSourceCountrySlug(newSlug);
+      localStorage.setItem('sourceCountryName', displayName);
+      localStorage.setItem('sourceCountrySlug', newSlug);
+    }
+  }, [locale, sourceCountryCode, countries]);
 
   useEffect(() => {
     getCurrentUser().then(async (userData) => {
@@ -123,26 +179,44 @@ export function Header() {
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       if (!target.closest('.search-container')) {
-        setSearchOpen(false);
+        setSourceSearchOpen(false);
+        setDestSearchOpen(false);
       }
     };
 
-    if (searchOpen) {
+    if (sourceSearchOpen || destSearchOpen) {
       document.addEventListener('mousedown', handleClickOutside);
       return () => document.removeEventListener('mousedown', handleClickOutside);
     }
-  }, [searchOpen]);
+  }, [sourceSearchOpen, destSearchOpen]);
 
+  // Filter source countries
+  useEffect(() => {
+    if (sourceQuery.trim()) {
+      const query = sourceQuery.toLocaleLowerCase('tr');
+      const allCountries = countries.filter(c => c.source_country_code === 'TUR');
+      const uniqueCountries = Array.from(new Set(allCountries.map(c => c.country_code)))
+        .map(code => allCountries.find(c => c.country_code === code))
+        .filter(c => c && (c.name.toLocaleLowerCase('tr').includes(query) || 
+                          (c.slug && c.slug.toLocaleLowerCase('tr').includes(query))))
+        .slice(0, 5);
+      setFilteredSourceCountries(uniqueCountries);
+    } else {
+      setFilteredSourceCountries([]);
+    }
+  }, [sourceQuery, countries]);
+
+  // Filter destination countries
   useEffect(() => {
     if (searchQuery.trim()) {
       const query = searchQuery.toLocaleLowerCase('tr');
-      const filtered = countries
-        .filter((c) => 
-          // Kaynak ülkeye göre filtrele
-          c.source_country_code === sourceCountryCode &&
-          (c.name.toLocaleLowerCase('tr').includes(query) ||
-          (c.slug && c.slug.toLocaleLowerCase('tr').includes(query)))
-        )
+      // Get unique countries (regardless of source_country_code)
+      const uniqueCountries = Array.from(new Set(countries.map(c => c.country_code)))
+        .map(code => countries.find(c => c.country_code === code))
+        .filter(c => c && (c.name.toLocaleLowerCase('tr').includes(query) ||
+          (c.slug && c.slug.toLocaleLowerCase('tr').includes(query))));
+      
+      const filtered = uniqueCountries
         .sort((a, b) => {
           const aName = a.name.toLocaleLowerCase('tr');
           const bName = b.name.toLocaleLowerCase('tr');
@@ -183,11 +257,11 @@ export function Header() {
           // Finally alphabetically
           return aName.localeCompare(bName, 'tr');
         });
-      setFilteredCountries(filtered.slice(0, 5));
+      setFilteredDestCountries(filtered.slice(0, 5));
     } else {
-      setFilteredCountries([]);
+      setFilteredDestCountries([]);
     }
-  }, [searchQuery, countries]);
+  }, [searchQuery, countries, sourceCountryCode]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -263,86 +337,149 @@ export function Header() {
           <span className="hidden text-2xl md:inline">KolaySeyahat</span>
         </Link>
 
-        {/* Search Bar */}
-        <div className="search-container relative flex-1 max-w-md md:max-w-md">
-          {/* Source Country Selector */}
-          <div className="mb-2 flex items-center gap-2">
-            <label className="text-xs font-semibold text-slate-600">
-              {locale === 'en' ? 'From:' : 'Nereden:'}
-            </label>
-            <select
-              value={sourceCountryCode}
-              onChange={(e) => {
-                const newSource = e.target.value;
-                setSourceCountryCode(newSource);
-                localStorage.setItem('sourceCountryCode', newSource);
-                setSearchQuery(''); // Reset search when source changes
-              }}
-              className="rounded-md border border-slate-300 px-2 py-1 text-xs font-medium focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30"
-            >
-              <option value="TUR">🇹🇷 Türkiye</option>
-              <option value="MNE">🇲🇪 Karadağ</option>
-              <option value="USA">🇺🇸 Amerika</option>
-              <option value="GBR">🇬🇧 İngiltere</option>
-              <option value="DEU">🇩🇪 Almanya</option>
-              <option value="FRA">🇫🇷 Fransa</option>
-              <option value="ITA">🇮🇹 İtalya</option>
-              <option value="ESP">🇪🇸 İspanya</option>
-            </select>
-            <span className="text-xs text-slate-500">→</span>
-            <span className="text-xs font-semibold text-primary">
-              {locale === 'en' ? 'To:' : 'Nereye:'}
-            </span>
-          </div>
-          
-          <div className="relative">
-            {/* Pulse Animation Ring */}
-            <div className="absolute -inset-1 rounded-lg bg-primary/20 opacity-75 blur-sm animate-pulse pointer-events-none"></div>
-            
-            <input
-              type="text"
-              placeholder={
-                isFocused 
-                  ? t(locale as Locale, "searchCountry")
-                  : isMounted && placeholderText
-                  ? `${placeholderText}${!searchQuery && !isDeleting ? '|' : ''}`
-                  : t(locale as Locale, "searchCountry")
-              }
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onFocus={() => {
-                setSearchOpen(true);
-                setIsFocused(true);
-              }}
-              onBlur={() => {
-                // Delay to allow click on results
-                setTimeout(() => setIsFocused(false), 200);
-              }}
-              className="relative w-full rounded-lg border-2 border-primary/40 bg-white py-3 pl-11 pr-3 text-sm font-medium placeholder:text-slate-600 placeholder:font-semibold focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30 md:py-2 md:pl-14 md:pr-4 md:text-sm"
-            />
-            
-            {/* Search Icon - Larger and more prominent - After input for proper z-index */}
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-primary stroke-[2.5]" />
-            <span className="pointer-events-none absolute left-9 top-1/2 -translate-y-1/2 hidden md:inline text-sm font-semibold text-primary/80">|</span>
-          </div>
+        {/* Search Bar - Split into From and To */}
+        <div className="search-container relative flex-1 max-w-2xl">
+          <div className="grid grid-cols-[1fr_1.5fr] gap-2">
+            {/* From (Source Country) */}
+            <div className="relative">
+              <label className="mb-1 block text-xs font-semibold text-slate-600">
+                {locale === 'en' ? 'From:' : 'Nereden:'}
+              </label>
+              <div className="relative">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder={locale === 'en' ? 'Select country...' : 'Ülke seçin...'}
+                    value={sourceQuery || sourceCountryName}
+                    onChange={(e) => {
+                      setSourceQuery(e.target.value);
+                      if (e.target.value !== sourceCountryName) {
+                        setSourceCountryName('');
+                      }
+                    }}
+                    onFocus={() => {
+                      setSourceSearchOpen(true);
+                      if (sourceCountryName && !sourceQuery) {
+                        setSourceQuery('');
+                      }
+                    }}
+                    onBlur={() => setTimeout(() => setSourceSearchOpen(false), 200)}
+                    className="w-full rounded-lg border-2 border-slate-300 bg-white py-2 pl-3 pr-8 text-sm font-medium placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  />
+                  {sourceCountryName && !sourceQuery && (
+                    <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-green-600">
+                      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {/* Source Country Dropdown */}
+              {sourceSearchOpen && filteredSourceCountries.length > 0 && (
+                <div className="absolute left-0 right-0 top-full z-50 mt-1 max-h-60 overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-xl">
+                  {filteredSourceCountries.map((country: any) => {
+                    const displayName = locale === 'en' ? (country.name_en || country.name) : country.name;
+                    // Generate slug from display name for locale-appropriate URLs
+                    const slugify = (text: string) => 
+                      text.toLowerCase()
+                        .replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's')
+                        .replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ç/g, 'c')
+                        .replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').trim();
+                    const newSlug = slugify(displayName);
+                    
+                    return (
+                    <button
+                      key={country.id}
+                      type="button"
+                      onClick={() => {
+                        setSourceCountryCode(country.country_code);
+                        setSourceCountryName(displayName);
+                        setSourceCountrySlug(newSlug);
+                        setSourceQuery('');
+                        setSourceSearchOpen(false);
+                        localStorage.setItem('sourceCountryCode', country.country_code);
+                        localStorage.setItem('sourceCountryName', displayName);
+                        localStorage.setItem('sourceCountrySlug', newSlug);
+                        setSearchQuery('');
+                      }}
+                      className="flex w-full items-center gap-3 border-b border-slate-100 px-4 py-2 text-left hover:bg-slate-50 last:border-0"
+                    >
+                      <div className="text-sm font-medium text-slate-900">{displayName}</div>
+                    </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
 
-          {searchOpen && (
-            <div className="absolute left-0 right-0 top-full z-50 mt-2 max-h-96 overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-xl">
+            {/* To (Destination Country) */}
+            <div className="relative">
+              <label className="mb-1 block text-xs font-semibold text-primary">
+                {locale === 'en' ? 'To:' : 'Nereye:'}
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder={
+                    isFocused 
+                      ? t(locale as Locale, "searchCountry")
+                      : isMounted && placeholderText
+                      ? `${placeholderText}${!searchQuery && !isDeleting ? '|' : ''}`
+                      : t(locale as Locale, "searchCountry")
+                  }
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onFocus={() => {
+                    setDestSearchOpen(true);
+                    setIsFocused(true);
+                  }}
+                  onBlur={() => {
+                    setTimeout(() => {
+                      setDestSearchOpen(false);
+                      setIsFocused(false);
+                    }, 200);
+                  }}
+                  className="w-full rounded-lg border-2 border-primary/40 bg-white py-2 pl-10 pr-3 text-sm font-medium placeholder:text-slate-600 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+                />
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-primary" />
+              </div>
+              
+              {/* Destination Country Dropdown */}
+              {destSearchOpen && (
+                <div className="absolute left-0 right-0 top-full z-50 mt-1 max-h-96 overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-xl">
               {/* Popular Countries - Show when no search */}
               {!searchQuery && (
                 <>
                   <div className="border-b border-slate-200 bg-gradient-to-r from-primary/10 to-blue-50 px-4 py-2">
                     <h3 className="text-xs font-semibold text-primary">⭐ {t(locale as Locale, "popularCountries")}</h3>
                   </div>
-                  {countries
-                    .filter((c: any) => ['Amerika', 'İngiltere', 'Kanada', 'Almanya', 'Fransa', 'İtalya'].includes(c.name))
+                  {Array.from(new Set(countries.map(c => c.country_code)))
+                    .map(code => countries.find(c => c.country_code === code))
+                    .filter((c: any) => c && ['Amerika', 'İngiltere', 'Kanada', 'Almanya', 'Fransa', 'İtalya'].includes(c.name))
                     .slice(0, 6)
-                    .map((country: any) => (
+                    .map((country: any) => {
+                      const displayName = locale === 'en' ? (country.name_en || country.name) : country.name;
+                      // Generate slug from display name for locale-appropriate URLs
+                      const slugify = (text: string) => 
+                        text.toLowerCase()
+                          .replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's')
+                          .replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ç/g, 'c')
+                          .replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').trim();
+                      const destSlug = slugify(displayName);
+                      
+                      // If source country is not Turkey, create bilateral URL
+                      const href = sourceCountryCode !== 'TUR' 
+                        ? getBilateralVisaUrl(sourceCountrySlug, destSlug, locale)
+                        : getLocalizedUrl(country.slug || getCountrySlug(country.id), locale);
+                      
+                      return (
                       <Link
                         key={country.id}
-                        href={getLocalizedUrl(country.slug || getCountrySlug(country.id), locale)}
+                        href={href}
                         onClick={() => {
-                          setSearchOpen(false);
+                          setDestSearchOpen(false);
                           setSearchQuery("");
                         }}
                         prefetch={false}
@@ -352,28 +489,44 @@ export function Header() {
                           <Globe2 className="h-5 w-5 text-primary" />
                         </div>
                         <div className="flex-1">
-                          <div className="text-sm font-semibold text-slate-900">{country.name} Vizesi</div>
+                          <div className="text-sm font-semibold text-slate-900">{displayName}</div>
                           <div className="text-xs text-slate-500 line-clamp-1">
                             {country.description || `${country.name} vizesi başvurunuz için bizi hemen...`}
                           </div>
                         </div>
                       </Link>
-                    ))}
+                      );
+                    })}
                 </>
               )}
 
               {/* Search Results */}
-              {searchQuery && filteredCountries.length > 0 && (
+              {searchQuery && filteredDestCountries.length > 0 && (
                 <>
                   <div className="border-b border-slate-200 bg-slate-50 px-4 py-2">
-                    <h3 className="text-xs font-semibold text-slate-700">{t(locale as Locale, "searchResults")} ({filteredCountries.length})</h3>
+                    <h3 className="text-xs font-semibold text-slate-700">{t(locale as Locale, "searchResults")} ({filteredDestCountries.length})</h3>
                   </div>
-                  {filteredCountries.map((country) => (
+                  {filteredDestCountries.map((country) => {
+                    const displayName = locale === 'en' ? (country.name_en || country.name) : country.name;
+                    // Generate slug from display name for locale-appropriate URLs
+                    const slugify = (text: string) => 
+                      text.toLowerCase()
+                        .replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's')
+                        .replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ç/g, 'c')
+                        .replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').trim();
+                    const destSlug = slugify(displayName);
+                    
+                    // If source country is not Turkey, create bilateral URL
+                    const href = sourceCountryCode !== 'TUR' 
+                      ? getBilateralVisaUrl(sourceCountrySlug, destSlug, locale)
+                      : getLocalizedUrl(country.slug || getCountrySlug(country.id), locale);
+                    
+                    return (
                     <Link
                       key={country.id}
-                      href={getLocalizedUrl(country.slug || getCountrySlug(country.id), locale)}
+                      href={href}
                       onClick={() => {
-                        setSearchOpen(false);
+                        setDestSearchOpen(false);
                         setSearchQuery("");
                       }}
                       prefetch={false}
@@ -383,25 +536,28 @@ export function Header() {
                         <Globe2 className="h-5 w-5 text-primary" />
                       </div>
                       <div className="flex-1">
-                        <div className="text-sm font-semibold text-slate-900">{country.name} Vizesi</div>
+                        <div className="text-sm font-semibold text-slate-900">{displayName}</div>
                         <div className="text-xs text-slate-500 line-clamp-1">
                           {country.description || `${country.name} vizesi başvurunuz için bizi hemen...`}
                         </div>
                       </div>
                       <Search className="h-4 w-4 text-slate-400" />
                     </Link>
-                  ))}
+                    );
+                  })}
                 </>
               )}
 
               {/* No Results */}
-              {searchQuery && filteredCountries.length === 0 && (
+              {searchQuery && filteredDestCountries.length === 0 && (
                 <div className="px-4 py-8 text-center">
                   <p className="text-sm text-slate-500">{t(locale as Locale, "noResults")}</p>
                 </div>
               )}
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
 
         {/* Desktop Menu */}

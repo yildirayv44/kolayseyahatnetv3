@@ -23,6 +23,7 @@ export function CountryEditForm({ country }: { country: any }) {
   const [showRegenerateModal, setShowRegenerateModal] = useState(false);
   const [activeLocale, setActiveLocale] = useState<'tr' | 'en'>('tr');
   const [visaRequirementPreview, setVisaRequirementPreview] = useState<any>(null);
+  const [countries, setCountries] = useState<any[]>([]);
   const [expandedSections, setExpandedSections] = useState({
     basic: true,
     seo: false,
@@ -40,6 +41,7 @@ export function CountryEditForm({ country }: { country: any }) {
     name: country.name || "",
     slug: country.slug || generateSlug(country.name || ""),
     country_code: country.country_code || "",
+    source_country_code: country.source_country_code || null,
     title: country.title || "",
     meta_title: country.meta_title || "",
     meta_description: country.meta_description || "",
@@ -80,7 +82,7 @@ export function CountryEditForm({ country }: { country: any }) {
     source_urls: Array.isArray(country.source_urls) ? country.source_urls : [],
   });
 
-  // Load visa requirements on mount
+  // Load countries and visa requirements on mount
   useEffect(() => {
     console.log('🏞️ Country Edit Form - Initial country data:', {
       id: country.id,
@@ -88,6 +90,22 @@ export function CountryEditForm({ country }: { country: any }) {
       country_code: country.country_code,
       image_url: country.image_url,
     });
+    
+    // Fetch all countries for source country dropdown
+    const fetchCountries = async () => {
+      const { data } = await supabase
+        .from('countries')
+        .select('id, name, name_en, country_code, slug')
+        .eq('status', 1)
+        .is('source_country_code', null)
+        .order('name');
+      
+      if (data) {
+        setCountries(data);
+      }
+    };
+    
+    fetchCountries();
     
     // Load visa requirements if country_code exists
     if (formData.country_code) {
@@ -473,6 +491,43 @@ export function CountryEditForm({ country }: { country: any }) {
           <p className="text-xs text-slate-500">
             Otomatik atanır. Ülke adı değiştirildiğinde ISO kodu bulunur.
           </p>
+        </div>
+
+        <div className="space-y-2">
+          <label className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+            <span>🔄 Kaynak Ülke (Bilateral Vize İçin)</span>
+            {formData.source_country_code && (
+              <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
+                Bilateral Sayfa
+              </span>
+            )}
+          </label>
+          <select
+            value={formData.source_country_code || ''}
+            onChange={(e) => setFormData({ ...formData, source_country_code: e.target.value || null })}
+            className="w-full rounded-lg border border-slate-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          >
+            <option value="">Yok (Normal Ülke Sayfası)</option>
+            {countries.map((c) => (
+              <option key={c.id} value={c.country_code}>
+                {c.name} ({c.country_code})
+              </option>
+            ))}
+          </select>
+          <p className="text-xs text-slate-500">
+            <strong>Bilateral vize sayfası oluşturmak için</strong> kaynak ülkeyi seçin. 
+            Örneğin: Karadağ vatandaşları için Kuveyt vizesi sayfası oluşturmak istiyorsanız, 
+            bu sayfada Kuveyt bilgilerini girin ve kaynak ülke olarak Karadağ'ı seçin.
+          </p>
+          <p className="text-xs text-blue-600">
+            💡 <strong>URL:</strong> {formData.source_country_code 
+              ? `/${countries.find(c => c.country_code === formData.source_country_code)?.slug || 'kaynak'}-vatandaslari-${formData.slug}-vizesi`
+              : `/${formData.slug}`
+            }
+          </p>
+        </div>
+
+        <div className="space-y-2">
           {visaRequirementPreview && (
             <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
               <p className="text-xs font-semibold text-green-900 mb-1">

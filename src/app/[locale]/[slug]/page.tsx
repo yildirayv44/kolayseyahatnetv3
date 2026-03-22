@@ -41,7 +41,8 @@ import { SocialProofNotifications } from "@/components/shared/SocialProofNotific
 import { SlideInVisaWidget } from "@/components/shared/SlideInVisaWidget";
 import { getReadingTime } from "@/lib/reading-time";
 import { optimizeHtmlContent } from "@/lib/optimize-html-images";
-import { isBilateralVisaSlug, getBilateralVisaPage, incrementVisaPageViews } from "@/lib/visa-bilateral-helpers";
+import { isBilateralVisaSlug, getBilateralVisaPage, incrementVisaPageViews, parseBilateralVisaSlug, getCountryCodeFromSlug } from "@/lib/visa-bilateral-helpers";
+import { BilateralVisaRequirementsOnly } from "@/components/visa-bilateral/BilateralVisaRequirementsOnly";
 
 // ⚡ PERFORMANCE: Revalidate every 24 hours (86400 seconds) since country content rarely changes
 // Admin can trigger on-demand revalidation when content is updated
@@ -146,40 +147,115 @@ export async function generateMetadata({ params }: CountryPageParams): Promise<M
   const { slug, locale } = await params;
   const decodedSlug = decodeURIComponent(slug);
 
-  // Check if this is a bilateral visa page
+  // Check if this is a bilateral visa page - generate template metadata
   if (isBilateralVisaSlug(decodedSlug)) {
-    const visaPage = await getBilateralVisaPage(decodedSlug);
+    const parsed = parseBilateralVisaSlug(decodedSlug);
     
-    if (visaPage) {
-      const url = `https://www.kolayseyahat.net/${locale === 'en' ? 'en/' : ''}${decodedSlug}`;
+    if (parsed) {
+      const { source, destination } = parsed;
+      const [sourceCode, destCode] = await Promise.all([
+        getCountryCodeFromSlug(source),
+        getCountryCodeFromSlug(destination)
+      ]);
       
-      return {
-        title: visaPage.meta_title || `${visaPage.source_country?.name} - ${visaPage.destination_country?.name} Visa`,
-        description: visaPage.meta_description,
-        openGraph: {
-          title: visaPage.meta_title,
-          description: visaPage.meta_description,
-          type: 'website',
-          url,
-          siteName: 'Kolay Seyahat',
-          locale: locale === 'en' ? 'en_US' : 'tr_TR',
-        },
-        twitter: {
-          card: 'summary_large_image',
-          title: visaPage.meta_title,
-          description: visaPage.meta_description,
-          creator: '@kolayseyahat',
-          site: '@kolayseyahat',
-        },
-        alternates: {
-          canonical: url,
-          languages: {
-            'tr': `https://www.kolayseyahat.net/${decodedSlug}`,
-            'en': `https://www.kolayseyahat.net/en/${decodedSlug}`,
-            'x-default': `https://www.kolayseyahat.net/${decodedSlug}`,
-          },
-        },
-      };
+      if (sourceCode && destCode) {
+        const supabaseClient = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        );
+        
+        // Check if bilateral page exists in DB (for custom metadata)
+        const { data: bilateralCountry } = await supabaseClient
+          .from('countries')
+          .select('meta_title, meta_description, name, name_en')
+          .eq('country_code', destCode)
+          .eq('source_country_code', sourceCode)
+          .eq('status', 1)
+          .maybeSingle();
+        
+        // If bilateral page exists with custom metadata, use it
+        if (bilateralCountry?.meta_title && bilateralCountry?.meta_description) {
+          const url = `https://www.kolayseyahat.net/${locale === 'en' ? 'en/' : ''}${decodedSlug}`;
+          
+          return {
+            title: bilateralCountry.meta_title,
+            description: bilateralCountry.meta_description,
+            openGraph: {
+              title: bilateralCountry.meta_title,
+              description: bilateralCountry.meta_description,
+              type: 'website',
+              url,
+              siteName: 'Kolay Seyahat',
+              locale: locale === 'en' ? 'en_US' : 'tr_TR',
+            },
+            twitter: {
+              card: 'summary_large_image',
+              title: bilateralCountry.meta_title,
+              description: bilateralCountry.meta_description,
+              creator: '@kolayseyahat',
+              site: '@kolayseyahat',
+            },
+            alternates: {
+              canonical: url,
+              languages: {
+                'tr': `https://www.kolayseyahat.net/${decodedSlug}`,
+                'en': `https://www.kolayseyahat.net/en/${decodedSlug}`,
+                'x-default': `https://www.kolayseyahat.net/${decodedSlug}`,
+              },
+            },
+          };
+        }
+        
+        // Otherwise, generate template metadata from country names
+        const { data: countries } = await supabaseClient
+          .from('countries')
+          .select('name, name_en, country_code')
+          .in('country_code', [sourceCode, destCode])
+          .is('source_country_code', null);
+        
+        const sourceCountry = countries?.find(c => c.country_code === sourceCode);
+        const destCountry = countries?.find(c => c.country_code === destCode);
+        
+        if (sourceCountry && destCountry) {
+          const sourceName = locale === 'en' ? (sourceCountry.name_en || sourceCountry.name) : sourceCountry.name;
+          const destName = locale === 'en' ? (destCountry.name_en || destCountry.name) : destCountry.name;
+          const title = locale === 'en' 
+            ? `${sourceName} to ${destName} Visa - Requirements & Application`
+            : `${sourceName} → ${destName} Vizesi - Gereklilikler ve Başvuru`;
+          const description = locale === 'en'
+            ? `Complete visa requirements for ${sourceName} citizens traveling to ${destName}. Application process, required documents, fees, and processing time.`
+            : `${sourceName} vatandaşları için ${destName} vize gereklilikleri. Başvuru süreci, gerekli belgeler, ücretler ve işlem süresi hakkında detaylı bilgi.`;
+          const url = `https://www.kolayseyahat.net/${locale === 'en' ? 'en/' : ''}${decodedSlug}`;
+          
+          return {
+            title: `${title} - Kolay Seyahat`,
+            description,
+            openGraph: {
+              title: `${title} - Kolay Seyahat`,
+              description,
+              type: 'website',
+              url,
+              siteName: 'Kolay Seyahat',
+              locale: locale === 'en' ? 'en_US' : 'tr_TR',
+            },
+            twitter: {
+              card: 'summary_large_image',
+              title: `${title} - Kolay Seyahat`,
+              description,
+              creator: '@kolayseyahat',
+              site: '@kolayseyahat',
+            },
+            alternates: {
+              canonical: url,
+              languages: {
+                'tr': `https://www.kolayseyahat.net/${decodedSlug}`,
+                'en': `https://www.kolayseyahat.net/en/${decodedSlug}`,
+                'x-default': `https://www.kolayseyahat.net/${decodedSlug}`,
+              },
+            },
+          };
+        }
+      }
     }
   }
 
@@ -485,21 +561,106 @@ export async function generateMetadata({ params }: CountryPageParams): Promise<M
   };
 }
 
-export default async function CountryPage({ params }: CountryPageParams) {
+export default async function CountryPage({ params }: { params: Promise<{ slug: string; locale: string }> }) {
   const { slug, locale } = await params;
   const decodedSlug = decodeURIComponent(slug);
   
+  // Initialize variables that might be set by bilateral check
+  let country: any = null;
+  let bilateralContext: { sourceCode: string; sourceName: string; bilateralSlug: string } | null = null;
+  
   // Check if this is a bilateral visa page
   if (isBilateralVisaSlug(decodedSlug)) {
-    const visaPage = await getBilateralVisaPage(decodedSlug);
+    const parsed = parseBilateralVisaSlug(decodedSlug);
     
-    if (visaPage) {
-      // Increment view count
-      await incrementVisaPageViews(decodedSlug);
+    if (parsed) {
+      const { source, destination } = parsed;
       
-      const { BilateralVisaPage } = await import('@/components/visa-bilateral/BilateralVisaPage');
+      const [sourceCode, destCode] = await Promise.all([
+        getCountryCodeFromSlug(source),
+        getCountryCodeFromSlug(destination)
+      ]);
       
-      return <BilateralVisaPage data={visaPage} locale={locale as 'tr' | 'en'} />;
+      if (sourceCode && destCode) {
+        const supabaseClient = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        );
+        
+        // Check if bilateral page exists in DB (admin created specific content)
+        const { data: bilateralCountry, error: bilateralError } = await supabaseClient
+          .from('countries')
+          .select('*')
+          .eq('country_code', destCode)
+          .eq('source_country_code', sourceCode)
+          .eq('status', 1)
+          .maybeSingle();
+        
+        if (bilateralCountry) {
+          // Bilateral page exists - set to upper scope variables to render full country page
+          // Fetch source country details separately
+          const { data: sourceCountryData } = await supabaseClient
+            .from('countries')
+            .select('name, name_en, country_code')
+            .eq('country_code', sourceCode)
+            .is('source_country_code', null)
+            .maybeSingle();
+          
+          // Set country to upper scope (will be used by standard country page rendering below)
+          country = bilateralCountry;
+          
+          // Set bilateralContext to upper scope
+          bilateralContext = {
+            sourceCode: sourceCode,
+            sourceName: locale === 'en' 
+              ? (sourceCountryData?.name_en || sourceCountryData?.name || '')
+              : (sourceCountryData?.name || ''),
+            bilateralSlug: decodedSlug
+          };
+          
+          // Code will continue to standard country page rendering below
+        } else {
+          // No bilateral page in DB - show only visa requirements
+          // Fetch base countries by slug (not by country_code to avoid bilateral pages)
+          const { data: sourceCountry } = await supabaseClient
+            .from('countries')
+            .select('name, name_en, country_code')
+            .eq('slug', source)
+            .maybeSingle();
+          
+          const { data: destCountry } = await supabaseClient
+            .from('countries')
+            .select('name, name_en, country_code')
+            .eq('slug', destination)
+            .maybeSingle();
+          
+          if (sourceCountry && destCountry) {
+            // Fetch visa requirements from API (same as visa checker)
+            const visaCheckUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/mobile/v2/visa-check?source=${sourceCode}&destination=${destCode}`;
+            const visaResponse = await fetch(visaCheckUrl, { cache: 'no-store' });
+            const visaData = visaResponse.ok ? await visaResponse.json() : null;
+            const visaResult = visaData?.success ? visaData.data : null;
+            
+            const sourceName = locale === 'en' ? sourceCountry.name_en || sourceCountry.name : sourceCountry.name;
+            const destName = locale === 'en' ? destCountry.name_en || destCountry.name : destCountry.name;
+            
+            // Import BilateralVisaRequirementsServer component
+            const { BilateralVisaRequirementsServer } = await import('@/components/visa-bilateral/BilateralVisaRequirementsServer');
+            
+            // Show visa requirements with full details
+            return (
+              <BilateralVisaRequirementsServer
+                sourceCountryCode={sourceCode}
+                destinationCountryCode={destCode}
+                sourceCountryName={sourceName}
+                destinationCountryName={destName}
+                locale={locale as 'tr' | 'en'}
+                visaResult={visaResult}
+              />
+            );
+          }
+        }
+      }
     }
   }
   
@@ -558,8 +719,10 @@ export default async function CountryPage({ params }: CountryPageParams) {
   // ⚡ OPTIMIZATION: Use cached data (shared with generateMetadata)
   const { customPageData, blog, country: countryData, menu } = await getCachedPageData(decodedSlug);
 
-  // Initialize country variable in function scope
-  let country = countryData;
+  // Use country from bilateral check if set, otherwise use cached data
+  if (!country) {
+    country = countryData;
+  }
 
   // Custom page bulundu - render et
   if (customPageData) {
@@ -1069,7 +1232,10 @@ export default async function CountryPage({ params }: CountryPageParams) {
 
       {/* BREADCRUMB */}
       <Breadcrumb
-        items={[
+        items={bilateralContext ? [
+          { label: locale === 'en' ? "Countries" : "Ülkeler", href: getLocalizedUrl("ulkeler", locale as 'tr' | 'en') },
+          { label: `${bilateralContext.sourceName} → ${country.name}` },
+        ] : [
           { label: locale === 'en' ? "Countries" : "Ülkeler", href: getLocalizedUrl("ulkeler", locale as 'tr' | 'en') },
           { label: country.name },
         ]}
@@ -1080,6 +1246,7 @@ export default async function CountryPage({ params }: CountryPageParams) {
         country={country} 
         locale={locale as 'tr' | 'en'} 
         products={products}
+        bilateralContext={bilateralContext}
       />
 
       {/* STICKY CTA */}
